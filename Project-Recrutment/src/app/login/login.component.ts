@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
@@ -13,38 +13,43 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent {
 
-  loginForm!: FormGroup;   // ✅ Declare first
+  loginForm: FormGroup;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) {
-    // ✅ Initialize inside constructor
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]]
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
   onSubmit() {
-    if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value)
-        .subscribe({
-          next: () => {
-            console.log('Login Success');
-          },
-          error: (err) => {
-            console.error('Login Failed', err);
-          }
-        });
-    }
+    if (this.loginForm.invalid) return;
+
+    this.authService.login(this.loginForm.value).subscribe({
+      next: (success) => {
+        if (success) {
+          console.log('Login success');
+          this.router.navigate(['/dashboard']);   // or any page
+        } else {
+          alert('Invalid credentials');
+        }
+      },
+      error: (err) => {
+        console.error('Login error', err);
+        alert('Server error');
+      }
+    });
   }
+
   navigateToRegister() {
     this.router.navigate(['/login/register']);
   }
+
   navigateToForgotPassword() {
     this.router.navigate(['/login/forgot-password']);
   }
-
 }

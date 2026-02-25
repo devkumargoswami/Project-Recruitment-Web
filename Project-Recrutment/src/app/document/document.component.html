@@ -1,1 +1,41 @@
-<p>document works!</p>
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Upload Document</h2>
+
+    <form [formGroup]="documentForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <label>User ID</label>
+        <input type="number" formControlName="userId">
+      </div>
+
+      <div class="form-group">
+        <label>Select Document</label>
+        <select formControlName="documentName">
+          <option value="">-- Select Required Document --</option>
+          <option value="Resume/CV">Resume / CV</option>
+          <option value="Cover Letter">Cover Letter</option>
+          <option value="10th Marksheet">10th Marksheet</option>
+          <option value="12th Marksheet">12th Marksheet</option>
+          <option value="Graduation Certificate">Graduation Certificate</option>
+          <option value="Post Graduation Certificate">Post Graduation Certificate</option>
+          <option value="Experience Certificate">Experience Certificate</option>
+          <option value="Aadhar Card">Aadhar Card</option>
+          <option value="PAN Card">PAN Card</option>
+          <option value="Passport">Passport</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Select File</label>
+        <input type="file" (change)="onFileSelect($event)">
+      </div>
+
+      <button type="submit" [disabled]="documentForm.invalid">
+        Save
+      </button>
+
+    </form>
+  </div>
+</div>

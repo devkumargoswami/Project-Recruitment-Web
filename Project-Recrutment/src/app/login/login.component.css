@@ -3,7 +3,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #4e73df, #1cc88a);
+  background:linear-gradient(135deg,#141e30,#243b55);
 }
 
 .auth-card {
@@ -78,4 +78,5 @@ button:disabled {
 
 .auth-links a:hover {
   text-decoration: underline;
+  cursor: pointer;
 }

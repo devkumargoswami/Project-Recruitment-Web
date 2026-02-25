@@ -1,1 +1,74 @@
-<p>education works!</p>
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Add Education</h2>
+
+    <form [formGroup]="educationForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <label>User ID</label>
+        <input type="number" formControlName="userId">
+      </div>
+
+      <div class="form-group">
+        <label>Education Level</label>
+        <select formControlName="educationLevelId">
+          <option value="">-- Select Level --</option>
+          <option value="1">SSC</option>
+          <option value="2">HSC</option>
+          <option value="3">Bachelor</option>
+          <option value="4">Master</option>
+          <option value="5">PhD</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>School / College</label>
+        <input type="text" formControlName="schoolCollege">
+      </div>
+
+      <div class="form-group">
+        <label>Board / University</label>
+        <input type="text" formControlName="boardUniversity">
+      </div>
+
+      <div class="form-group">
+        <label>Degree</label>
+        <input type="text" formControlName="degree">
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Start Month</label>
+          <input type="number" min="1" max="12" formControlName="startMonth">
+        </div>
+
+        <div>
+          <label>Start Year</label>
+          <input type="number" formControlName="startYear">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>End Month</label>
+          <input type="number" min="1" max="12" formControlName="endMonth">
+        </div>
+
+        <div>
+          <label>End Year</label>
+          <input type="number" formControlName="endYear">
+        </div>
+      </div>
+
+      <div class="checkbox">
+        <input type="checkbox" formControlName="isContinue">
+        <label>Currently Studying</label>
+      </div>
+
+      <button type="submit" [disabled]="educationForm.invalid">
+        Save
+      </button>
+
+    </form>
+  </div>
+</div>

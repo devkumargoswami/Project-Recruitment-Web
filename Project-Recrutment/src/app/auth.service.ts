@@ -1,15 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 export interface LoginRequest {
   email: string;
   password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  refreshToken?: string;
 }
 
 @Injectable({
@@ -21,25 +16,24 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  login(data: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(this.apiUrl, data)
-      .pipe(
-        tap((response: LoginResponse) => {
-          // ✅ Save token automatically
-          localStorage.setItem('token', response.token);
-        })
-      );
+  login(data: LoginRequest): Observable<boolean> {
+    return this.http.post<any>(this.apiUrl, data).pipe(
+      map(response => {
+        // ✅ backend just returns success/failure
+        if (response === true || response?.success === true) {
+          localStorage.setItem('isLoggedIn', 'true');
+          return true;
+        }
+        return false;
+      })
+    );
   }
 
   logout() {
-    localStorage.removeItem('token');
+    localStorage.removeItem('isLoggedIn');
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem('isLoggedIn') === 'true';
   }
 }

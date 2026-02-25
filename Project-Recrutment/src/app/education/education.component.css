@@ -1,0 +1,66 @@
+.auth-container{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#141e30,#243b55);
+}
+
+.auth-card{
+  width:520px;
+  background:#fff;
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+h2{
+  text-align:center;
+  color:#11998e;
+  margin-bottom:20px;
+}
+
+.form-group{
+  margin-bottom:12px;
+}
+
+label{
+  font-weight:600;
+  display:block;
+  margin-bottom:5px;
+}
+
+input,select{
+  width:100%;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.row div{
+  flex:1;
+}
+
+.checkbox{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:12px 0;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  background:#11998e;
+  color:white;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
+}
