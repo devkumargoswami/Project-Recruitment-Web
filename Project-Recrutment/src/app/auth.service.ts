@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 
 export interface LoginRequest {
   email: string;
@@ -12,28 +12,21 @@ export interface LoginRequest {
 })
 export class AuthService {
 
-  private apiUrl = 'http://localhost:7027/api/login';
+  private apiUrl = 'https://localhost:7027/api/User/login';
 
   constructor(private http: HttpClient) {}
 
-  login(data: LoginRequest): Observable<boolean> {
-    return this.http.post<any>(this.apiUrl, data).pipe(
-      map(response => {
-        // ✅ backend just returns success/failure
-        if (response === true || response?.success === true) {
-          localStorage.setItem('isLoggedIn', 'true');
-          return true;
-        }
-        return false;
-      })
-    );
+  // ✅ Return full API response (not boolean)
+  login(data: LoginRequest): Observable<any> {
+    return this.http.post<any>(this.apiUrl, data);
   }
 
+  // ✅ Simple local session handling
   logout() {
-    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('user');
   }
 
   isLoggedIn(): boolean {
-    return localStorage.getItem('isLoggedIn') === 'true';
+    return !!localStorage.getItem('user');
   }
 }

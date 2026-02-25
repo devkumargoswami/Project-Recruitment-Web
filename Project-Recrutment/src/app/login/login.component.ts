@@ -14,6 +14,7 @@ import { AuthService } from '../auth.service';
 export class LoginComponent {
 
   loginForm: FormGroup;
+  isLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -29,18 +30,37 @@ export class LoginComponent {
   onSubmit() {
     if (this.loginForm.invalid) return;
 
+    this.isLoading = true;
+
     this.authService.login(this.loginForm.value).subscribe({
-      next: (success) => {
-        if (success) {
-          console.log('Login success');
-          this.router.navigate(['/dashboard']);   // or any page
+      next: (res: any) => {
+
+        // 🔥 Debug - see exact API response
+        console.log('FULL API RESPONSE:', res);
+
+        // ✅ Match Swagger response structure
+        if (res && res.success === true && res.user) {
+
+          // ✅ Store user
+          localStorage.setItem('user', JSON.stringify(res.user));
+
+          console.log('Login success user:', res.user);
+
+          // ✅ Navigate to dashboard
+          this.router.navigate(['/dashboard']);
+
         } else {
+
+          console.log('Login failed response:', res);
           alert('Invalid credentials');
         }
+
+        this.isLoading = false;
       },
       error: (err) => {
-        console.error('Login error', err);
+        console.error('HTTP error:', err);
         alert('Server error');
+        this.isLoading = false;
       }
     });
   }
