@@ -3,12 +3,17 @@
     <h2>{{ isEditMode ? 'Edit Education' : 'Add Education' }}</h2>
 
     <form [formGroup]="educationForm" (ngSubmit)="onSubmit()">
+
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
       <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
 
+      <!-- Education Level -->
       <div class="form-group">
-        <label>Education Level *</label>
-        <select formControlName="educationLevelId" class="form-control">
+        <label for="educationLevelId">Education Level *</label>
+        <select id="educationLevelId"
+                formControlName="educationLevelId"
+                class="form-control"
+                title="Select education level">
           <option value="">-- Select Level --</option>
           <option value="1">SSC (10th)</option>
           <option value="2">HSC (12th)</option>
@@ -16,65 +21,106 @@
           <option value="4">Master</option>
           <option value="5">PhD</option>
         </select>
-        <div class="error" *ngIf="educationForm.get('educationLevelId')?.invalid && educationForm.get('educationLevelId')?.touched">
-          Education level is required
-        </div>
       </div>
 
+      <!-- School -->
       <div class="form-group">
-        <label>School / College *</label>
-        <input type="text" formControlName="schoolCollege" class="form-control">
-        <div class="error" *ngIf="educationForm.get('schoolCollege')?.invalid && educationForm.get('schoolCollege')?.touched">
-          School/College name is required
-        </div>
+        <label for="schoolCollege">School / College *</label>
+        <input id="schoolCollege"
+               type="text"
+               formControlName="schoolCollege"
+               class="form-control"
+               placeholder="Enter school or college name"
+               title="School or College name">
       </div>
 
+      <!-- Board -->
       <div class="form-group">
-        <label>Board / University *</label>
-        <input type="text" formControlName="boardUniversity" class="form-control">
-        <div class="error" *ngIf="educationForm.get('boardUniversity')?.invalid && educationForm.get('boardUniversity')?.touched">
-          Board/University is required
-        </div>
+        <label for="boardUniversity">Board / University *</label>
+        <input id="boardUniversity"
+               type="text"
+               formControlName="boardUniversity"
+               class="form-control"
+               placeholder="Enter board or university"
+               title="Board or University">
       </div>
 
+      <!-- Degree -->
       <div class="form-group">
-        <label>Degree *</label>
-        <input type="text" formControlName="degree" class="form-control">
-        <div class="error" *ngIf="educationForm.get('degree')?.invalid && educationForm.get('degree')?.touched">
-          Degree name is required
-        </div>
+        <label for="degree">Degree *</label>
+        <input id="degree"
+               type="text"
+               formControlName="degree"
+               class="form-control"
+               placeholder="Enter degree name"
+               title="Degree">
       </div>
 
+      <!-- Start Date -->
       <div class="row">
         <div class="form-group">
-          <label>Start Month *</label>
-          <input type="number" min="1" max="12" formControlName="startMonth" class="form-control">
+          <label for="startMonth">Start Month *</label>
+          <input id="startMonth"
+                 type="number"
+                 min="1"
+                 max="12"
+                 formControlName="startMonth"
+                 class="form-control"
+                 title="Start Month">
         </div>
+
         <div class="form-group">
-          <label>Start Year *</label>
-          <input type="number" min="1900" max="2026" formControlName="startYear" class="form-control">
+          <label for="startYear">Start Year *</label>
+          <input id="startYear"
+                 type="number"
+                 min="1900"
+                 max="2026"
+                 formControlName="startYear"
+                 class="form-control"
+                 title="Start Year">
         </div>
       </div>
 
+      <!-- End Date -->
       <div class="row">
         <div class="form-group">
-          <label>End Month</label>
-          <input type="number" min="1" max="12" formControlName="endMonth" class="form-control">
+          <label for="endMonth">End Month</label>
+          <input id="endMonth"
+                 type="number"
+                 min="1"
+                 max="12"
+                 formControlName="endMonth"
+                 class="form-control"
+                 title="End Month">
         </div>
+
         <div class="form-group">
-          <label>End Year</label>
-          <input type="number" min="1900" max="2026" formControlName="endYear" class="form-control">
+          <label for="endYear">End Year</label>
+          <input id="endYear"
+                 type="number"
+                 min="1900"
+                 max="2026"
+                 formControlName="endYear"
+                 class="form-control"
+                 title="End Year">
         </div>
       </div>
 
+      <!-- Checkbox -->
       <div class="checkbox">
-        <input type="checkbox" formControlName="isContinue" (change)="onContinueChange($event)">
-        <label>Currently Studying</label>
+        <input id="isContinue"
+               type="checkbox"
+               formControlName="isContinue"
+               (change)="onContinueChange($event)">
+        <label for="isContinue">Currently Studying</label>
       </div>
 
-      <button type="submit" [disabled]="educationForm.invalid || loading">
+      <!-- Button -->
+      <button type="submit"
+              [disabled]="educationForm.invalid || loading">
         {{ loading ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
       </button>
+
     </form>
   </div>
 </div>

@@ -1,21 +1,22 @@
-/* Card Styling */
+/* ===== Card Styling ===== */
 .card {
   border: none;
   border-radius: 18px;
-  transition: 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  background: #ffffff;
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* Form Inputs */
+/* ===== Form Inputs ===== */
 .form-control {
   border-radius: 10px;
-  padding: 10px;
-  transition: all 0.3s ease;
+  padding: 10px 12px;
   border: 1px solid #ced4da;
+  transition: all 0.3s ease;
 }
 
 .form-control:focus {
@@ -23,23 +24,19 @@
   box-shadow: 0 0 8px rgba(13, 110, 253, 0.25);
 }
 
-/* Toggle Switch */
-.form-check-input {
-  cursor: pointer;
-  width: 45px;
-  height: 22px;
+/* ===== Labels ===== */
+.form-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
 }
 
-.form-check-label {
-  margin-left: 8px;
-  font-weight: 500;
-}
-
-/* Buttons */
+/* ===== Buttons ===== */
 .btn {
   border-radius: 10px;
-  transition: all 0.3s ease;
+  padding: 6px 18px;
   font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .btn-success {
@@ -57,7 +54,7 @@
   transform: scale(1.05);
 }
 
-/* Table Styling */
+/* ===== Table Styling ===== */
 .table {
   border-radius: 15px;
   overflow: hidden;
@@ -77,24 +74,30 @@
   transform: scale(1.01);
 }
 
-/* Badge Styling */
-.badge {
+/* ===== Status Badge (Optional Enhancement) ===== */
+.status-badge {
   padding: 6px 10px;
-  font-size: 13px;
   border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-/* Empty Row */
-.text-muted {
-  font-style: italic;
+.status-scheduled {
+  background-color: #ffc107;
+  color: #000;
 }
 
-/* Responsive Padding */
-.container {
-  max-width: 1000px;
+.status-completed {
+  background-color: #28a745;
+  color: #fff;
 }
 
-/* Smooth Animation */
+.status-cancelled {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* ===== Smooth Animation Global ===== */
 * {
   transition: 0.2s ease-in-out;
 }
