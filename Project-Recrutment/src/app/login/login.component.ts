@@ -1,20 +1,36 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { Subject, takeUntil } from 'rxjs';
+
+interface RoleOption {
+  id: number;
+  name: string;
+}
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
 
   loginForm: FormGroup;
   isLoading = false;
+  showPassword = false;
+  errorMessage = '';
+  private destroy$ = new Subject<void>();
+
+  roles: RoleOption[] = [
+    { id: 1, name: 'HR' },
+    { id: 2, name: 'Admin' },
+    { id: 3, name: 'Candidate' },
+    { id: 4, name: 'Employer' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -23,53 +39,59 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      roleId: [null, [Validators.required]]
     });
   }
 
-  onSubmit() {
-    if (this.loginForm.invalid) return;
+  onSubmit(): void {
+    if (this.loginForm.invalid) {
+      this.markFormGroupTouched();
+      return;
+    }
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (res: any) => {
+    const { email, password, roleId } = this.loginForm.value;
+    const selectedRoleId = Number(roleId);
 
-        // 🔥 Debug - see exact API response
-        console.log('FULL API RESPONSE:', res);
-
-        // ✅ Match Swagger response structure
-        if (res && res.success === true && res.user) {
-
-          // ✅ Store user
-          localStorage.setItem('user', JSON.stringify(res.user));
-
-          console.log('Login success user:', res.user);
-
-          // ✅ Navigate to dashboard
-          this.router.navigate(['/dashboard']);
-
-        } else {
-
-          console.log('Login failed response:', res);
-          alert('Invalid credentials');
+    // Pass roleId to backend via AuthService
+    this.authService.login(email, password, selectedRoleId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          if (res?.user) {
+            switch (selectedRoleId) {
+              case 1: this.router.navigate(['/dashboard/hr']); break;
+              case 2: this.router.navigate(['/dashboard/admin']); break;
+              case 3: this.router.navigate(['/dashboard/candidate']); break;
+              case 4: this.router.navigate(['/dashboard/employer']); break;
+              default: this.router.navigate(['/dashboard']); break;
+            }
+          } else {
+            this.errorMessage = res?.message || 'Invalid credentials. Please try again.';
+          }
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error(err); // log backend error
+          this.errorMessage = 'Login failed. Please check your connection and try again.';
+          this.isLoading = false;
         }
-
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('HTTP error:', err);
-        alert('Server error');
-        this.isLoading = false;
-      }
-    });
+      });
   }
 
-  navigateToRegister() {
-    this.router.navigate(['/login/register']);
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
   }
 
-  navigateToForgotPassword() {
-    this.router.navigate(['/login/forgot-password']);
+  private markFormGroupTouched(): void {
+    Object.values(this.loginForm.controls).forEach(control => control.markAsTouched());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

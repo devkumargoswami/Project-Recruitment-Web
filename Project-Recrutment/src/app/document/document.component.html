@@ -1,17 +1,14 @@
 <div class="auth-container">
   <div class="auth-card">
-    <h2>Upload Document</h2>
+    <h2>{{ isEditMode ? 'Edit Document' : 'Upload Document' }}</h2>
 
     <form [formGroup]="documentForm" (ngSubmit)="onSubmit()">
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
 
       <div class="form-group">
-        <label>User ID</label>
-        <input type="number" formControlName="userId">
-      </div>
-
-      <div class="form-group">
-        <label>Select Document</label>
-        <select formControlName="documentName">
+        <label>Select Document Type *</label>
+        <select formControlName="documentName" class="form-control">
           <option value="">-- Select Required Document --</option>
           <option value="Resume/CV">Resume / CV</option>
           <option value="Cover Letter">Cover Letter</option>
@@ -25,17 +22,22 @@
           <option value="Passport">Passport</option>
           <option value="Other">Other</option>
         </select>
+        <div class="error" *ngIf="documentForm.get('documentName')?.invalid && documentForm.get('documentName')?.touched">
+          Document type is required
+        </div>
       </div>
 
       <div class="form-group">
-        <label>Select File</label>
-        <input type="file" (change)="onFileSelect($event)">
+        <label>Select File *</label>
+        <input type="file" (change)="onFileSelect($event)" accept=".pdf,.jpg,.jpeg,.png" class="form-control">
+        <div *ngIf="selectedFile" class="file-info">
+          Selected: {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(2) }} KB)
+        </div>
       </div>
 
-      <button type="submit" [disabled]="documentForm.invalid">
-        Save
+      <button type="submit" [disabled]="documentForm.invalid || loading || !selectedFile">
+        {{ loading ? 'Uploading...' : (isEditMode ? 'Update' : 'Upload') }}
       </button>
-
     </form>
   </div>
 </div>

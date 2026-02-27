@@ -1,18 +1,289 @@
-<div class="dashboard-container" *ngIf="user">
-  <div class="dashboard-card">
+<!-- dashboard.component.html -->
+<div class="app" [class.sidebar-open]="sidebarOpen">
 
-    <h2>Welcome, {{ user.name }} 👋</h2>
-
-    <div class="user-info">
-      <p><strong>User ID:</strong> {{ user.id }}</p>
-      <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Role:</strong> {{ user.role }}</p>
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="brand">
+      <div class="brand-icon">🏢</div>
+      <div class="brand-text">
+        <div class="brand-name">HRPro</div>
+        <div class="brand-sub">Dashboard</div>
+      </div>
     </div>
 
-    <div class="actions">
-      <button class="btn primary">Go to Profile</button>
-      <button class="btn danger" (click)="logout()">Logout</button>
+    <div class="user-mini">
+      <div class="avatar" [style.background]="roleConfig.grad">{{ getInitials(user?.name) }}</div>
+      <div class="user-info">
+        <div class="u-name">{{ user?.name }}</div>
+        <div class="u-role" [style.color]="roleConfig.color">{{ currentRole }}</div>
+      </div>
     </div>
 
+    <nav class="nav">
+      <ng-container *ngFor="let item of filteredNavItems">
+        <div class="nav-divider" *ngIf="item.divider">{{ item.dlabel }}</div>
+        <button *ngIf="!item.divider" class="nav-item"
+          [class.active]="currentSection === item.id"
+          [style.--role-color]="roleConfig.color"
+          (click)="showSection(item.id!)">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+          <span class="nav-bar" *ngIf="currentSection === item.id"></span>
+        </button>
+      </ng-container>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-footer" (click)="refresh()">↻ Refresh</button>
+      <button class="btn-footer btn-logout" (click)="logout()">⏻ Logout</button>
+    </div>
+  </aside>
+
+  <div class="overlay" [class.show]="sidebarOpen" (click)="closeSidebar()"></div>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" (click)="openSidebar()">☰</button>
+        <h1 class="page-title">{{ currentSectionTitle }}</h1>
+      </div>
+      <div class="topbar-right">
+        <span class="badge" [ngClass]="roleConfig.badge">{{ currentRole }}</span>
+        <button class="btn-primary" *ngIf="currentActionText" (click)="handleTopAction()">{{ currentActionText }}</button>
+      </div>
+    </header>
+
+    <div class="loading-wrap" *ngIf="loading">
+      <div class="spinner"></div><p>Loading…</p>
+    </div>
+
+    <div class="content" *ngIf="!loading">
+
+      <!-- PROFILE -->
+      <section *ngIf="currentSection === 'profile'" class="section fade-in">
+        <div class="profile-hero">
+          <div class="avatar-lg" [style.background]="roleConfig.grad">{{ getInitials(user?.name) }}</div>
+          <div class="profile-meta">
+            <h2>{{ user?.name }}</h2>
+            <div class="p-email">{{ user?.email }}</div>
+            <div class="pill-row">
+              <span class="badge" [ngClass]="roleConfig.badge">{{ currentRole }}</span>
+              <span class="badge badge-green">Active</span>
+            </div>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card" *ngFor="let s of roleConfig.stats" (click)="showSection(s.toLowerCase())">
+            <div class="stat-num" [style.color]="roleConfig.color">{{ getStatCount(s) }}</div>
+            <div class="stat-lbl">{{ s }}</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-head">Account Details</div>
+          <div class="info-row"><span class="info-lbl">User ID</span><span>#{{ user?.id }}</span></div>
+          <div class="info-row"><span class="info-lbl">Email</span><span>{{ user?.email }}</span></div>
+          <div class="info-row">
+            <span class="info-lbl">Role</span>
+            <span><span class="badge" [ngClass]="roleConfig.badge">{{ currentRole }}</span></span>
+          </div>
+          <div class="info-row" *ngIf="user?.status">
+            <span class="info-lbl">Status</span><span>{{ user?.status }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- EDUCATION -->
+      <section *ngIf="currentSection === 'education'" class="section fade-in">
+        <div class="card">
+          <div class="card-head"><h3>Education Records</h3><button class="btn-add" (click)="goToEducation()">+ Add Education</button></div>
+          <div class="empty-state" *ngIf="educationList.length === 0">
+            <div class="empty-icon">🎓</div><p>No education records yet.</p>
+            <button class="btn-primary" (click)="goToEducation()">Add your first record</button>
+          </div>
+          <div class="table-wrap" *ngIf="educationList.length > 0">
+            <table>
+              <thead><tr><th>#</th><th>Title</th><th>Institution</th><th>Board</th><th>Year</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let edu of educationList; trackBy: trackById; let i = index" [class.deleting]="deletingId === edu.id">
+                  <td class="td-num">{{ i+1 }}</td>
+                  <td class="td-main">{{ edu.title }}</td>
+                  <td>{{ edu.institution }}</td>
+                  <td>{{ edu.board || '—' }}</td>
+                  <td>{{ edu.duration || edu.year }}</td>
+                  <td class="td-actions">
+                    <button class="btn-icon" (click)="editEducation(edu.id)">✏️</button>
+                    <button class="btn-icon btn-del" [disabled]="deletingId === edu.id" (click)="deleteEducation(edu.id)">{{ deletingId === edu.id ? '…' : '🗑️' }}</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SKILLS -->
+      <section *ngIf="currentSection === 'skills'" class="section fade-in">
+        <div class="card">
+          <div class="card-head"><h3>Skills</h3><button class="btn-add" (click)="goToSkills()">+ Add Skill</button></div>
+          <div class="empty-state" *ngIf="skillsList.length === 0">
+            <div class="empty-icon">⚙️</div><p>No skills added yet.</p>
+            <button class="btn-primary" (click)="goToSkills()">Add your first skill</button>
+          </div>
+          <div class="skills-grid" *ngIf="skillsList.length > 0">
+            <div class="skill-card" *ngFor="let sk of skillsList; trackBy: trackById">
+              <div class="skill-top">
+                <span class="skill-name">{{ sk.name }}</span>
+                <div class="skill-acts">
+                  <button class="btn-icon" (click)="editSkill(sk.id)">✏️</button>
+                  <button class="btn-icon btn-del" [disabled]="deletingId === sk.id" (click)="deleteSkill(sk.id)">{{ deletingId === sk.id ? '…' : '🗑️' }}</button>
+                </div>
+              </div>
+              <div class="skill-lvl" [style.color]="getSkillLevelColor(sk.level)">{{ sk.level }}</div>
+              <div class="skill-bar"><div class="skill-fill" [style.width]="getSkillLevelWidth(sk.level)" [style.background]="getSkillLevelColor(sk.level)"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPERIENCE -->
+      <section *ngIf="currentSection === 'experience'" class="section fade-in">
+        <div class="card">
+          <div class="card-head"><h3>Work Experience</h3><button class="btn-add" (click)="goToExperience()">+ Add Experience</button></div>
+          <div class="empty-state" *ngIf="experienceList.length === 0">
+            <div class="empty-icon">💼</div><p>No experience records yet.</p>
+            <button class="btn-primary" (click)="goToExperience()">Add your first experience</button>
+          </div>
+          <div class="timeline" *ngIf="experienceList.length > 0">
+            <div class="tl-item" *ngFor="let exp of experienceList; trackBy: trackById">
+              <div class="tl-dot" [style.background]="roleConfig.color"></div>
+              <div class="tl-body">
+                <div class="tl-row">
+                  <div><div class="tl-title">{{ exp.position }}</div><div class="tl-company">{{ exp.company }}</div></div>
+                  <div class="tl-right">
+                    <span class="tl-dur">{{ exp.duration }}</span>
+                    <div class="tl-acts">
+                      <button class="btn-icon" (click)="editExperience(exp.id)">✏️</button>
+                      <button class="btn-icon btn-del" [disabled]="deletingId === exp.id" (click)="deleteExperience(exp.id)">{{ deletingId === exp.id ? '…' : '🗑️' }}</button>
+                    </div>
+                  </div>
+                </div>
+                <p class="tl-desc" *ngIf="exp.description">{{ exp.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DOCUMENTS -->
+      <section *ngIf="currentSection === 'documents'" class="section fade-in">
+        <div class="card">
+          <div class="card-head"><h3>Documents</h3><button class="btn-add" (click)="goToDocuments()">+ Upload Document</button></div>
+          <div class="empty-state" *ngIf="documentList.length === 0">
+            <div class="empty-icon">📄</div><p>No documents uploaded yet.</p>
+            <button class="btn-primary" (click)="goToDocuments()">Upload your first document</button>
+          </div>
+          <div class="table-wrap" *ngIf="documentList.length > 0">
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Uploaded</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let doc of documentList; trackBy: trackById; let i = index" [class.deleting]="deletingId === doc.id">
+                  <td class="td-num">{{ i+1 }}</td>
+                  <td class="td-main">📎 {{ doc.name }}</td>
+                  <td><span class="type-tag">{{ doc.type }}</span></td>
+                  <td class="td-muted">{{ doc.uploadedAt | date:'dd MMM yyyy' }}</td>
+                  <td class="td-actions">
+                    <a *ngIf="doc.url" [href]="doc.url" target="_blank" class="btn-icon">👁️</a>
+                    <button class="btn-icon" (click)="editDocument(doc.id)">✏️</button>
+                    <button class="btn-icon btn-del" [disabled]="deletingId === doc.id" (click)="deleteDocument(doc.id)">{{ deletingId === doc.id ? '…' : '🗑️' }}</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ALL USERS -->
+      <section *ngIf="currentSection === 'users' && isAdminOrHR()" class="section fade-in">
+        <div class="card">
+          <div class="card-head"><h3>All Users</h3><button class="btn-add btn-add-danger" (click)="goToAddUser()">+ Add User</button></div>
+          <div class="filter-bar">
+            <input class="filter-input" placeholder="Search name or email…" [value]="userSearchTerm" (input)="onUserSearch($event)">
+            <select class="filter-sel" [value]="userRoleFilter" (change)="onRoleFilter($event)">
+              <option value="">All Roles</option>
+              <option>Admin</option><option>HR</option><option>Employer</option><option>Candidate</option>
+            </select>
+            <select class="filter-sel" [value]="userStatusFilter" (change)="onStatusFilter($event)">
+              <option value="">All Status</option>
+              <option>Active</option><option>Inactive</option><option>Pending</option>
+            </select>
+            <span class="result-count">{{ filteredUsers.length }} user{{ filteredUsers.length !== 1 ? 's' : '' }}</span>
+          </div>
+          <div class="empty-state" *ngIf="filteredUsers.length === 0">
+            <div class="empty-icon">👥</div>
+            <p>{{ allUsers.length === 0 ? 'No users found.' : 'No users match your filters.' }}</p>
+          </div>
+          <div class="table-wrap" *ngIf="filteredUsers.length > 0">
+            <table>
+              <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr class="clickable-row" *ngFor="let u of filteredUsers; trackBy: trackById" (click)="openUserDrawer(u)">
+                  <td class="td-num">#{{ u.id }}</td>
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar-xs" [style.background]="ROLE_CONFIG[u.role].grad || '#555'">{{ getInitials(u.name) }}</div>
+                      <span class="td-main">{{ u.name }}</span>
+                    </div>
+                  </td>
+                  <td class="td-muted">{{ u.email }}</td>
+                  <td><span class="badge" [ngClass]="ROLE_CONFIG[u.role].badge || 'badge-green'">{{ u.role }}</span></td>
+                  <td>
+                    <span class="status-dot" [class.dot-green]="!u.status || u.status==='Active'" [class.dot-red]="u.status==='Inactive'" [class.dot-amber]="u.status==='Pending'"></span>
+                    {{ u.status || 'Active' }}
+                  </td>
+                  <td class="td-actions" (click)="$event.stopPropagation()">
+                    <button class="btn-icon" (click)="editUser(u.id)">✏️</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- DRAWER -->
+  <div class="drawer-overlay" [class.open]="drawerOpen" (click)="closeDrawer()"></div>
+  <div class="drawer" [class.open]="drawerOpen" *ngIf="isAdminOrHR()">
+    <div class="drawer-head">
+      <h3>User Details</h3>
+      <button class="drawer-close" (click)="closeDrawer()">×</button>
+    </div>
+    <div class="drawer-body" *ngIf="selectedUser">
+      <div class="drawer-avatar" [style.background]="ROLE_CONFIG[selectedUser.role].grad || '#555'">{{ getInitials(selectedUser.name) }}</div>
+      <div class="drawer-name">{{ selectedUser.name }}</div>
+      <div class="drawer-email">{{ selectedUser.email }}</div>
+      <div class="pill-row" style="justify-content:center;margin-bottom:1.5rem">
+        <span class="badge" [ngClass]="ROLE_CONFIG[selectedUser.role].badge">{{ selectedUser.role }}</span>
+        <span class="badge badge-green" *ngIf="!selectedUser.status || selectedUser.status==='Active'">Active</span>
+        <span class="badge badge-red" *ngIf="selectedUser.status==='Inactive'">Inactive</span>
+        <span class="badge badge-amber" *ngIf="selectedUser.status==='Pending'">Pending</span>
+      </div>
+      <div class="info-card">
+        <div class="info-row"><span class="info-lbl">User ID</span><span>#{{ selectedUser.id }}</span></div>
+        <div class="info-row"><span class="info-lbl">Role</span><span>{{ selectedUser.role }}</span></div>
+        <div class="info-row" *ngIf="selectedUser.status"><span class="info-lbl">Status</span><span>{{ selectedUser.status }}</span></div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:1rem" (click)="editUser(selectedUser.id)">Edit User</button>
+    </div>
   </div>
+
 </div>
+
+<style>
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+</style>
