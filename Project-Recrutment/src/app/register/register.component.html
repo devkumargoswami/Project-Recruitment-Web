@@ -25,18 +25,39 @@
       </div>
 
       <div class="form-group">
+        <label>Address</label>
+        <textarea formControlName="address" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Country</label>
+        <input type="number" formControlName="countryId">
+      </div>
+
+      <div class="form-group">
+        <label>State</label>
+        <input type="number" formControlName="stateId">
+      </div>
+
+      <div class="form-group">
+        <label>Role</label>
+        <input type="number" formControlName="roleId">
+      </div>
+
+      <div class="form-group">
+        <label>Total Experience (Years)</label>
+        <input type="number" formControlName="totalExperience" min="0">
+      </div>
+
+      <div class="form-group">
         <label>Password</label>
         <input type="password" formControlName="password">
       </div>
 
-      <button type="submit" [disabled]="registerForm.invalid">
-        Next
-      </button>
+      <button type="submit" [disabled]="registerForm.invalid">Register</button>
 
       <div class="auth-links">
-        <button type="button" routerLink="/login" (click)="navigateToLogin()">
-          Already have an account? Login
-        </button>
+        <button type="button" (click)="navigateToLogin()">Already have an account? Login</button>
       </div>
 
     </form>

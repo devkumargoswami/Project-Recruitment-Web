@@ -1,0 +1,24 @@
+<div class="form-container">
+  <h2>Add User</h2>
+
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>ID</label>
+      <input type="number" formControlName="id">
+    </div>
+
+    <div class="form-group">
+      <label>User ID</label>
+      <input type="number" formControlName="userId">
+    </div>
+
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" formControlName="name">
+    </div>
+
+    <button type="submit" [disabled]="userForm.invalid || submitting">
+      {{ submitting ? 'Submitting...' : 'Add User' }}
+    </button>
+  </form>
+</div>

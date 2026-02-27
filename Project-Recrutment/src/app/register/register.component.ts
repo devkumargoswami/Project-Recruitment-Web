@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
-import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../service/register.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -20,30 +20,51 @@ export class RegisterComponent {
     private userService: UserService,
     private router: Router
   ) {
+    // Match backend property names exactly
     this.registerForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       mobile: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+      address: ['', Validators.required],
+      countryId: [0, Validators.required],
+      stateId: [0, Validators.required],
+      roleId: [0, Validators.required],
+      totalExperience: [0, [Validators.required, Validators.min(0)]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
   onSubmit() {
-    if (this.registerForm.invalid) return;
+    if (this.registerForm.invalid) {
+      alert('Please fill all required fields correctly.');
+      return;
+    }
 
-    this.userService.register(this.registerForm.value).subscribe({
+    // Convert numeric fields to number type
+    const payload = {
+      ...this.registerForm.value,
+      countryId: Number(this.registerForm.value.countryId),
+      stateId: Number(this.registerForm.value.stateId),
+      roleId: Number(this.registerForm.value.roleId),
+      totalExperience: Number(this.registerForm.value.totalExperience)
+    };
+
+    console.log('Payload to send:', payload);
+
+    this.userService.register(payload).subscribe({
       next: (res) => {
-        // assume backend returns userId
-        localStorage.setItem('userId', res.userId);
-        alert('Registration successful');
-        this.router.navigate(['/education']);   // 👉 next step
+        console.log('API response:', res);
+        alert('User registered successfully!');
+        this.router.navigate(['/login']); // Navigate after success
       },
-      error: () => {
-        alert('Registration failed');
+      error: (err) => {
+        console.error('Registration error:', err);
+        alert('Failed to register user. Check console for details.');
       }
     });
   }
+
   navigateToLogin() {
     this.router.navigate(['/login']);
   }

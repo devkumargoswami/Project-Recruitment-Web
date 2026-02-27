@@ -3,13 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
-export class UserService {
-
-  private api = 'https://localhost:7027/api/UserRegister';
+export class UserListService {
+  private api = 'https://localhost:7027/api/List';
 
   constructor(private http: HttpClient) {}
 
-  register(data: any): Observable<any> {
-    return this.http.post(`${this.api}/register`, data); // backend endpoint
+  // Fetch all users or by ID
+  getUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.api}/UserId?id=300`);
   }
 }

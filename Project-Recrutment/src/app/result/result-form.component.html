@@ -1,0 +1,31 @@
+<div class="form-container">
+  <h2>Add Result</h2>
+
+  <form [formGroup]="resultForm" (ngSubmit)="onSubmit()">
+
+    <div class="form-group">
+      <label>Result ID</label>
+      <input type="number" formControlName="result_id">
+    </div>
+
+    <div class="form-group">
+      <label>Candidate ID</label>
+      <input type="number" formControlName="candidate_id">
+    </div>
+
+    <div class="form-group">
+      <label>Technical Marks</label>
+      <input type="number" formControlName="technical_marks">
+    </div>
+
+    <div class="form-group">
+      <label>HR Marks</label>
+      <input type="number" formControlName="hr_marks">
+    </div>
+
+    <button type="submit" [disabled]="resultForm.invalid || submitting">
+      {{ submitting ? 'Submitting...' : 'Submit Result' }}
+    </button>
+
+  </form>
+</div>
