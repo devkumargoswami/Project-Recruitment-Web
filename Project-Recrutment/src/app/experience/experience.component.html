@@ -1,0 +1,81 @@
+<div class="container">
+  <h2>Experience Details</h2>
+
+  <!-- Input Form -->
+  <div class="form-container">
+    <h3>{{ isEditMode ? 'Update Experience' : 'Add New Experience' }}</h3>
+    
+    <form (ngSubmit)="onSubmit()">
+      
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" [(ngModel)]="experience.companyName" name="companyName" required class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Designation</label>
+        <input type="text" [(ngModel)]="experience.designation" name="designation" required class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" [(ngModel)]="experience.startDate" name="startDate" required class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>End Date</label>
+        <input type="date" 
+               [(ngModel)]="experience.endDate" 
+               name="endDate" 
+               [disabled]="experience.isCurrent" 
+               class="form-control">
+      </div>
+
+      <div class="form-group checkbox-group">
+        <input type="checkbox" [(ngModel)]="experience.isCurrent" (change)="onCurrentChange($event)" name="isCurrent" id="isCurrent">
+        <label for="isCurrent">Currently Working Here</label>
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="btn btn-save">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+        <button type="button" (click)="resetForm()" class="btn btn-reset" *ngIf="isEditMode">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- List Display -->
+  <div class="list-container">
+    <h3>Experience List</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Designation</th>
+          <th>Duration</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let exp of experienceList">
+          <td>{{ exp.companyName }}</td>
+          <td>{{ exp.designation }}</td>
+          <td>
+            {{ exp.startDate | date:'shortDate' }} - 
+            <span *ngIf="!exp.isCurrent">{{ exp.endDate | date:'shortDate' }}</span>
+            <span *ngIf="exp.isCurrent" class="badge-current">Current</span>
+          </td>
+          <td>
+            <button (click)="editRecord(exp)" class="btn btn-edit">Edit</button>
+            <button (click)="deleteRecord(exp.experienceId)" class="btn btn-delete">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="experienceList.length === 0">
+          <td colspan="4" style="text-align: center;">No experience found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
