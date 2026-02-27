@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class EducationService {
+
   private api = 'http://localhost:7027/Education';
 
   constructor(private http: HttpClient) {}
@@ -22,6 +23,18 @@ export class EducationService {
 
   getByUserId(userId: number): Observable<any> {
     return this.http.get(`${this.api}/GetByUserId/${userId}`);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.api}/Delete/${id}`);
+  }
+
+  getByUserId(userId: number): Observable<any> {
+    return this.http.get(`${this.api}/GetByUser/${userId}`);
+  }
+
+  update(data: any): Observable<any> {
+    return this.http.put(`${this.api}/Update`, data);
   }
 
   delete(id: number): Observable<any> {

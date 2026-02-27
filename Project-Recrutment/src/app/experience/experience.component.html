@@ -1,0 +1,55 @@
+<div class="col-md-6 mb-3">
+  <label for="companyName" class="form-label">Company Name</label>
+  <input type="text"
+         id="companyName"
+         class="form-control"
+         placeholder="Enter company name"
+         [(ngModel)]="experience.companyName"
+         name="companyName"
+         required>
+</div>
+
+<div class="col-md-6 mb-3">
+  <label for="designation" class="form-label">Designation</label>
+  <input type="text"
+         id="designation"
+         class="form-control"
+         placeholder="Enter designation"
+         [(ngModel)]="experience.designation"
+         name="designation"
+         required>
+</div>
+
+<div class="col-md-6 mb-3">
+  <label for="startDate" class="form-label">Start Date</label>
+  <input type="date"
+         id="startDate"
+         class="form-control"
+         [(ngModel)]="experience.startDate"
+         name="startDate"
+         required>
+</div>
+
+<div class="col-md-6 mb-3">
+  <label for="endDate" class="form-label">End Date</label>
+  <input type="date"
+         id="endDate"
+         class="form-control"
+         [(ngModel)]="experience.endDate"
+         name="endDate"
+         [disabled]="experience.isCurrent">
+</div>
+
+<div class="col-md-12 mb-3">
+  <div class="form-check form-switch">
+    <input class="form-check-input"
+           type="checkbox"
+           id="isCurrent"
+           [(ngModel)]="experience.isCurrent"
+           name="isCurrent"
+           (change)="onCurrentChange($event)">
+    <label class="form-check-label" for="isCurrent">
+      Currently Working Here
+    </label>
+  </div>
+</div>

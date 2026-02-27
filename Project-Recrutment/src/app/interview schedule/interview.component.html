@@ -1,0 +1,89 @@
+<div class="container mt-4">
+
+  <div class="card p-4 shadow">
+    <h3 class="text-center text-primary mb-3">
+      {{ isEditMode ? 'Update Interview' : 'Schedule Interview' }}
+    </h3>
+
+    <form (ngSubmit)="onSubmit()">
+
+      <div class="row">
+
+        <!-- Title -->
+        <div class="col-md-6 mb-3">
+          <label for="title" class="form-label">Interview Title</label>
+          <input type="text"
+                 id="title"
+                 class="form-control"
+                 placeholder="Enter interview title"
+                 [(ngModel)]="interview.interviewTitle"
+                 name="title"
+                 required>
+        </div>
+
+        <!-- DateTime -->
+        <div class="col-md-6 mb-3">
+          <label for="dateTime" class="form-label">Interview Date & Time</label>
+          <input type="datetime-local"
+                 id="dateTime"
+                 class="form-control"
+                 [(ngModel)]="interview.interviewDateTime"
+                 name="dateTime"
+                 required>
+        </div>
+
+        <!-- Interview By -->
+        <div class="col-md-6 mb-3">
+          <label for="interviewBy" class="form-label">Interview By</label>
+          <input type="text"
+                 id="interviewBy"
+                 class="form-control"
+                 placeholder="Enter interviewer name"
+                 [(ngModel)]="interview.interviewBy"
+                 name="interviewBy"
+                 required>
+        </div>
+
+        <!-- Status -->
+        <div class="col-md-6 mb-3">
+          <label for="status" class="form-label">Status</label>
+          <select id="status"
+                  class="form-control"
+                  [(ngModel)]="interview.status"
+                  name="status">
+            <option [value]="0">Scheduled</option>
+            <option [value]="1">Completed</option>
+            <option [value]="2">Cancelled</option>
+          </select>
+        </div>
+
+        <!-- Comments -->
+        <div class="col-md-12 mb-3">
+          <label for="comments" class="form-label">Comments</label>
+          <textarea id="comments"
+                    class="form-control"
+                    placeholder="Enter comments"
+                    [(ngModel)]="interview.comments"
+                    name="comments">
+          </textarea>
+        </div>
+
+      </div>
+
+      <div class="text-center">
+        <button type="submit"
+                class="btn btn-success me-2">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+
+        <button type="button"
+                class="btn btn-secondary"
+                (click)="resetForm()">
+          Reset
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
