@@ -5,10 +5,10 @@ import { ForgotPasswordComponent } from '../frogot-password/frogot-password.comp
 
 export const loginRoutes: Routes = [
   {
-    path: '',          // Base path for login module
+    path: '',
     children: [
-      { path: '', component: LoginComponent },               // /login
-      { path: 'register', component: RegisterComponent },    // /login/register
+      { path: '', component: LoginComponent },                // /login
+      { path: 'register', component: RegisterComponent },     // /login/register
       { path: 'forgot-password', component: ForgotPasswordComponent } // /login/forgot-password
     ]
   }

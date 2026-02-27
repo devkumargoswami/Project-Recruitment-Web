@@ -1,66 +1,123 @@
-.auth-container{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:linear-gradient(135deg,#141e30,#243b55);
+.auth-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
 }
 
-.auth-card{
-  width:520px;
-  background:#fff;
-  padding:30px;
-  border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+.auth-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
 }
 
-h2{
-  text-align:center;
-  color:#11998e;
-  margin-bottom:20px;
+.auth-card h2 {
+  margin-bottom: 2rem;
+  color: #333;
+  text-align: center;
 }
 
-.form-group{
-  margin-bottom:12px;
+.form-group {
+  margin-bottom: 1.5rem;
 }
 
-label{
-  font-weight:600;
-  display:block;
-  margin-bottom:5px;
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
 }
 
-input,select{
-  width:100%;
-  padding:10px;
-  border:1px solid #ccc;
-  border-radius:6px;
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
 }
 
-.row{
-  display:flex;
-  gap:10px;
-  margin-bottom:12px;
+.form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
 }
 
-.row div{
-  flex:1;
+.row {
+  display: flex;
+  gap: 1.5rem;
 }
 
-.checkbox{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin:12px 0;
+.row > div {
+  flex: 1;
 }
 
-button{
-  width:100%;
-  padding:12px;
-  background:#11998e;
-  color:white;
-  border:none;
-  border-radius:6px;
-  font-weight:bold;
-  cursor:pointer;
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+.checkbox input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #f5c6cb;
+}
+
+.success-message {
+  background: #d4edda;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #c3e6cb;
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.file-info {
+  background: #e7f3ff;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #0066cc;
 }
