@@ -1,0 +1,39 @@
+<div class="card">
+  <div class="card-head">
+    <h3>Documents</h3>
+    <button class="btn-add" (click)="addNew()">+ Add Document</button>
+  </div>
+
+  <div class="table-wrap" *ngIf="documents.length; else empty">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Document Name</th>
+          <th>File</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of documents; index as i">
+          <td>{{ i + 1 }}</td>
+          <td class="td-main">{{ d.documentName }}</td>
+          <td>
+            <button class="btn-action btn-view">View</button>
+          </td>
+          <td class="td-action-col">
+            <button class="btn-action btn-update" (click)="edit(d.id)">Edit</button>
+            <button class="btn-action btn-delete" (click)="delete(d.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #empty>
+    <div class="empty-state">
+      <div class="empty-icon">📁</div>
+      No documents added
+    </div>
+  </ng-template>
+</div>

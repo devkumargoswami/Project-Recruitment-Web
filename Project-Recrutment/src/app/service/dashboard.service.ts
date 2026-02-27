@@ -98,6 +98,13 @@ export class DashboardService {
     });
   }
 
+  deleteUser(userId: number): Observable<void> {
+  return this.http.delete<void>(
+    `${this.API}/User/delete/${userId}`, // match your backend route
+    { headers: this.getSafeAuthHeaders() }
+  );
+}
+
   /* ───────────────── AUTH HEADERS ───────────────── */
 
   private getSafeAuthHeaders(): HttpHeaders {

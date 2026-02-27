@@ -1,438 +1,4 @@
-// import {
-//   Component, OnInit, Inject, PLATFORM_ID, OnDestroy,
-//   ChangeDetectionStrategy, ChangeDetectorRef
-// } from '@angular/core';
-// import { CommonModule, isPlatformBrowser } from '@angular/common';
-// import { Router } from '@angular/router';
-// import { DashboardService } from '../service/dashboard.service';
-// import { Subject, takeUntil, forkJoin, of } from 'rxjs';
-// import { catchError } from 'rxjs/operators';
-// import { ReactiveFormsModule } from '@angular/forms';
-
-// interface NavItem {
-//   id?: string;
-//   icon?: string;
-//   label?: string;
-//   divider?: boolean;
-//   dlabel?: string;
-//   admin?: boolean;
-// }
-
-// interface RoleConfig {
-//   color: string;
-//   grad: string;
-//   badge: string;
-//   stats: string[];
-//   nav: NavItem[];
-//   actions: Record<string, string>;
-// }
-
-// interface RoleConfigs {
-//   [key: string]: RoleConfig;
-// }
-
-// interface User {
-//   id: number;
-//   name: string;
-//   email: string;
-//   role: string;
-//   status?: string;
-//   joinedAt?: string;
-// }
-
-// interface Education {
-//   id: number;
-//   title: string;
-//   institution: string;
-//   board?: string;
-//   degree?: string;
-//   year: string;
-//   duration?: string;
-// }
-
-// interface Skill {
-//   id: number;
-//   name: string;
-//   level: string;
-// }
-
-// interface Experience {
-//   id: number;
-//   company: string;
-//   position: string;
-//   duration: string;
-//   description?: string;
-// }
-
-// interface Document {
-//   id: number;
-//   name: string;
-//   type: string;
-//   uploadedAt: string;
-//   url?: string;
-// }
-
-// @Component({
-//   selector: 'app-dashboard',
-//   standalone: true,
-//   imports: [CommonModule, ReactiveFormsModule],
-//   templateUrl: './dashboard.component.html',
-//   styleUrls: ['./dashboard.component.css'],
-//   changeDetection: ChangeDetectionStrategy.OnPush,
-  
-// })
-// export class DashboardComponent implements OnInit, OnDestroy {
-
-//   /* ───────────────── ROLE CONFIG ───────────────── */
-
-//   readonly ROLE_CONFIG: RoleConfigs = {
-//     Admin: {
-//       color: '#ff4757',
-//       grad: 'linear-gradient(135deg,#ff4757,#c82333)',
-//       badge: 'badge-red',
-//       stats: ['Education', 'Skills', 'Experience', 'Documents'],
-//       nav: [
-//         { id: 'profile', icon: '👤', label: 'Profile' },
-//         { id: 'education', icon: '🎓', label: 'Education' },
-//         { id: 'skills', icon: '⚙️', label: 'Skills' },
-//         { id: 'experience', icon: '💼', label: 'Experience' },
-//         { id: 'documents', icon: '📄', label: 'Documents' },
-//         { divider: true, dlabel: 'Management' },
-//         { id: 'users', icon: '👥', label: 'All Users', admin: true }
-//       ],
-//       actions: {
-//         profile: 'Edit Profile',
-//         education: '+ Add Education',
-//         skills: '+ Add Skill',
-//         experience: '+ Add Experience',
-//         documents: '+ Upload Document',
-//         users: '+ Add User'
-//       }
-//     },
-//     HR: {
-//       color: '#ffa502',
-//       grad: 'linear-gradient(135deg,#ffa502,#d08000)',
-//       badge: 'badge-orange',
-//       stats: ['Education', 'Skills', 'Experience', 'Documents'],
-//       nav: [
-//         { id: 'profile', icon: '👤', label: 'Profile' },
-//         { id: 'education', icon: '🎓', label: 'Education' },
-//         { id: 'skills', icon: '⚙️', label: 'Skills' },
-//         { id: 'experience', icon: '💼', label: 'Experience' },
-//         { id: 'documents', icon: '📄', label: 'Documents' },
-//         { divider: true, dlabel: 'Management' },
-//         { id: 'users', icon: '👥', label: 'All Users', admin: true }
-//       ],
-//       actions: {
-//         profile: 'Edit Profile',
-//         education: '+ Add Education',
-//         skills: '+ Add Skill',
-//         experience: '+ Add Experience',
-//         documents: '+ Upload Document',
-//         users: '+ Add User'
-//       }
-//     },
-//     Employer: {
-//       color: '#5b8cff',
-//       grad: 'linear-gradient(135deg,#5b8cff,#7c3aed)',
-//       badge: 'badge-blue',
-//       stats: ['Skills', 'Experience', 'Documents'],
-//       nav: [
-//         { id: 'profile', icon: '👤', label: 'Profile' },
-//         { id: 'skills', icon: '⚙️', label: 'Skills' },
-//         { id: 'experience', icon: '💼', label: 'Experience' },
-//         { id: 'documents', icon: '📄', label: 'Documents' }
-//       ],
-//       actions: {
-//         profile: 'Edit Profile',
-//         skills: '+ Add Skill',
-//         experience: '+ Add Experience',
-//         documents: '+ Upload Document'
-//       }
-//     },
-//     Candidate: {
-//       color: '#06d6a0',
-//       grad: 'linear-gradient(135deg,#06d6a0,#0ab87c)',
-//       badge: 'badge-green',
-//       stats: ['Education', 'Skills', 'Documents'],
-//       nav: [
-//         { id: 'profile', icon: '👤', label: 'Profile' },
-//         { id: 'education', icon: '🎓', label: 'Education' },
-//         { id: 'skills', icon: '⚙️', label: 'Skills' },
-//         { id: 'documents', icon: '📄', label: 'Documents' }
-//       ],
-//       actions: {
-//         profile: 'Edit Profile',
-//         education: '+ Add Education',
-//         skills: '+ Add Skill',
-//         documents: '+ Upload Document'
-//       }
-//     }
-//   };
-
-//   readonly SECTION_TITLE: Record<string, string> = {
-//     profile: 'Profile',
-//     education: 'Education',
-//     skills: 'Skills',
-//     experience: 'Experience',
-//     documents: 'Documents',
-//     users: 'All Users'
-//   };
-
-//   readonly SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-
-//   /* ───────────────── STATE ───────────────── */
-
-//   user: User | null = null;
-//   currentRole = 'Candidate';
-
-//   educationList: Education[] = [];
-//   skillsList: Skill[] = [];
-//   experienceList: Experience[] = [];
-//   documentList: Document[] = [];
-
-//   allUsers: User[] = [];
-//   filteredUsers: User[] = [];
-
-//   loading = false;
-//   deletingId: number | null = null;
-
-//   sidebarOpen = false;
-//   drawerOpen = false;
-//   selectedUser: User | null = null;
-
-//   currentSection = 'profile';
-
-//   userSearchTerm = '';
-//   userRoleFilter = '';
-//   userStatusFilter = '';
-
-//   private destroy$ = new Subject<void>();
-
-//   constructor(
-//     private dashboardService: DashboardService,
-//     private router: Router,
-//     private cdr: ChangeDetectorRef,
-//     @Inject(PLATFORM_ID) private platformId: Object
-//   ) {}
-
-//   /* ───────────────── LIFECYCLE ───────────────── */
-
-//   ngOnInit(): void {
-//     this.initializeComponent();
-//   }
-
-//   ngOnDestroy(): void {
-//     this.destroy$.next();
-//     this.destroy$.complete();
-//   }
-
-//   /* ───────────────── INIT ───────────────── */
-
-//   private initializeComponent(): void {
-//     if (!isPlatformBrowser(this.platformId)) return;
-
-//     const parsedUser = this.getStoredUser();
-
-//     if (!parsedUser?.id) {
-//       this.safeNavigate('/login');
-//       return;
-//     }
-
-//     this.user = parsedUser;
-//     this.currentRole = parsedUser.role || 'Candidate';
-
-//     this.loadCompleteDashboard();
-//   }
-
-//   private getStoredUser(): User | null {
-//     try {
-//       const raw = localStorage.getItem('user');
-//       return raw ? JSON.parse(raw) as User : null;
-//     } catch {
-//       return null;
-//     }
-//   }
-
-//   /* ───────────────── DATA LOAD ───────────────── */
-
-//   private loadCompleteDashboard(): void {
-//     if (!this.user?.id) return;
-
-//     this.loading = true;
-//     this.cdr.markForCheck();
-
-//     const dashboard$ = this.dashboardService
-//       .getCompleteDashboard(this.user.id)
-//       .pipe(catchError(() => of(null)));
-
-//     const users$ = this.isAdminOrHR()
-//       ? this.dashboardService.getAllUsers().pipe(catchError(() => of([])))
-//       : of([]);
-
-//     forkJoin({ dashboard: dashboard$, users: users$ })
-//       .pipe(takeUntil(this.destroy$))
-//       .subscribe(({ dashboard, users }) => {
-
-//         if (dashboard) {
-//           this.educationList = dashboard.education ?? [];
-//           this.skillsList = dashboard.skills ?? [];
-//           this.experienceList = dashboard.experience ?? [];
-//           this.documentList = dashboard.documents ?? [];
-//         }
-
-//         this.allUsers = users as User[];
-//         this.filteredUsers = [...this.allUsers];
-
-//         this.loading = false;
-//         this.cdr.markForCheck();
-//       });
-//   }
-
-//   /* ───────────────── COMPUTED ───────────────── */
-
-//   get roleConfig(): RoleConfig {
-//     return this.ROLE_CONFIG[this.currentRole] ?? this.ROLE_CONFIG['Candidate'];
-//   }
-
-//   get filteredNavItems(): NavItem[] {
-//     return this.roleConfig.nav.filter(item =>
-//       !item.admin || this.isAdminOrHR()
-//     );
-//   }
-
-//   get currentSectionTitle(): string {
-//     return this.SECTION_TITLE[this.currentSection] ?? 'Dashboard';
-//   }
-
-//   get currentActionText(): string {
-//     return this.roleConfig.actions[this.currentSection] ?? '';
-//   }
-
-//   getStatCount(section: string): number {
-//     const map: Record<string, number> = {
-//       education: this.educationList.length,
-//       skills: this.skillsList.length,
-//       experience: this.experienceList.length,
-//       documents: this.documentList.length
-//     };
-//     return map[section.toLowerCase()] ?? 0;
-//   }
-
-//   isAdminOrHR(): boolean {
-//     return ['Admin', 'HR'].includes(this.currentRole);
-//   }
-
-//   trackById(_: number, item: { id: number }): number {
-//     return item.id;
-//   }
-
-//   /* ───────────────── FILTERING ───────────────── */
-
-//   private applyUserFilters(): void {
-//     const term = this.userSearchTerm.trim().toLowerCase();
-
-//     this.filteredUsers = this.allUsers.filter(u =>
-//       (!term || u.name?.toLowerCase().includes(term) || u.email?.toLowerCase().includes(term)) &&
-//       (!this.userRoleFilter || u.role === this.userRoleFilter) &&
-//       (!this.userStatusFilter || u.status === this.userStatusFilter)
-//     );
-
-//     this.cdr.markForCheck();
-//   }
-
-//   onUserSearch(e: Event): void {
-//     this.userSearchTerm = (e.target as HTMLInputElement).value;
-//     this.applyUserFilters();
-//   }
-
-//   onRoleFilter(e: Event): void {
-//     this.userRoleFilter = (e.target as HTMLSelectElement).value;
-//     this.applyUserFilters();
-//   }
-
-//   onStatusFilter(e: Event): void {
-//     this.userStatusFilter = (e.target as HTMLSelectElement).value;
-//     this.applyUserFilters();
-//   }
-
-//   /* ───────────────── DELETE (GENERIC) ───────────────── */
-
-//   private handleDelete<T>(
-//     id: number,
-//     serviceCall: any,
-//     list: T[],
-//     setter: (updated: T[]) => void
-//   ): void {
-//     if (!confirm('Are you sure you want to delete this record?')) return;
-
-//     this.deletingId = id;
-//     this.cdr.markForCheck();
-
-//     serviceCall.pipe(takeUntil(this.destroy$)).subscribe({
-//       next: () => {
-//         setter(list.filter((item: any) => item.id !== id));
-//         this.deletingId = null;
-//         this.cdr.markForCheck();
-//       },
-//       error: () => {
-//         this.deletingId = null;
-//         this.cdr.markForCheck();
-//       }
-//     });
-//   }
-
-//   deleteEducation(id: number): void {
-//     this.handleDelete(id,
-//       this.dashboardService.deleteEducation(id),
-//       this.educationList,
-//       updated => this.educationList = updated
-//     );
-//   }
-
-//   deleteSkill(id: number): void {
-//     this.handleDelete(id,
-//       this.dashboardService.deleteSkill(id),
-//       this.skillsList,
-//       updated => this.skillsList = updated
-//     );
-//   }
-
-//   deleteExperience(id: number): void {
-//     this.handleDelete(id,
-//       this.dashboardService.deleteExperience(id),
-//       this.experienceList,
-//       updated => this.experienceList = updated
-//     );
-//   }
-
-//   deleteDocument(id: number): void {
-//     this.handleDelete(id,
-//       this.dashboardService.deleteDocument(id),
-//       this.documentList,
-//       updated => this.documentList = updated
-//     );
-//   }
-
-//   /* ───────────────── NAVIGATION ───────────────── */
-
-//   private safeNavigate(path: string): void {
-//     this.router.navigate([path]);
-//   }
-
-//   logout(): void {
-//     if (isPlatformBrowser(this.platformId)) {
-//       localStorage.removeItem('user');
-//       localStorage.removeItem('token');
-//     }
-//     this.safeNavigate('/login');
-//   }
-
-//   refresh(): void {
-//     this.loadCompleteDashboard();
-//   }
-// }
-
+// dashboard.component.ts
 import {
   Component, OnInit, Inject, PLATFORM_ID, OnDestroy,
   ChangeDetectionStrategy, ChangeDetectorRef
@@ -452,15 +18,17 @@ interface RoleConfig {
   color: string; grad: string; badge: string;
   stats: string[]; nav: NavItem[]; actions: Record<string, string>;
 }
-interface Education  { id: number; title: string; institution: string; board?: string; degree?: string; year: string; duration?: string; }
+interface Education  { id: number; title: string; institution: string; board?: string; year: string; duration?: string; }
 interface Skill      { id: number; name: string; level: string; }
 interface Experience { id: number; company: string; position: string; duration: string; description?: string; }
 interface Document   { id: number; name: string; type: string; uploadedAt: string; url?: string; }
 
+type SubDataTab = 'education' | 'skills' | 'experience' | 'documents';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule],   // <-- TitleCasePipe removed; use toTitleCase() method instead
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -470,79 +38,116 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly ROLE_CONFIG: Record<string, RoleConfig> = {
     Admin: {
       color: '#60a5fa', grad: 'linear-gradient(135deg,#3b82f6,#6366f1)', badge: 'badge-blue',
-      stats: ['Education','Skills','Experience','Documents'],
+      stats: ['Education', 'Skills', 'Experience', 'Documents'],
       nav: [
-        { id:'profile', icon:'👤', label:'Profile' },
-        { id:'education', icon:'🎓', label:'Education' },
-        { id:'skills', icon:'⚙️', label:'Skills' },
-        { id:'experience', icon:'💼', label:'Experience' },
-        { id:'documents', icon:'📄', label:'Documents' },
-        { divider:true, dlabel:'Management' },
-        { id:'users', icon:'👥', label:'All Users', admin:true }
+        { id: 'profile',    icon: '&#x1F464;', label: 'Profile' },
+        { id: 'education',  icon: '&#x1F393;', label: 'Education' },
+        { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
+        { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
+        { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { divider: true, dlabel: 'Management' },
+        { id: 'users', icon: '&#x1F465;', label: 'All Users', admin: true }
       ],
-      actions: { profile:'Edit Profile', education:'+ Add Education', skills:'+ Add Skill', experience:'+ Add Experience', documents:'+ Upload Document', users:'+ Add User' }
+      actions: {
+        profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
+        experience: '+ Add Experience', documents: '+ Upload Document', users: '+ Add User'
+      }
     },
     HR: {
       color: '#fcd34d', grad: 'linear-gradient(135deg,#f59e0b,#d97706)', badge: 'badge-amber',
-      stats: ['Education','Skills','Experience','Documents'],
+      stats: ['Education', 'Skills', 'Experience', 'Documents'],
       nav: [
-        { id:'profile', icon:'👤', label:'Profile' },
-        { id:'education', icon:'🎓', label:'Education' },
-        { id:'skills', icon:'⚙️', label:'Skills' },
-        { id:'experience', icon:'💼', label:'Experience' },
-        { id:'documents', icon:'📄', label:'Documents' },
-        { divider:true, dlabel:'Management' },
-        { id:'users', icon:'👥', label:'All Users', admin:true }
+        { id: 'profile',    icon: '&#x1F464;', label: 'Profile' },
+        { id: 'education',  icon: '&#x1F393;', label: 'Education' },
+        { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
+        { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
+        { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { divider: true, dlabel: 'Management' },
+        { id: 'users', icon: '&#x1F465;', label: 'All Users', admin: true }
       ],
-      actions: { profile:'Edit Profile', education:'+ Add Education', skills:'+ Add Skill', experience:'+ Add Experience', documents:'+ Upload Document', users:'+ Add User' }
+      actions: {
+        profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
+        experience: '+ Add Experience', documents: '+ Upload Document', users: '+ Add User'
+      }
     },
     Employer: {
       color: '#a78bfa', grad: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', badge: 'badge-violet',
-      stats: ['Skills','Experience','Documents'],
+      stats: ['Skills', 'Experience', 'Documents'],
       nav: [
-        { id:'profile', icon:'👤', label:'Profile' },
-        { id:'skills', icon:'⚙️', label:'Skills' },
-        { id:'experience', icon:'💼', label:'Experience' },
-        { id:'documents', icon:'📄', label:'Documents' }
+        { id: 'profile',    icon: '&#x1F464;', label: 'Profile' },
+        { id: 'education',  icon: '&#x1F393;', label: 'Education' },
+        { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
+        { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
+        { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' }
       ],
-      actions: { profile:'Edit Profile', skills:'+ Add Skill', experience:'+ Add Experience', documents:'+ Upload Document' }
+      actions: {
+        profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
+        experience: '+ Add Experience', documents: '+ Upload Document'
+      }
     },
     Candidate: {
       color: '#6ee7b7', grad: 'linear-gradient(135deg,#10b981,#059669)', badge: 'badge-green',
-      stats: ['Education','Skills','Documents'],
+      stats: ['Education', 'Skills', 'Documents'],
       nav: [
-        { id:'profile', icon:'👤', label:'Profile' },
-        { id:'education', icon:'🎓', label:'Education' },
-        { id:'skills', icon:'⚙️', label:'Skills' },
-        { id:'documents', icon:'📄', label:'Documents' }
+        { id: 'profile',   icon: '&#x1F464;', label: 'Profile' },
+        { id: 'education', icon: '&#x1F393;', label: 'Education' },
+        { id: 'skills',    icon: '&#x2699;',  label: 'Skills' },
+        { id: 'documents', icon: '&#x1F4C4;', label: 'Documents' }
       ],
-      actions: { profile:'Edit Profile', education:'+ Add Education', skills:'+ Add Skill', documents:'+ Upload Document' }
+      actions: {
+        profile: 'Edit Profile', education: '+ Add Education',
+        skills: '+ Add Skill', documents: '+ Upload Document'
+      }
     }
   };
 
   readonly SECTION_TITLE: Record<string, string> = {
-    profile:'Profile', education:'Education', skills:'Skills',
-    experience:'Work Experience', documents:'Documents', users:'All Users'
+    profile: 'Profile', education: 'Education', skills: 'Skills',
+    experience: 'Work Experience', documents: 'Documents', users: 'All Users'
   };
-  readonly SKILL_LEVELS = ['Beginner','Intermediate','Advanced','Expert'];
 
+  readonly SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
+
+  /** Sub-panel tab list exposed to template */
+  readonly subTabs: SubDataTab[] = ['education', 'skills', 'experience', 'documents'];
+
+  // ── Current user ──────────────────────────────────────────────────
   user: AuthUser | null = null;
   currentRole = '';
+
+  // ── Own profile data ──────────────────────────────────────────────
   educationList: Education[]   = [];
   skillsList: Skill[]          = [];
   experienceList: Experience[] = [];
   documentList: Document[]     = [];
-  allUsers: AuthUser[]         = [];
-  filteredUsers: AuthUser[]    = [];
 
-  loading = false;
+  // ── HR/Admin: all users ───────────────────────────────────────────
+  allUsers: AuthUser[]      = [];
+  filteredUsers: AuthUser[] = [];
+
+  // ── HR/Admin: per-user data cache ─────────────────────────────────
+  userDataCache = new Map<number, {
+    education: Education[];
+    skills: Skill[];
+    experience: Experience[];
+    documents: Document[];
+  }>();
+
+  // ── Sub-panel state ───────────────────────────────────────────────
+  selectedUserForData: AuthUser | null = null;
+  subDataTab: SubDataTab = 'education';
+  subEducation:  Education[]  = [];
+  subSkills:     Skill[]      = [];
+  subExperience: Experience[] = [];
+  subDocuments:  Document[]   = [];
+
+  // ── UI state ──────────────────────────────────────────────────────
+  loading          = false;
   deletingId: number | null = null;
-  currentSection = 'profile';
-  sidebarOpen = false;
-  drawerOpen = false;
-  selectedUser: AuthUser | null = null;
-  userSearchTerm = '';
-  userRoleFilter = '';
+  currentSection   = 'profile';
+  sidebarOpen      = false;
+  userSearchTerm   = '';
+  userRoleFilter   = '';
   userStatusFilter = '';
 
   private destroy$ = new Subject<void>();
@@ -556,21 +161,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // AuthGuard already checked — just read session
     const sessionUser = this.auth.getUser();
     if (!sessionUser) { this.router.navigate(['/login']); return; }
     this.user = sessionUser;
-    this.currentRole = sessionUser.role || 'Candidate';
+    // ✅ Always read role from session — fixes "shows as Candidate" bug
+    this.currentRole = sessionUser.role ?? 'Candidate';
     this.loadDashboard();
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
+  // ── Utility: replaces | titlecase pipe ───────────────────────────
+  toTitleCase(value: string): string {
+    if (!value) return '';
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  }
+
+  // ── Data loading ──────────────────────────────────────────────────
   private loadDashboard(): void {
     if (!this.user?.id) return;
-    this.loading = true; this.cdr.markForCheck();
+    this.loading = true;
+    this.cdr.markForCheck();
 
-    const dashboard$ = this.dashboardService.getCompleteDashboard(this.user.id)
+    const dashboard$ = this.dashboardService
+      .getCompleteDashboard(this.user.id)
       .pipe(catchError(err => { console.error(err); return of(null); }));
 
     const users$ = this.isAdminOrHR()
@@ -587,9 +201,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.experienceList = dashboard.experience ?? [];
             this.documentList   = dashboard.documents  ?? [];
           }
-          this.allUsers = (users ?? []) as AuthUser[];
+          this.allUsers      = (users ?? []) as AuthUser[];
           this.filteredUsers = [...this.allUsers];
-          this.loading = false; this.cdr.markForCheck();
+          this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => { this.loading = false; this.cdr.markForCheck(); }
       });
@@ -597,43 +212,112 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   refresh(): void { this.loadDashboard(); }
 
-  get roleConfig(): RoleConfig { return this.ROLE_CONFIG[this.currentRole] || this.ROLE_CONFIG['Candidate']; }
-  get filteredNavItems(): NavItem[] { return this.roleConfig.nav.filter(i => !i.admin || this.isAdminOrHR()); }
-  get currentSectionTitle(): string { return this.SECTION_TITLE[this.currentSection] || 'Dashboard'; }
-  get currentActionText(): string { return this.roleConfig.actions[this.currentSection] || ''; }
+  // ── Getters ───────────────────────────────────────────────────────
+  get roleConfig(): RoleConfig {
+    return this.ROLE_CONFIG[this.currentRole] || this.ROLE_CONFIG['Candidate'];
+  }
+  get filteredNavItems(): NavItem[] {
+    return this.roleConfig.nav.filter(i => !i.admin || this.isAdminOrHR());
+  }
+  get currentSectionTitle(): string {
+    return this.SECTION_TITLE[this.currentSection] || 'Dashboard';
+  }
+  get currentActionText(): string {
+    return this.roleConfig.actions[this.currentSection] || '';
+  }
 
-  isAdminOrHR(): boolean { return ['Admin','HR'].includes(this.currentRole); }
+  isAdminOrHR(): boolean { return ['Admin', 'HR'].includes(this.currentRole); }
 
+  // ── Stat counts ───────────────────────────────────────────────────
   getStatCount(s: string): number {
     const map: Record<string, number> = {
-      education: this.educationList.length, skills: this.skillsList.length,
-      experience: this.experienceList.length, documents: this.documentList.length
+      education:  this.educationList.length,
+      skills:     this.skillsList.length,
+      experience: this.experienceList.length,
+      documents:  this.documentList.length
     };
     return map[s.toLowerCase()] ?? 0;
   }
 
+  getUserDataCount(userId: number, tab: SubDataTab): number {
+    return this.userDataCache.get(userId)?.[tab]?.length ?? 0;
+  }
+
+  // ── Sub-panel ─────────────────────────────────────────────────────
+  viewUserData(user: AuthUser, tab: SubDataTab): void {
+    this.selectedUserForData = user;
+    this.subDataTab = tab;
+    this.loadSubPanelData(user.id);
+  }
+
+  switchSubTab(tab: string): void {
+    this.subDataTab = tab as SubDataTab;
+    if (this.selectedUserForData) this.syncSubArrays(this.selectedUserForData.id);
+  }
+
+  closeSubPanel(): void {
+    this.selectedUserForData = null;
+    this.cdr.markForCheck();
+  }
+
+  private loadSubPanelData(userId: number): void {
+    if (this.userDataCache.has(userId)) { this.syncSubArrays(userId); return; }
+    this.dashboardService.getCompleteDashboard(userId)
+      .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.userDataCache.set(userId, {
+          education:  data?.education  ?? [],
+          skills:     data?.skills     ?? [],
+          experience: data?.experience ?? [],
+          documents:  data?.documents  ?? []
+        });
+        this.syncSubArrays(userId);
+      });
+  }
+
+  private syncSubArrays(userId: number): void {
+    const c = this.userDataCache.get(userId);
+    if (!c) return;
+    this.subEducation  = [...c.education];
+    this.subSkills     = [...c.skills];
+    this.subExperience = [...c.experience];
+    this.subDocuments  = [...c.documents];
+    this.cdr.markForCheck();
+  }
+
+  // ── Skill helpers ─────────────────────────────────────────────────
   getSkillLevelWidth(level: string): string {
     const idx = this.SKILL_LEVELS.findIndex(l => l.toLowerCase() === level?.toLowerCase());
     return idx === -1 ? '25%' : `${((idx + 1) / this.SKILL_LEVELS.length) * 100}%`;
   }
 
   getSkillLevelColor(level: string): string {
-    const map: Record<string, string> = { beginner:'#fbbf24', intermediate:'#60a5fa', advanced:'#34d399', expert:'#f87171' };
+    const map: Record<string, string> = {
+      beginner: '#fbbf24', intermediate: '#60a5fa',
+      advanced: '#34d399', expert: '#f87171'
+    };
     return map[level?.toLowerCase()] || '#888';
   }
 
+  // ── Misc helpers ──────────────────────────────────────────────────
   trackById(_: number, item: { id: number }): number { return item.id; }
 
   getInitials(name?: string | null): string {
     return (name || '').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   }
 
-  showSection(id: string): void { this.currentSection = id; this.sidebarOpen = false; this.cdr.markForCheck(); }
+  // ── Navigation ────────────────────────────────────────────────────
+  showSection(id: string): void {
+    this.currentSection = id;
+    this.sidebarOpen = false;
+    this.selectedUserForData = null;
+    this.cdr.markForCheck();
+  }
 
   handleTopAction(): void {
     const routes: Record<string, string> = {
-      profile:'/profile', education:'/education', skills:'/skills',
-      experience:'/experience', documents:'/documents', users:'/users/add'
+      profile: '/profile', education: '/education', skills: '/skills',
+      experience: '/experience', documents: '/documents', users: '/users/add'
     };
     if (routes[this.currentSection]) this.router.navigate([routes[this.currentSection]]);
   }
@@ -643,6 +327,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   goToExperience(): void { this.router.navigate(['/experience']); }
   goToDocuments():  void { this.router.navigate(['/documents']); }
   goToAddUser():    void { this.router.navigate(['/users/add']); }
+
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]); }
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]); }
   editExperience(id: number): void { this.router.navigate([`/experience/edit/${id}`]); }
@@ -652,28 +337,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
   openSidebar():  void { this.sidebarOpen = true;  this.cdr.markForCheck(); }
   closeSidebar(): void { this.sidebarOpen = false; this.cdr.markForCheck(); }
 
-  openUserDrawer(user: AuthUser): void { this.selectedUser = user; this.drawerOpen = true; this.cdr.markForCheck(); }
-  closeDrawer(): void { this.drawerOpen = false; this.selectedUser = null; this.cdr.markForCheck(); }
-
-  onUserSearch(e: Event): void { this.userSearchTerm = (e.target as HTMLInputElement).value; this.applyFilters(); }
-  onRoleFilter(e: Event): void { this.userRoleFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
-  onStatusFilter(e: Event): void { this.userStatusFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
+  // ── User filters ──────────────────────────────────────────────────
+  onUserSearch(e: Event):   void { this.userSearchTerm   = (e.target as HTMLInputElement).value;   this.applyFilters(); }
+  onRoleFilter(e: Event):   void { this.userRoleFilter   = (e.target as HTMLSelectElement).value;  this.applyFilters(); }
+  onStatusFilter(e: Event): void { this.userStatusFilter = (e.target as HTMLSelectElement).value;  this.applyFilters(); }
 
   private applyFilters(): void {
     const t = this.userSearchTerm.toLowerCase();
     this.filteredUsers = this.allUsers.filter(u =>
       (!t || u.name?.toLowerCase().includes(t) || u.email?.toLowerCase().includes(t)) &&
-      (!this.userRoleFilter || u.role === this.userRoleFilter) &&
+      (!this.userRoleFilter   || u.role   === this.userRoleFilter)   &&
       (!this.userStatusFilter || u.status === this.userStatusFilter)
     );
     this.cdr.markForCheck();
   }
 
+  // ── Delete: own data ──────────────────────────────────────────────
   async deleteEducation(id: number): Promise<void> {
     if (!confirm('Delete this education record?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteEducation(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.educationList = this.educationList.filter(e => e.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
+      next:  () => { this.educationList  = this.educationList.filter(e => e.id !== id);  this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -682,7 +366,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this skill?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteSkill(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.skillsList = this.skillsList.filter(s => s.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
+      next:  () => { this.skillsList = this.skillsList.filter(s => s.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -691,7 +375,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this experience?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteExperience(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.experienceList = this.experienceList.filter(e => e.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
+      next:  () => { this.experienceList = this.experienceList.filter(e => e.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -700,11 +384,85 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this document?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteDocument(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.documentList = this.documentList.filter(d => d.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
+      next:  () => { this.documentList = this.documentList.filter(d => d.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
 
-  // No JWT — AuthService just clears localStorage user and navigates to /login
+  // ── Delete: user row ──────────────────────────────────────────────
+  async deleteUser(id: number): Promise<void> {
+    if (!confirm('Delete this user? This cannot be undone.')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.dashboardService.deleteUser(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.allUsers      = this.allUsers.filter(u => u.id !== id);
+        this.filteredUsers = this.filteredUsers.filter(u => u.id !== id);
+        this.userDataCache.delete(id);
+        if (this.selectedUserForData?.id === id) this.selectedUserForData = null;
+        this.deletingId = null; this.cdr.markForCheck();
+      },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  // ── Delete: sub-panel data ────────────────────────────────────────
+  async deleteSubEducation(id: number): Promise<void> {
+    if (!confirm('Delete this education record?')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.dashboardService.deleteEducation(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.subEducation = this.subEducation.filter(e => e.id !== id);
+        this.patchCache('education', id);
+        this.deletingId = null; this.cdr.markForCheck();
+      },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  async deleteSubSkill(id: number): Promise<void> {
+    if (!confirm('Delete this skill?')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.dashboardService.deleteSkill(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.subSkills = this.subSkills.filter(s => s.id !== id);
+        this.patchCache('skills', id);
+        this.deletingId = null; this.cdr.markForCheck();
+      },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  async deleteSubExperience(id: number): Promise<void> {
+    if (!confirm('Delete this experience?')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.dashboardService.deleteExperience(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.subExperience = this.subExperience.filter(e => e.id !== id);
+        this.patchCache('experience', id);
+        this.deletingId = null; this.cdr.markForCheck();
+      },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  async deleteSubDocument(id: number): Promise<void> {
+    if (!confirm('Delete this document?')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.dashboardService.deleteDocument(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.subDocuments = this.subDocuments.filter(d => d.id !== id);
+        this.patchCache('documents', id);
+        this.deletingId = null; this.cdr.markForCheck();
+      },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  private patchCache(tab: SubDataTab, id: number): void {
+    if (!this.selectedUserForData) return;
+    const cache = this.userDataCache.get(this.selectedUserForData.id);
+    if (cache) (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.id !== id);
+  }
+
   logout(): void { this.auth.logout(); }
 }

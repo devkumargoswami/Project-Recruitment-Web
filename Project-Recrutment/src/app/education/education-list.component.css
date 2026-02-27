@@ -1,0 +1,151 @@
+/* Card layout */
+.card{
+  background:#0f172a;
+  border-radius:12px;
+  padding:20px;
+  margin:25px 0;
+  color:#fff;
+  box-shadow:0 8px 25px rgba(0,0,0,0.25);
+}
+
+/* Header */
+.card-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.card-head h3{
+  margin:0;
+  font-size:18px;
+  font-weight:600;
+}
+
+/* Add button */
+.btn-add{
+  background:#2563eb;
+  border:none;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:13px;
+  transition:0.2s ease;
+}
+
+.btn-add:hover{
+  background:#1d4ed8;
+}
+
+/* Table */
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+thead{
+  background:#020617;
+}
+
+th, td{
+  padding:10px 12px;
+  text-align:left;
+  border-bottom:1px solid #1e293b;
+}
+
+th{
+  color:#94a3b8;
+  font-weight:600;
+  font-size:12px;
+  text-transform:uppercase;
+}
+
+tbody tr:hover{
+  background:#020617;
+}
+
+/* Text styles */
+.td-main{
+  font-weight:600;
+}
+
+.td-muted{
+  color:#94a3b8;
+  font-size:12px;
+}
+
+/* Action column */
+.td-action-col{
+  display:flex;
+  gap:8px;
+}
+
+/* Buttons */
+.btn-action{
+  border:none;
+  padding:6px 10px;
+  border-radius:5px;
+  font-size:12px;
+  cursor:pointer;
+  transition:0.2s ease;
+  color:#fff;
+}
+
+/* Button types */
+.btn-update{
+  background:#22c55e;
+}
+.btn-update:hover{
+  background:#16a34a;
+}
+
+.btn-delete{
+  background:#ef4444;
+}
+.btn-delete:hover{
+  background:#dc2626;
+}
+
+.btn-view{
+  background:#0ea5e9;
+}
+.btn-view:hover{
+  background:#0284c7;
+}
+
+/* Empty state */
+.empty-state{
+  text-align:center;
+  padding:40px 10px;
+  color:#94a3b8;
+  font-size:14px;
+}
+
+.empty-icon{
+  font-size:40px;
+  margin-bottom:10px;
+}
+
+/* Responsive */
+@media (max-width: 768px){
+  th, td{
+    padding:8px;
+    font-size:12px;
+  }
+
+  .btn-add{
+    font-size:12px;
+    padding:6px 10px;
+  }
+
+  .btn-action{
+    padding:5px 8px;
+    font-size:11px;
+  }
+}

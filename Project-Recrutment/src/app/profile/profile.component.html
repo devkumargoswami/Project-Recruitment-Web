@@ -1,0 +1,54 @@
+<div class="profile-container">
+  <h2>User Profile</h2>
+
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+
+    <div class="row">
+      <label>Name</label>
+      <input type="text" formControlName="name">
+    </div>
+
+    <div class="row">
+      <label>Email</label>
+      <input type="text" formControlName="email" [disabled]="true">
+    </div>
+
+    <div class="row">
+      <label>Role</label>
+      <input type="text" formControlName="role" [disabled]="true">
+    </div>
+
+    <div class="row">
+      <label>Phone</label>
+      <input type="text" formControlName="phone">
+    </div>
+
+    <div class="row">
+      <label>Gender</label>
+      <select formControlName="gender">
+        <option value="">Select</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Date of Birth</label>
+      <input type="date" formControlName="dob">
+    </div>
+
+    <div class="row">
+      <label>Address</label>
+      <textarea formControlName="address"></textarea>
+    </div>
+
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Saving...' : 'Update Profile' }}
+    </button>
+
+    <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  </form>
+</div>

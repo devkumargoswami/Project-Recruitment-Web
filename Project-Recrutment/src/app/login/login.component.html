@@ -1,61 +1,80 @@
-<div class="auth-container">
-  <div class="auth-card">
-    <h2 id="login-title">Login</h2>
+<!-- login.component.html -->
+<div class="login-wrap">
+  <div class="login-card">
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" aria-labelledby="login-title">
+    <div class="login-brand">
+      <div class="login-brand-icon">&#x1F3E2;</div>
+      <h1 id="login-title" class="login-title">HRPro</h1>
+      <p class="login-sub">Sign in to your account</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" aria-labelledby="login-title" novalidate>
 
       <!-- Email -->
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input id="email" type="email" formControlName="email" placeholder="Enter your email" />
+      <div class="field-group">
+        <label class="field-label" for="email">Email Address</label>
+        <input id="email" type="email" class="field-input" formControlName="email" placeholder="you@example.com"
+          autocomplete="email" [class.field-error]="loginForm.get('email')?.touched && loginForm.get('email')?.invalid">
         <div class="error-message" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid">
-          <small *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</small>
-          <small *ngIf="loginForm.get('email')?.errors?.['email']">Enter a valid email</small>
+          <small *ngIf="loginForm.get('email')?.errors?.['required']">Email is required.</small>
+          <small *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email.</small>
         </div>
       </div>
 
       <!-- Role -->
-      <div class="form-group">
-        <label for="roleId">Role</label>
-        <select id="roleId" formControlName="roleId">
+      <div class="field-group">
+        <label class="field-label" for="roleId">Login As</label>
+        <select id="roleId" class="field-input field-select" formControlName="roleId"
+          [class.field-error]="loginForm.get('roleId')?.touched && loginForm.get('roleId')?.invalid">
           <option value="" disabled>Select your role</option>
           <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
         </select>
         <div class="error-message" *ngIf="loginForm.get('roleId')?.touched && loginForm.get('roleId')?.invalid">
-          <small>Role selection is required</small>
+          <small>Please select a role.</small>
         </div>
       </div>
 
       <!-- Password -->
-      <div class="form-group">
-        <label for="password">Password</label>
-        <div class="password-container">
-          <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
-            placeholder="Enter your password" />
-          <button type="button" class="password-toggle" (click)="togglePassword()">
-            {{ showPassword ? '🙈' : '👁️' }}
+      <div class="field-group">
+        <label class="field-label" for="password">Password</label>
+        <div class="password-wrap">
+          <input id="password" [type]="showPassword ? 'text' : 'password'" class="field-input"
+            formControlName="password" placeholder="Enter your password" autocomplete="current-password"
+            [class.field-error]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid">
+          <button type="button" class="password-toggle" (click)="togglePassword()" tabindex="-1">
+            {{ showPassword ? 'Hide' : 'Show' }}
           </button>
         </div>
         <div class="error-message" *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid">
-          <small>Password must be at least 6 characters</small>
+          <small *ngIf="loginForm.get('password')?.errors?.['required']">Password is required.</small>
+          <small *ngIf="loginForm.get('password')?.errors?.['minlength']">
+            Minimum 4 characters required.
+          </small>
         </div>
       </div>
 
       <!-- Submit -->
       <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading">
         <span *ngIf="!isLoading">Login</span>
-        <span *ngIf="isLoading">🔄 Logging in...</span>
+        <span *ngIf="isLoading">Logging in...</span>
       </button>
 
-      <!-- Error -->
+      <!-- Error alert -->
       <div *ngIf="errorMessage" class="error-alert">
         {{ errorMessage }}
       </div>
 
-      <!-- Links -->
+      <!-- Auth Links -->
       <div class="auth-links">
-        <a routerLink="/login/register">Don't have an account? Register</a>
-        <a routerLink="/login/forgot-password">Forgot Password?</a>
+        <a routerLink="/login/forgot-password" class="auth-link">
+          Forgot password?
+        </a>
+
+        <div class="auth-divider"></div>
+
+        <a routerLink="/login/register" class="auth-link primary">
+          Create new account
+        </a>
       </div>
 
     </form>
