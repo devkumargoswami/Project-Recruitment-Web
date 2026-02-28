@@ -1,11 +1,11 @@
-import { Component, OnDestroy } from '@angular/core';
-import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
-import { Subject, takeUntil } from 'rxjs';
+import { RouterModule } from '@angular/router';
 
-interface RoleOption {
+interface Role {
   id: number;
   name: string;
 }
@@ -17,36 +17,46 @@ interface RoleOption {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnDestroy {
+export class LoginComponent implements OnInit {
 
-  loginForm: FormGroup;
+  loginForm!: FormGroup;
   isLoading = false;
   showPassword = false;
   errorMessage = '';
-  private destroy$ = new Subject<void>();
 
-  roles: RoleOption[] = [
-    { id: 1, name: 'HR' },
-    { id: 2, name: 'Admin' },
-    { id: 3, name: 'Candidate' },
-    { id: 4, name: 'Employer' }
+  roles: Role[] = [
+    { id: 1, name: 'Admin' },
+    { id: 2, name: 'HR' },
+    { id: 3, name: 'Employer' },
+    { id: 4, name: 'Candidate' }
   ];
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) {
+  ) { }
+
+  ngOnInit(): void {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigateByUrl('/dashboard');
+      return;
+    }
+
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      roleId: [null, [Validators.required]]
+      roleId: ['', [Validators.required]],
+      password: ['', [Validators.required, Validators.minLength(4)]]
     });
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
   }
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      this.markFormGroupTouched();
+      this.loginForm.markAllAsTouched();
       return;
     }
 
@@ -54,44 +64,21 @@ export class LoginComponent implements OnDestroy {
     this.errorMessage = '';
 
     const { email, password, roleId } = this.loginForm.value;
-    const selectedRoleId = Number(roleId);
 
-    // Pass roleId to backend via AuthService
-    this.authService.login(email, password, selectedRoleId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res: any) => {
-          if (res?.user) {
-            switch (selectedRoleId) {
-              case 1: this.router.navigate(['/dashboard/hr']); break;
-              case 2: this.router.navigate(['/dashboard/admin']); break;
-              case 3: this.router.navigate(['/dashboard/candidate']); break;
-              case 4: this.router.navigate(['/dashboard/employer']); break;
-              default: this.router.navigate(['/dashboard']); break;
-            }
-          } else {
-            this.errorMessage = res?.message || 'Invalid credentials. Please try again.';
-          }
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error(err); // log backend error
-          this.errorMessage = 'Login failed. Please check your connection and try again.';
-          this.isLoading = false;
+    this.authService.login({ email, password, roleId: Number(roleId) }).subscribe({
+      next: success => {
+        this.isLoading = false;
+
+        if (success) {
+          this.router.navigateByUrl('/dashboard');   // ✅ now works without refresh
+        } else {
+          this.errorMessage = 'Invalid email, password or role.';
         }
-      });
-  }
-
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
-  }
-
-  private markFormGroupTouched(): void {
-    Object.values(this.loginForm.controls).forEach(control => control.markAsTouched());
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.errorMessage = 'Login failed. Please try again.';
+      }
+    });
   }
 }

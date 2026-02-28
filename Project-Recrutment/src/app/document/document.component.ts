@@ -13,7 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class DocumentComponent implements OnInit {
   documentForm!: FormGroup;
-  selectedFile!: File | null;
+  selectedFile: File | null = null;
   userId!: number;
   documentId: number | null = null;
   isEditMode = false;
@@ -51,7 +51,7 @@ export class DocumentComponent implements OnInit {
     this.documentService.getById(id).subscribe({
       next: (res: any) => {
         this.documentForm.patchValue({ documentName: res.documentName });
-        this.selectedFile = null; // Clear file in edit mode
+        this.selectedFile = null;
       },
       error: () => this.errorMessage = 'Failed to load document'
     });
@@ -59,23 +59,23 @@ export class DocumentComponent implements OnInit {
 
   onFileSelect(event: any): void {
     const file = event.target.files[0];
-    if (file) {
-      // File size validation (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        this.errorMessage = 'File size must be less than 5MB';
-        event.target.value = '';
-        return;
-      }
-      // File type validation
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-      if (!allowedTypes.includes(file.type)) {
-        this.errorMessage = 'Only PDF, JPG, and PNG files are allowed';
-        event.target.value = '';
-        return;
-      }
-      this.selectedFile = file;
-      this.errorMessage = '';
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMessage = 'File size must be less than 5MB';
+      event.target.value = '';
+      return;
     }
+
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      this.errorMessage = 'Only PDF, JPG, and PNG files are allowed';
+      event.target.value = '';
+      return;
+    }
+
+    this.selectedFile = file;
+    this.errorMessage = '';
   }
 
   onSubmit(): void {
@@ -85,40 +85,28 @@ export class DocumentComponent implements OnInit {
     }
 
     this.loading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
 
     const formData = new FormData();
     formData.append('UserId', this.userId.toString());
     formData.append('DocumentName', this.documentForm.value.documentName);
     formData.append('DocumentFile', this.selectedFile);
 
-    if (this.isEditMode) {
-      this.documentService.update(this.documentId!, formData).subscribe({
-        next: () => {
-          this.loading = false;
-          this.successMessage = 'Document updated successfully';
-          setTimeout(() => this.router.navigate(['/dashboard']), 1500);
-        },
-        error: (err) => {
-          this.loading = false;
-          this.errorMessage = 'Update failed. Please try again.';
-          console.error(err);
-        }
-      });
-    } else {
-      this.documentService.insert(formData).subscribe({
-        next: () => {
-          this.loading = false;
-          this.successMessage = 'Document uploaded successfully';
-          setTimeout(() => this.router.navigate(['/dashboard']), 1500);
-        },
-        error: (err) => {
-          this.loading = false;
-          this.errorMessage = 'Upload failed. Please try again.';
-          console.error(err);
-        }
-      });
-    }
+    const req = this.isEditMode
+      ? this.documentService.update(this.documentId!, formData)
+      : this.documentService.insert(formData);
+
+    req.subscribe({
+      next: () => {
+        this.loading = false;
+        this.successMessage = this.isEditMode
+          ? 'Document updated successfully'
+          : 'Document uploaded successfully';
+        setTimeout(() => this.router.navigate(['/dashboard/documents']), 1200);
+      },
+      error: () => {
+        this.loading = false;
+        this.errorMessage = 'Operation failed. Try again.';
+      }
+    });
   }
 }

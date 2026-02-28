@@ -1,77 +1,116 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, map, BehaviorSubject } from 'rxjs';
 
 export interface AuthUser {
   id: number;
-  name: string;
+  username: string;
   email: string;
+  firstName: string;
+  lastName: string;
+  gender: string | null;
+  phonenumber: string | null;
+  dataOfBirth: string | null;
+  address: string | null;
+  countryId: number | null;
+  stateId: number | null;
+  city: string | null;
+  roleId: number;
   role: string;
+  offerCTC: number | null;
+  totalExperience: number | null;
+  createdDateTime: string | null;
   status?: string;
+  name: string;
 }
 
-export interface LoginResponse {
-  user: AuthUser;
-  message?: string;
+export interface UserLoginDTO {
+  email: string;
+  password: string;
+  roleId: number;
 }
+
+const ROLE_MAP: Record<number, string> = {
+  1: 'Admin',
+  2: 'HR',
+  3: 'Employer',
+  4: 'Candidate'
+};
+
+const USER_KEY = 'hrpro_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private readonly USER_KEY = 'user';
-  private readonly API = 'https://localhost:7027/api/User'; // Updated to match old backend
+  private apiUrl = 'https://your-api-url/api/User';
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+  /** Reactive auth state */
+  private authStateSubject = new BehaviorSubject<AuthUser | null>(this.getUser());
+  authState$ = this.authStateSubject.asObservable();
 
-  // ─── Login ────────────────────────────────────────────────────────────────────
-  login(email: string, password: string, roleId: number): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API}/login`, { email, password, roleId })
+  constructor(private http: HttpClient, private router: Router) { }
+
+  /** LOGIN */
+  login(payload: UserLoginDTO): Observable<boolean> {
+    return this.http
+      .post<{ success: boolean; user: any }>(`${this.apiUrl}/login`, payload)
       .pipe(
         tap(res => {
-          if (res?.user) {
-            this.saveUser(res.user);
+          if (res?.success && res.user) {
+            const mapped = this.mapUser(res.user);
+            localStorage.setItem('hrpro_user', JSON.stringify(mapped));
           }
-        })
+        }),
+        map(res => res?.success === true)
       );
   }
 
-  // ─── Logout ──────────────────────────────────────────────────────────────────
-  logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(this.USER_KEY);
-    }
-    this.router.navigate(['/login']);
+  /** USER MAPPING */
+  mapUser(raw: any): AuthUser {
+    const roleId = raw.roleId ?? raw.RoleId ?? 4;
+    const firstName = raw.firstName ?? raw.FirstName ?? '';
+    const lastName = raw.lastName ?? raw.LastName ?? '';
+    return {
+      id: raw.id ?? raw.Id,
+      username: raw.username ?? raw.Username ?? '',
+      email: raw.email ?? raw.Email ?? '',
+      firstName,
+      lastName,
+      gender: raw.gender ?? raw.Gender ?? null,
+      phonenumber: raw.phonenumber ?? raw.Phonenumber ?? null,
+      dataOfBirth: raw.dataOfBirth ?? raw.DataOfBirth ?? null,
+      address: raw.address ?? raw.Address ?? null,
+      countryId: raw.countryId ?? raw.CountryId ?? null,
+      stateId: raw.stateId ?? raw.StateId ?? null,
+      city: raw.city ?? raw.City ?? null,
+      roleId,
+      role: ROLE_MAP[roleId] ?? 'Candidate',
+      offerCTC: raw.offerCTC ?? raw.OfferCTC ?? null,
+      totalExperience: raw.totalExperience ?? raw.TotalExperience ?? null,
+      createdDateTime: raw.createdDateTime ?? raw.CreatedDateTime ?? null,
+      status: raw.status ?? 'Active',
+      name: `${firstName} ${lastName}`.trim() || (raw.username ?? raw.Username ?? ''),
+    };
   }
 
-  // ─── Session helpers ─────────────────────────────────────────────────────────
-  saveUser(user: AuthUser): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-    }
-  }
-
+  /** GET USER */
   getUser(): AuthUser | null {
-    if (!isPlatformBrowser(this.platformId)) return null;
-    const raw = localStorage.getItem(this.USER_KEY);
+    const raw = localStorage.getItem(USER_KEY);
     if (!raw) return null;
-    try {
-      return JSON.parse(raw) as AuthUser;
-    } catch {
-      return null;
-    }
+    try { return JSON.parse(raw) as AuthUser; }
+    catch { return null; }
   }
 
+  /** AUTH CHECK */
   isLoggedIn(): boolean {
-    return !!this.getUser()?.id;
+    return !!this.authStateSubject.value;
   }
 
-  isAdminOrHR(): boolean {
-    return ['Admin', 'HR'].includes(this.getUser()?.role || '');
+  /** LOGOUT */
+  logout(): void {
+    localStorage.removeItem(USER_KEY);
+    this.authStateSubject.next(null);
+    this.router.navigate(['/login']);
   }
 }

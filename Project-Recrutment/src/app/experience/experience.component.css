@@ -1,0 +1,100 @@
+/* Card Styling */
+.card {
+  border: none;
+  border-radius: 18px;
+  transition: 0.3s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* Form Inputs */
+.form-control {
+  border-radius: 10px;
+  padding: 10px;
+  transition: all 0.3s ease;
+  border: 1px solid #ced4da;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 8px rgba(13, 110, 253, 0.25);
+}
+
+/* Toggle Switch */
+.form-check-input {
+  cursor: pointer;
+  width: 45px;
+  height: 22px;
+}
+
+.form-check-label {
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn-success {
+  background: linear-gradient(45deg, #28a745, #218838);
+  border: none;
+}
+
+.btn-success:hover {
+  transform: scale(1.05);
+}
+
+.btn-primary:hover,
+.btn-danger:hover,
+.btn-secondary:hover {
+  transform: scale(1.05);
+}
+
+/* Table Styling */
+.table {
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.table thead {
+  background: linear-gradient(45deg, #343a40, #212529);
+  color: white;
+}
+
+.table tbody tr {
+  transition: 0.2s ease-in-out;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+  transform: scale(1.01);
+}
+
+/* Badge Styling */
+.badge {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 20px;
+}
+
+/* Empty Row */
+.text-muted {
+  font-style: italic;
+}
+
+/* Responsive Padding */
+.container {
+  max-width: 1000px;
+}
+
+/* Smooth Animation */
+* {
+  transition: 0.2s ease-in-out;
+}

@@ -1,0 +1,103 @@
+/* ===== Card Styling ===== */
+.card {
+  border: none;
+  border-radius: 18px;
+  transition: all 0.3s ease-in-out;
+  background: #ffffff;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Form Inputs ===== */
+.form-control {
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 8px rgba(13, 110, 253, 0.25);
+}
+
+/* ===== Labels ===== */
+.form-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  border-radius: 10px;
+  padding: 6px 18px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-success {
+  background: linear-gradient(45deg, #28a745, #218838);
+  border: none;
+}
+
+.btn-success:hover {
+  transform: scale(1.05);
+}
+
+.btn-primary:hover,
+.btn-danger:hover,
+.btn-secondary:hover {
+  transform: scale(1.05);
+}
+
+/* ===== Table Styling ===== */
+.table {
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.table thead {
+  background: linear-gradient(45deg, #343a40, #212529);
+  color: white;
+}
+
+.table tbody tr {
+  transition: 0.2s ease-in-out;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+  transform: scale(1.01);
+}
+
+/* ===== Status Badge (Optional Enhancement) ===== */
+.status-badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-scheduled {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.status-completed {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.status-cancelled {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* ===== Smooth Animation Global ===== */
+* {
+  transition: 0.2s ease-in-out;
+}

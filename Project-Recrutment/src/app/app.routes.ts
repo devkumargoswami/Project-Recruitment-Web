@@ -5,16 +5,25 @@ export const routes: Routes = [
 
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
-  // Auth (Lazy)
+  // Auth
   {
     path: 'login',
-    canActivate: [guestGuard],   // prevents logged-in users from seeing login
+    canActivate: [guestGuard],
     loadChildren: () =>
       import('./login/login.route')
         .then(m => m.loginRoutes)
   },
 
-  // Dashboard (Protected + Lazy)
+  // Register
+{
+  path: 'register',
+  canActivate: [authGuard],
+  loadChildren: () =>
+    import('./register/register.route')
+      .then(m => m.registerRoutes)
+},
+
+  // Dashboard
   {
     path: 'dashboard',
     canActivate: [authGuard],
@@ -22,25 +31,6 @@ export const routes: Routes = [
       import('./dashboard/dashboard.routes')
         .then(m => m.dashboardRoutes)
   },
-
-  // Education (Protected + Lazy)
-  {
-    path: 'education',
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import('./education/education.routes')
-        .then(m => m.educationRoutes)
-  },
-
-  // Documents (Protected + Lazy)
-  {
-    path: 'documents',
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import('./document/document.route')
-        .then(m => m.documentRoutes)
-  },
-
-  // Fallback
-  { path: '**', redirectTo: 'login' }
+   
+  
 ];
