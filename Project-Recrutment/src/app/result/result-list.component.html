@@ -1,0 +1,36 @@
+<div class="result-container">
+  <h2>Candidate Results</h2>
+
+  <div *ngIf="loading" class="loading">
+    Loading results...
+  </div>
+
+  <div *ngIf="error" class="error">
+    {{ error }}
+  </div>
+
+  <table *ngIf="results.length > 0" class="result-table">
+    <thead>
+      <tr>
+        <th>Result ID</th>
+        <th>Candidate ID</th>
+        <th>Technical Marks</th>
+        <th>HR Marks</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let result of results">
+        <td>{{ result.result_id }}</td>
+        <td>{{ result.candidate_id }}</td>
+        <td>{{ result.technical_marks }}</td>
+        <td>{{ result.hr_marks }}</td>
+        <td>{{ result.technical_marks + result.hr_marks }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="results.length === 0 && !loading" class="no-data">
+    No results found.
+  </div>
+</div>

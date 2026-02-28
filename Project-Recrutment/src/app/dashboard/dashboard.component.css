@@ -168,7 +168,7 @@ tr.deleting { opacity: .45; pointer-events: none; }
 .type-tag { display: inline-block; padding: .15rem .5rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; font-size: .7rem; font-weight: 600; text-transform: uppercase; color: var(--muted); }
 
 .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: .4rem; background: var(--muted); }
-.dot-green { background: #34d399; }
+.dot-green { background: #27d7e7; }
 .dot-red   { background: #f87171; }
 .dot-amber { background: #fbbf24; }
 

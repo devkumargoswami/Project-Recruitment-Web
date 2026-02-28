@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-result',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './result-form.component.html',
-  styleUrl: './result-form.component.css'
+  styleUrls: ['./result-form.component.css']
 })
 export class ResultComponent {
 
