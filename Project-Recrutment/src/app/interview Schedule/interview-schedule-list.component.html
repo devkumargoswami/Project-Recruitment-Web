@@ -1,0 +1,66 @@
+<div class="container py-4">
+  <div class="list-card">
+    <div class="list-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-list-ul"></i>
+        <h5 class="mb-0">Interview Schedule List</h5>
+      </div>
+      <span class="record-count">{{ scheduleList.length }} Records</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table custom-table" *ngIf="scheduleList.length > 0; else emptyState">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Interview By</th>
+            <th>Date & Time</th>
+            <th>Status</th>
+            <th>Comments</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of scheduleList; let i = index">
+            <td><span class="row-num">{{ i + 1 }}</span></td>
+            <td><span class="title-text">{{ item.interviewTitle }}</span></td>
+            <td>{{ item.interviewBy }}</td>
+            <td>
+              <span class="date-text">
+                <i class="bi bi-clock"></i> {{ formatDisplay(item.interviewDateTime) }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(item.status)">
+                <span class="dot" *ngIf="item.status === 1"></span>
+                <i class="bi bi-check-circle-fill" *ngIf="item.status === 2"></i>
+                <i class="bi bi-x-circle-fill" *ngIf="item.status === 3"></i>
+                <i class="bi bi-arrow-repeat" *ngIf="item.status === 4"></i>
+                {{ getStatusLabel(item.status) }}
+              </span>
+            </td>
+            <td>{{ item.comments || '-' }}</td>
+            <td>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-delete" 
+                title="Delete"
+                (click)="deleteRecord(item.id)">
+                <i class="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <p>No interviews scheduled yet</p>
+      </div>
+    </ng-template>
+
+  </div>
+</div>
