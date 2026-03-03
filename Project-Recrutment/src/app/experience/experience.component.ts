@@ -20,11 +20,8 @@ export interface Experience {
 export class ExperienceComponent implements OnInit {
 
   userId: number = 1;
-
   experienceList: Experience[] = [];
-
   experience: Experience = this.getEmptyExperience();
-
   isEditMode: boolean = false;
 
   constructor(private expService: ExperienceService) { }
@@ -60,7 +57,6 @@ export class ExperienceComponent implements OnInit {
 
   // 🔹 Submit
   onSubmit(): void {
-
     if (!this.experience.companyName ||
         !this.experience.designation ||
         !this.experience.startDate) {
@@ -112,7 +108,6 @@ export class ExperienceComponent implements OnInit {
   // 🔹 Edit
   editRecord(exp: Experience): void {
     this.isEditMode = true;
-
     this.experience = {
       ...exp,
       startDate: this.formatDate(exp.startDate),

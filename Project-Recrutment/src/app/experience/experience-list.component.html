@@ -1,0 +1,65 @@
+<div class="container mt-5">
+  <div class="list-card">
+
+    <!-- Header -->
+    <div class="list-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-briefcase-fill fs-5"></i>
+        <h5 class="mb-0">My Experience</h5>
+      </div>
+      <span class="record-count">{{ experienceList.length }} Records</span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table custom-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Company</th>
+            <th>Designation</th>
+            <th>Duration</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Empty State -->
+          <tr *ngIf="experienceList.length === 0">
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <p>No experience records found</p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Data Rows -->
+          <tr *ngFor="let exp of experienceList; let i = index">
+            <td><span class="row-num">{{ i + 1 }}</span></td>
+            <td><span class="company-name">{{ exp.companyName }}</span></td>
+            <td>{{ exp.designation }}</td>
+            <td>
+              <span class="duration-text">
+                <i class="bi bi-calendar3"></i>
+                {{ exp.startDate | date: 'MMM yyyy' }} —
+                {{ exp.isCurrent ? 'Present' : (exp.endDate | date: 'MMM yyyy') }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge"
+                    [class.ongoing]="exp.isCurrent"
+                    [class.completed]="!exp.isCurrent">
+                <span *ngIf="exp.isCurrent" class="dot"></span>
+                <i *ngIf="!exp.isCurrent" class="bi bi-check-circle-fill"></i>
+                {{ exp.isCurrent ? 'Ongoing' : 'Completed' }}
+              </span>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>

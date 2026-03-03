@@ -1,55 +1,192 @@
-<div class="col-md-6 mb-3">
-  <label for="companyName" class="form-label">Company Name</label>
-  <input type="text"
-         id="companyName"
-         class="form-control"
-         placeholder="Enter company name"
-         [(ngModel)]="experience.companyName"
-         name="companyName"
-         required>
-</div>
+<div class="container mt-5">
 
-<div class="col-md-6 mb-3">
-  <label for="designation" class="form-label">Designation</label>
-  <input type="text"
-         id="designation"
-         class="form-control"
-         placeholder="Enter designation"
-         [(ngModel)]="experience.designation"
-         name="designation"
-         required>
-</div>
+  <!-- 🔹 Form Card -->
+  <div class="form-card mb-5">
 
-<div class="col-md-6 mb-3">
-  <label for="startDate" class="form-label">Start Date</label>
-  <input type="date"
-         id="startDate"
-         class="form-control"
-         [(ngModel)]="experience.startDate"
-         name="startDate"
-         required>
-</div>
+    <!-- Card Header -->
+    <div class="form-header">
+      <div class="header-icon">
+        <i class="bi bi-briefcase-fill"></i>
+      </div>
+      <div>
+        <h4 class="mb-0">{{ isEditMode ? 'Edit Experience' : 'Add Experience' }}</h4>
+        <small class="opacity-75">{{ isEditMode ? 'Update your work details' : 'Fill in your work experience details' }}</small>
+      </div>
+    </div>
 
-<div class="col-md-6 mb-3">
-  <label for="endDate" class="form-label">End Date</label>
-  <input type="date"
-         id="endDate"
-         class="form-control"
-         [(ngModel)]="experience.endDate"
-         name="endDate"
-         [disabled]="experience.isCurrent">
-</div>
+    <!-- Card Body -->
+    <div class="form-body">
+      <form (ngSubmit)="onSubmit()" #expForm="ngForm">
+        <div class="row g-4">
 
-<div class="col-md-12 mb-3">
-  <div class="form-check form-switch">
-    <input class="form-check-input"
-           type="checkbox"
-           id="isCurrent"
-           [(ngModel)]="experience.isCurrent"
-           name="isCurrent"
-           (change)="onCurrentChange($event)">
-    <label class="form-check-label" for="isCurrent">
-      Currently Working Here
+          <!-- Company Name -->
+          <div class="col-md-6">
+            <div class="input-group-custom">
+              <div class="input-icon">
+                <i class="bi bi-building"></i>
+              </div>
+              <div class="input-wrapper">
+                <input type="text"
+                       id="companyName"
+                       class="custom-input"
+                       placeholder=" "
+                       [(ngModel)]="experience.companyName"
+                       name="companyName"
+                       required>
+                <label for="companyName" class="floating-label">Company Name *</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Designation -->
+          <div class="col-md-6">
+            <div class="input-group-custom">
+              <div class="input-icon">
+                <i class="bi bi-person-badge"></i>
+              </div>
+              <div class="input-wrapper">
+                <input type="text"
+                       id="designation"
+                       class="custom-input"
+                       placeholder=" "
+                       [(ngModel)]="experience.designation"
+                       name="designation"
+                       required>
+                <label for="designation" class="floating-label">Designation *</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Start Date -->
+          <div class="col-md-6">
+            <div class="input-group-custom">
+              <div class="input-icon">
+                <i class="bi bi-calendar-check"></i>
+              </div>
+              <div class="input-wrapper">
+                <input type="date"
+                       id="startDate"
+                       class="custom-input"
+                       [(ngModel)]="experience.startDate"
+                       name="startDate"
+                       required>
+                <label for="startDate" class="floating-label always-up">Start Date *</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- End Date -->
+          <div class="col-md-6">
+            <div class="input-group-custom" [class.disabled-field]="experience.isCurrent">
+              <div class="input-icon">
+                <i class="bi bi-calendar-x"></i>
+              </div>
+              <div class="input-wrapper">
+                <input type="date"
+                       id="endDate"
+                       class="custom-input"
+                       [(ngModel)]="experience.endDate"
+                       name="endDate"
+                       [disabled]="experience.isCurrent">
+                <label for="endDate" class="floating-label always-up">End Date</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Currently Working Toggle -->
+          <div class="col-md-12">
+            <div class="toggle-card" [class.active]="experience.isCurrent">
+              <div class="toggle-info">
+                <i class="bi bi-star-fill toggle-star"></i>
+                <div>
+                  <div class="toggle-title">Currently Working Here</div>
+                  <div class="toggle-sub">End date will be marked as Present</div>
+                </div>
+              </div>
+              <label class="switch" for="isCurrent">
+         <input type="checkbox"
+         id="isCurrent"
+         name="isCurrent"
+         title="Currently Working Here"
+         aria-label="Currently Working Here"
+         [(ngModel)]="experience.isCurrent"
+         (change)="onCurrentChange()">
+         <span class="slider"></span>
     </label>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions mt-4">
+          <button type="button" class="btn-cancel" (click)="resetForm()">
+            <i class="bi bi-x-lg me-2"></i>Cancel
+          </button>
+          <button type="submit" class="btn-submit">
+            <i class="bi {{ isEditMode ? 'bi-check2-circle' : 'bi-plus-circle-fill' }} me-2"></i>
+            {{ isEditMode ? 'Update Experience' : 'Save Experience' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
   </div>
+
+  <!-- 🔹 Table Card -->
+  <div class="list-card">
+    <div class="list-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-list-check fs-5"></i>
+        <h5 class="mb-0">Experience Records</h5>
+      </div>
+      <span class="record-count">{{ experienceList.length }} Records</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table custom-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Company</th>
+            <th>Designation</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="experienceList.length === 0">
+            <td colspan="7" class="empty-row">
+              <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+              No experience records found
+            </td>
+          </tr>
+          <tr *ngFor="let exp of experienceList; let i = index">
+            <td><span class="row-num">{{ i + 1 }}</span></td>
+            <td><strong>{{ exp.companyName }}</strong></td>
+            <td>{{ exp.designation }}</td>
+            <td>{{ exp.startDate | date: 'MMM yyyy' }}</td>
+            <td>{{ exp.isCurrent ? '—' : (exp.endDate | date: 'MMM yyyy') }}</td>
+            <td>
+              <span class="status-badge" [class.ongoing]="exp.isCurrent" [class.completed]="!exp.isCurrent">
+                <i class="bi {{ exp.isCurrent ? 'bi-circle-fill' : 'bi-check-circle-fill' }} me-1"></i>
+                {{ exp.isCurrent ? 'Ongoing' : 'Completed' }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button class="action-btn edit-btn me-2" (click)="editRecord(exp)" title="Edit">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="action-btn delete-btn" (click)="deleteRecord(exp.experienceId)" title="Delete">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
