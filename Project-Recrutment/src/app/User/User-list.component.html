@@ -69,27 +69,27 @@
           <td>
             <div class="name-cell">
               <div class="avatar" [style.background]="avatarColor(user.firstName)">
-                {{ (user.firstName?.[0] || '?') | uppercase }}
+                {{ (user.firstName ? user.firstName[0] : '?') | uppercase }}
               </div>
               {{ user.firstName }} {{ user.lastName }}
             </div>
           </td>
-          <td class="text-muted">@{{ user.username }}</td>
+          <td class="text-muted">{{ '@' + (user.username || '') }}</td>
           <td class="text-sm">{{ user.email }}</td>
-          <td>{{ user.phoneNumber || '—' }}</td>
-          <td>{{ user.city || '—' }}</td>
+          <td>{{ user.phoneNumber ? user.phoneNumber : '—' }}</td>
+          <td>{{ user.city ? user.city : '—' }}</td>
           <td>
             <span class="role-badge" [style.background]="roleColor(user.roleId)">
-              {{ roleMap[user.roleId] || 'R'+user.roleId }}
+              {{ roleMap[user.roleId] ? roleMap[user.roleId] : 'R'+user.roleId }}
             </span>
           </td>
           <td>
-            <span class="status-badge" [ngClass]="statusClass(user.interviewStatus || 0)">
-              {{ statusMap[user.interviewStatus || 0] }}
+            <span class="status-badge" [ngClass]="statusClass(user.interviewStatus ? user.interviewStatus : 0)">
+              {{ statusMap[user.interviewStatus ? user.interviewStatus : 0] }}
             </span>
           </td>
-          <td class="ctc-cell">₹{{ user.offerCTC | number }}</td>
-          <td class="text-muted">{{ user.totalExperience }}y</td>
+          <td class="ctc-cell">₹{{ user.offerCTC ? (user.offerCTC | number) : '0' }}</td>
+          <td class="text-muted">{{ user.totalExperience ? user.totalExperience + 'y' : '—' }}</td>
           <td>
             <div class="action-btns">
               <button class="btn-edit"   (click)="openEdit(user)">✏️ Edit</button>
@@ -228,7 +228,7 @@
     <div class="delete-body">
       <div class="warn-icon">⚠️</div>
       <p class="del-text">Are you sure you want to delete</p>
-      <p class="del-name">{{ selectedUser?.firstName }} {{ selectedUser?.lastName }}</p>
+      <p class="del-name">{{ selectedUser ? selectedUser.firstName + ' ' + selectedUser.lastName : '' }}</p>
       <p class="del-note">This action cannot be undone.</p>
     </div>
     <div class="modal-footer">
@@ -268,5 +268,5 @@
 <div class="toast" *ngIf="toast"
   [class.toast-success]="toast.type==='success'"
   [class.toast-error]="toast.type==='error'">
-  {{ toast.type==='success' ? '✅' : '❌' }} {{ toast.message }}
+  {{ toast.type === 'success' ? '✅' : '❌' }} {{ toast.message }}
 </div>

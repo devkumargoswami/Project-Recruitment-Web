@@ -38,9 +38,26 @@ app.use(
 );
 
 /**
+ * Handle parameterized routes that cause prerendering errors by serving them as client-side routes
+ */
+app.get('/dashboard/education/edit/:id', (req, res) => {
+  res.sendFile(resolve(browserDistFolder, 'index.html'));
+});
+
+app.get('/dashboard/documents/edit/:id', (req, res) => {
+  res.sendFile(resolve(browserDistFolder, 'index.html'));
+});
+
+/**
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
+  // Check if this is a parameterized route that should be handled client-side
+  if (req.path.match(/^\/dashboard\/(education|documents)\/edit\/\d+$/)) {
+    res.sendFile(resolve(browserDistFolder, 'index.html'));
+    return;
+  }
+  
   angularApp
     .handle(req)
     .then((response) =>

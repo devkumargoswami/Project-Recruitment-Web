@@ -32,6 +32,22 @@ export const routes: Routes = [
         .then(m => m.dashboardRoutes)
   },
 
+  // Test Login
+  {
+    path: 'test-login',
+    loadChildren: () =>
+      import('./test-login/test-login.route')
+        .then(m => m.testLoginRoutes)
+  },
+
+  // Simple Test
+  {
+    path: 'simple-test',
+    loadChildren: () =>
+      import('./simple-test/simple-test.route')
+        .then(m => m.simpleTestRoutes)
+  },
+
   // User
   {
     path: 'user',

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, map, BehaviorSubject } from 'rxjs';
+import { Observable, tap, map, BehaviorSubject, catchError, throwError } from 'rxjs';
 
 export interface AuthUser {
   id: number;
@@ -32,8 +32,8 @@ export interface UserLoginDTO {
 }
 
 const ROLE_MAP: Record<number, string> = {
-  1: 'Admin',
-  2: 'HR',
+  1: 'HR',
+  2: 'Admin',
   3: 'Employer',
   4: 'Candidate'
 };
@@ -43,7 +43,7 @@ const USER_KEY = 'hrpro_user';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private apiUrl = 'https://your-api-url/api/User';
+  private apiUrl = '/api/User';
 
   /** Reactive auth state */
   private authStateSubject = new BehaviorSubject<AuthUser | null>(this.getUser());
@@ -53,16 +53,38 @@ export class AuthService {
 
   /** LOGIN */
   login(payload: UserLoginDTO): Observable<boolean> {
+    console.log('AuthService: Making login request to:', `${this.apiUrl}/login`);
+    console.log('AuthService: Request payload:', payload);
+    
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
     return this.http
-      .post<{ success: boolean; user: any }>(`${this.apiUrl}/login`, payload)
+      .post<{ success: boolean; user: any }>(`${this.apiUrl}/login`, payload, { headers })
       .pipe(
         tap(res => {
+          console.log('AuthService: Login response:', res);
           if (res?.success && res.user) {
             const mapped = this.mapUser(res.user);
+            console.log('AuthService: Mapped user:', mapped);
             localStorage.setItem('hrpro_user', JSON.stringify(mapped));
+            this.authStateSubject.next(mapped);
+          } else {
+            console.log('AuthService: Login failed - no user data');
           }
         }),
-        map(res => res?.success === true)
+        map(res => {
+          const success = res?.success === true;
+          console.log('AuthService: Login success result:', success);
+          return success;
+        }),
+        catchError(error => {
+          console.error('AuthService: Login error details:', error);
+          console.error('AuthService: Error status:', error.status);
+          console.error('AuthService: Error message:', error.message);
+          return throwError(() => error);
+        })
       );
   }
 

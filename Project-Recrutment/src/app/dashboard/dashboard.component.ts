@@ -1,10 +1,3 @@
- HEAD
-
-
-
-
-// dashboard.component.ts
- 4eb2da2d6e67ebf846baa298bdcc57d8df05226f
 import {
   Component, OnInit, Inject, PLATFORM_ID, OnDestroy,
   ChangeDetectionStrategy, ChangeDetectorRef
@@ -92,12 +85,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     },
     Candidate: {
- HEAD
       color: '#a2e1c8', grad: 'linear-gradient(135deg,#10b981,#059669)', badge: 'badge-green',
       stats: ['Education','Skills','Documents'],
-      color: '#6ee7b7', grad: 'linear-gradient(135deg,#10b981,#059669)', badge: 'badge-green',
-      stats: ['Education', 'Skills', 'Documents'],
- 4eb2da2d6e67ebf846baa298bdcc57d8df05226f
       nav: [
         { id: 'profile',   icon: '&#x1F464;', label: 'Profile' },
         { id: 'education', icon: '&#x1F393;', label: 'Education' },

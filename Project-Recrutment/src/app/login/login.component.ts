@@ -64,20 +64,27 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
 
     const { email, password, roleId } = this.loginForm.value;
+    const loginPayload = { email, password, roleId: Number(roleId) };
+    
+    console.log('Login attempt with payload:', loginPayload);
 
-    this.authService.login({ email, password, roleId: Number(roleId) }).subscribe({
+    this.authService.login(loginPayload).subscribe({
       next: success => {
         this.isLoading = false;
+        console.log('Login response success:', success);
 
         if (success) {
-          this.router.navigateByUrl('/dashboard');   // ✅ now works without refresh
+          console.log('Login successful, navigating to dashboard');
+          this.router.navigateByUrl('/dashboard');
         } else {
           this.errorMessage = 'Invalid email, password or role.';
+          console.log('Login failed - invalid credentials');
         }
       },
-      error: () => {
+      error: (error) => {
         this.isLoading = false;
-        this.errorMessage = 'Login failed. Please try again.';
+        console.error('Login error:', error);
+        this.errorMessage = 'Login failed. Please check your network connection and try again.';
       }
     });
   }
