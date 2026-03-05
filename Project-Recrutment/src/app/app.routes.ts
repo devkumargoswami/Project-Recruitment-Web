@@ -15,13 +15,13 @@ export const routes: Routes = [
   },
 
   // Register
-{
-  path: 'register',
-  canActivate: [authGuard],
-  loadChildren: () =>
-    import('./register/register.route')
-      .then(m => m.registerRoutes)
-},
+  {
+    path: 'register',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./register/register.route')
+        .then(m => m.registerRoutes)
+  },
 
   // Dashboard
   {
@@ -31,6 +31,14 @@ export const routes: Routes = [
       import('./dashboard/dashboard.routes')
         .then(m => m.dashboardRoutes)
   },
-   
-  
+
+  // User
+  {
+    path: 'user',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./User/User.route')
+        .then(m => m.userRoutes)
+  },
+
 ];

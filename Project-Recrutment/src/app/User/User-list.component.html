@@ -1,0 +1,272 @@
+<div class="page">
+
+  <div class="header">
+    <div>
+      <span class="header-badge">RECRUITMENT PORTAL</span>
+      <h1 class="header-title">User Management</h1>
+    </div>
+    <button class="btn-add" (click)="openAdd()">＋ Add User</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card stat-purple">
+      <div class="stat-num num-purple">{{ totalUsers }}</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card stat-green">
+      <div class="stat-num num-green">{{ totalCandidates }}</div>
+      <div class="stat-label">Candidates</div>
+    </div>
+    <div class="stat-card stat-yellow">
+      <div class="stat-num num-yellow">{{ totalHR }}</div>
+      <div class="stat-label">HR / Admin</div>
+    </div>
+    <div class="stat-card stat-blue">
+      <div class="stat-num num-blue">{{ totalPassed }}</div>
+      <div class="stat-label">Passed</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span>🔍</span>
+      <input class="search-input" placeholder="Search by name, email, city..."
+        title="Search users"
+        [(ngModel)]="searchText" (ngModelChange)="applyFilter()" />
+    </div>
+    <span class="count-badge">{{ filtered.length }} records</span>
+  </div>
+
+  <div class="table-wrap">
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <span>Loading users...</span>
+    </div>
+
+    <table *ngIf="!loading" class="data-table">
+      <thead>
+        <tr>
+          <th (click)="handleSort('id')" class="th-sort"># <span class="si">{{ sortField==='id'?(sortDir==='asc'?'▲':'▼'):'⇅' }}</span></th>
+          <th (click)="handleSort('firstName')" class="th-sort">Name <span class="si">{{ sortField==='firstName'?(sortDir==='asc'?'▲':'▼'):'⇅' }}</span></th>
+          <th (click)="handleSort('username')" class="th-sort">Username <span class="si">{{ sortField==='username'?(sortDir==='asc'?'▲':'▼'):'⇅' }}</span></th>
+          <th (click)="handleSort('email')" class="th-sort">Email <span class="si">{{ sortField==='email'?(sortDir==='asc'?'▲':'▼'):'⇅' }}</span></th>
+          <th>Phone</th>
+          <th (click)="handleSort('city')" class="th-sort">City <span class="si">{{ sortField==='city'?(sortDir==='asc'?'▲':'▼'):'⇅' }}</span></th>
+          <th>Role</th>
+          <th>Status</th>
+          <th (click)="handleSort('offerCTC')" class="th-sort">CTC <span class="si">{{ sortField==='offerCTC'?(sortDir==='asc'?'▲':'▼'):'⇅' }}</span></th>
+          <th>Exp</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="paginatedUsers.length === 0">
+          <td colspan="11" class="no-data">No users found</td>
+        </tr>
+        <tr *ngFor="let user of paginatedUsers; let i = index"
+          [class.row-even]="i%2===0" [class.row-odd]="i%2!==0">
+          <td><span class="id-badge">{{ user.id }}</span></td>
+          <td>
+            <div class="name-cell">
+              <div class="avatar" [style.background]="avatarColor(user.firstName)">
+                {{ (user.firstName?.[0] || '?') | uppercase }}
+              </div>
+              {{ user.firstName }} {{ user.lastName }}
+            </div>
+          </td>
+          <td class="text-muted">@{{ user.username }}</td>
+          <td class="text-sm">{{ user.email }}</td>
+          <td>{{ user.phoneNumber || '—' }}</td>
+          <td>{{ user.city || '—' }}</td>
+          <td>
+            <span class="role-badge" [style.background]="roleColor(user.roleId)">
+              {{ roleMap[user.roleId] || 'R'+user.roleId }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="statusClass(user.interviewStatus || 0)">
+              {{ statusMap[user.interviewStatus || 0] }}
+            </span>
+          </td>
+          <td class="ctc-cell">₹{{ user.offerCTC | number }}</td>
+          <td class="text-muted">{{ user.totalExperience }}y</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-edit"   (click)="openEdit(user)">✏️ Edit</button>
+              <button class="btn-pwd"    (click)="openPassword(user)">🔑 Pwd</button>
+              <button class="btn-delete" (click)="openDelete(user)">🗑️ Delete</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button class="page-btn" [disabled]="currentPage===1" (click)="currentPage=currentPage-1">← Prev</button>
+    <button class="page-btn" *ngFor="let p of pages"
+      [class.page-active]="currentPage===p" (click)="currentPage=p">{{ p }}</button>
+    <button class="page-btn" [disabled]="currentPage===totalPages" (click)="currentPage=currentPage+1">Next →</button>
+  </div>
+
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" *ngIf="showFormModal" (click)="showFormModal=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span>{{ isEditMode ? '✏️ Edit User' : '➕ Add New User' }}</span>
+      <button class="close-btn" (click)="showFormModal=false">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field-wrap">
+          <label for="firstName">First Name <span class="req">*</span></label>
+          <input id="firstName" [(ngModel)]="formData.firstName" type="text" class="form-input"
+            title="First Name" placeholder="Enter first name" />
+        </div>
+        <div class="field-wrap">
+          <label for="lastName">Last Name <span class="req">*</span></label>
+          <input id="lastName" [(ngModel)]="formData.lastName" type="text" class="form-input"
+            title="Last Name" placeholder="Enter last name" />
+        </div>
+        <div class="field-wrap">
+          <label for="username">Username <span class="req">*</span></label>
+          <input id="username" [(ngModel)]="formData.username" type="text" class="form-input"
+            title="Username" placeholder="Enter username" />
+        </div>
+        <div class="field-wrap">
+          <label for="email">Email <span class="req">*</span></label>
+          <input id="email" [(ngModel)]="formData.email" type="email" class="form-input"
+            title="Email" placeholder="Enter email address" />
+        </div>
+        <div class="field-wrap" *ngIf="!isEditMode">
+          <label for="password">Password <span class="req">*</span></label>
+          <input id="password" [(ngModel)]="formData.password" type="password" class="form-input"
+            title="Password" placeholder="Enter password" />
+        </div>
+        <div class="field-wrap">
+          <label for="phoneNumber">Phone Number</label>
+          <input id="phoneNumber" [(ngModel)]="formData.phoneNumber" type="number" class="form-input"
+            title="Phone Number" placeholder="Enter phone number" />
+        </div>
+        <div class="field-wrap">
+          <label for="dateOfBirth">Date of Birth <span class="req">*</span></label>
+          <input id="dateOfBirth" [(ngModel)]="formData.dateOfBirth" type="date" class="form-input"
+            title="Date of Birth" placeholder="Select date of birth" />
+        </div>
+        <div class="field-wrap">
+          <label for="gender">Gender</label>
+          <select id="gender" [(ngModel)]="formData.gender" class="form-input" title="Select Gender">
+            <option *ngFor="let g of genderOptions" [value]="g">{{ g }}</option>
+          </select>
+        </div>
+        <div class="field-wrap">
+          <label for="city">City</label>
+          <input id="city" [(ngModel)]="formData.city" type="text" class="form-input"
+            title="City" placeholder="Enter city" />
+        </div>
+        <div class="field-wrap">
+          <label for="countryId">Country ID</label>
+          <input id="countryId" [(ngModel)]="formData.countryId" type="number" class="form-input"
+            title="Country ID" placeholder="Enter country ID" />
+        </div>
+        <div class="field-wrap">
+          <label for="stateId">State ID</label>
+          <input id="stateId" [(ngModel)]="formData.stateId" type="number" class="form-input"
+            title="State ID" placeholder="Enter state ID" />
+        </div>
+        <div class="field-wrap">
+          <label for="roleId">Role <span class="req">*</span></label>
+          <select id="roleId" [(ngModel)]="formData.roleId" class="form-input" title="Select Role">
+            <option [value]="1">Admin</option>
+            <option [value]="2">HR</option>
+            <option [value]="3">Candidate</option>
+            <option [value]="4">Manager</option>
+          </select>
+        </div>
+        <div class="field-wrap">
+          <label for="offerCTC">Offer CTC <span class="req">*</span></label>
+          <input id="offerCTC" [(ngModel)]="formData.offerCTC" type="number" class="form-input"
+            title="Offer CTC" placeholder="Enter offer CTC" />
+        </div>
+        <div class="field-wrap">
+          <label for="totalExperience">Total Experience (yrs)</label>
+          <input id="totalExperience" [(ngModel)]="formData.totalExperience" type="number" class="form-input"
+            title="Total Experience" placeholder="Enter years of experience" />
+        </div>
+        <div class="field-wrap">
+          <label for="interviewStatus">Interview Status</label>
+          <select id="interviewStatus" [(ngModel)]="formData.interviewStatus" class="form-input" title="Select Interview Status">
+            <option [value]="0">Pending</option>
+            <option [value]="1">Scheduled</option>
+            <option [value]="2">Passed</option>
+            <option [value]="3">Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-wrap">
+        <label for="address">Address</label>
+        <textarea id="address" [(ngModel)]="formData.address" class="form-input textarea"
+          title="Address" placeholder="Enter full address"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="showFormModal=false">Cancel</button>
+      <button class="btn-submit" (click)="submitForm()">{{ isEditMode ? 'Save Changes' : 'Add User' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal=false">
+  <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span>🗑️ Delete User</span>
+      <button class="close-btn" (click)="showDeleteModal=false">✕</button>
+    </div>
+    <div class="delete-body">
+      <div class="warn-icon">⚠️</div>
+      <p class="del-text">Are you sure you want to delete</p>
+      <p class="del-name">{{ selectedUser?.firstName }} {{ selectedUser?.lastName }}</p>
+      <p class="del-note">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="showDeleteModal=false">Cancel</button>
+      <button class="btn-danger" (click)="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" *ngIf="showPasswordModal" (click)="showPasswordModal=false">
+  <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span>🔑 Update Password</span>
+      <button class="close-btn" (click)="showPasswordModal=false">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-wrap">
+        <label for="newPassword">New Password <span class="req">*</span></label>
+        <input id="newPassword" [(ngModel)]="passwordForm.newPassword" type="password" class="form-input"
+          title="New Password" placeholder="Enter new password" />
+      </div>
+      <div class="field-wrap">
+        <label for="confirmPassword">Confirm Password <span class="req">*</span></label>
+        <input id="confirmPassword" [(ngModel)]="passwordForm.confirmPassword" type="password" class="form-input"
+          title="Confirm Password" placeholder="Re-enter new password" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="showPasswordModal=false">Cancel</button>
+      <button class="btn-submit" (click)="submitPassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" *ngIf="toast"
+  [class.toast-success]="toast.type==='success'"
+  [class.toast-error]="toast.type==='error'">
+  {{ toast.type==='success' ? '✅' : '❌' }} {{ toast.message }}
+</div>
