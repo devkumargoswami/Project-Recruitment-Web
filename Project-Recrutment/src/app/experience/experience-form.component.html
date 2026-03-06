@@ -1,0 +1,64 @@
+<div class="form-container">
+  <h2>Add / Update Experience</h2>
+
+  <form [formGroup]="experienceForm">
+
+    <div class="form-group">
+      <label for="id">Experience ID <span class="hint">(update ke liye)</span></label>
+      <input type="number" id="id" formControlName="id" placeholder="Enter ID (only for update)">
+    </div>
+
+    <div class="form-group">
+      <label for="userId">User ID</label>
+      <input type="number" id="userId" formControlName="userId" placeholder="Enter user ID">
+    </div>
+
+    <div class="form-group">
+      <label for="companyName">Company Name</label>
+      <input type="text" id="companyName" formControlName="companyName" placeholder="Enter company name">
+    </div>
+
+    <div class="form-group">
+      <label for="designation">Designation</label>
+      <input type="text" id="designation" formControlName="designation" placeholder="Enter designation">
+    </div>
+
+    <div class="form-group">
+      <label for="startDate">Start Date</label>
+      <input type="datetime-local" id="startDate" formControlName="startDate">
+    </div>
+
+    <div class="form-group">
+      <label for="endDate">End Date</label>
+      <input type="datetime-local" id="endDate" formControlName="endDate"
+        [class.disabled-input]="experienceForm.get('isCurrent')?.value">
+    </div>
+
+    <div class="form-group checkbox-group">
+      <label for="isCurrent">
+        <input type="checkbox" id="isCurrent" formControlName="isCurrent">
+        Currently Working Here
+      </label>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="successMessage" class="success">{{ successMessage }}</div>
+    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+      <button type="button" class="add-btn"
+        [disabled]="experienceForm.invalid || submitting"
+        (click)="onSubmit()">
+        {{ submitting ? 'Saving...' : 'Add Experience' }}
+      </button>
+
+      <button type="button" class="update-btn"
+        [disabled]="submitting"
+        (click)="onUpdate()">
+        {{ submitting ? 'Updating...' : 'Update Experience' }}
+      </button>
+    </div>
+
+  </form>
+</div>

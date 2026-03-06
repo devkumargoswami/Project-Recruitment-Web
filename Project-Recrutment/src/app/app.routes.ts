@@ -74,6 +74,15 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./skill/skill.route')
         .then(m => m.skillRoutes)
+  },
+
+  // Experience
+  {
+    path: 'experience',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./experience/experience.routes')
+        .then(m => m.experienceRoutes)
   }
 
 ];
