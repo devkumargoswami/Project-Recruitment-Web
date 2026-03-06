@@ -1,54 +1,160 @@
 <div class="profile-container">
-  <h2>User Profile</h2>
+  <div class="profile-header">
+    <h2>Edit Profile</h2>
+    <p class="subtitle">Update your personal information</p>
+  </div>
 
-  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+    
+    <!-- Basic Information Section -->
+    <div class="form-section">
+      <h3>Basic Information</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" formControlName="firstName" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+            First name is required
+          </div>
+        </div>
 
-    <div class="row">
-      <label>Name</label>
-      <input type="text" formControlName="name">
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" formControlName="lastName" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+            Last name is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" formControlName="username" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('username')?.invalid && profileForm.get('username')?.touched">
+            Username is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" formControlName="email" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+            Valid email is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" formControlName="password" class="form-input" placeholder="Leave blank to keep current password">
+        </div>
+
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number</label>
+          <input type="tel" id="phoneNumber" formControlName="phoneNumber" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+            Phone number is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gender">Gender</label>
+          <select id="gender" formControlName="gender" class="form-select">
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="error-message" *ngIf="profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched">
+            Gender is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="dateOfBirth">Date of Birth</label>
+          <input type="date" id="dateOfBirth" formControlName="dateOfBirth" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('dateOfBirth')?.invalid && profileForm.get('dateOfBirth')?.touched">
+            Date of birth is required
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="row">
-      <label>Email</label>
-      <input type="text" formControlName="email" [disabled]="true">
+    <!-- Address Information Section -->
+    <div class="form-section">
+      <h3>Address Information</h3>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="address">Address</label>
+          <textarea id="address" formControlName="address" class="form-textarea" rows="3"></textarea>
+          <div class="error-message" *ngIf="profileForm.get('address')?.invalid && profileForm.get('address')?.touched">
+            Address is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="countryId">Country ID</label>
+          <input type="number" id="countryId" formControlName="countryId" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('countryId')?.invalid && profileForm.get('countryId')?.touched">
+            Country ID is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="stateId">State ID</label>
+          <input type="number" id="stateId" formControlName="stateId" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('stateId')?.invalid && profileForm.get('stateId')?.touched">
+            State ID is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" formControlName="city" class="form-input">
+          <div class="error-message" *ngIf="profileForm.get('city')?.invalid && profileForm.get('city')?.touched">
+            City is required
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="row">
-      <label>Role</label>
-      <input type="text" formControlName="role" [disabled]="true">
+    <!-- Professional Information Section -->
+    <div class="form-section">
+      <h3>Professional Information</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="roleId">Role ID</label>
+          <input type="number" id="roleId" formControlName="roleId" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="offerCTC">Offer CTC</label>
+          <input type="number" id="offerCTC" formControlName="offerCTC" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="interviewStatus">Interview Status</label>
+          <input type="number" id="interviewStatus" formControlName="interviewStatus" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="totalExperience">Total Experience (Years)</label>
+          <input type="number" id="totalExperience" formControlName="totalExperience" class="form-input">
+        </div>
+      </div>
     </div>
 
-    <div class="row">
-      <label>Phone</label>
-      <input type="text" formControlName="phone">
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="submit" [disabled]="loading || profileForm.invalid" class="btn-submit">
+        <span *ngIf="loading">Saving...</span>
+        <span *ngIf="!loading">Update Profile</span>
+      </button>
     </div>
 
-    <div class="row">
-      <label>Gender</label>
-      <select formControlName="gender">
-        <option value="">Select</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
+    <!-- Messages -->
+    <div class="messages">
+      <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
     </div>
-
-    <div class="row">
-      <label>Date of Birth</label>
-      <input type="date" formControlName="dob">
-    </div>
-
-    <div class="row">
-      <label>Address</label>
-      <textarea formControlName="address"></textarea>
-    </div>
-
-    <button type="submit" [disabled]="loading">
-      {{ loading ? 'Saving...' : 'Update Profile' }}
-    </button>
-
-    <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
-    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
 
   </form>
 </div>
