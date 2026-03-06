@@ -70,9 +70,9 @@
           </div>
           <div class="profile-meta">
             <h2>{{ user?.firstName }} {{ user?.lastName }}</h2>
-            <div class="p-username" *ngIf="user?.username">
+            <!-- <div class="p-username" *ngIf="user?.username">
               &#64;<span>{{ user?.username }}</span>
-            </div>
+            </div> -->  
             <div class="p-email">{{ user?.email }}</div>
             <div class="pill-row">
               <span class="badge" [ngClass]="roleConfig.badge">{{ currentRole }}</span>
@@ -112,11 +112,11 @@
             </div>
             <div class="info-row">
               <span class="info-lbl">Date of Birth</span>
-              <span>{{ (user?.dataOfBirth | date:'dd MMM yyyy') || '—' }}</span>
+              <span>{{ (user?.dateOfBirth | date:'dd MMM yyyy') || '—' }}</span>
             </div>
             <div class="info-row">
               <span class="info-lbl">Phone Number</span>
-              <span>{{ user?.phonenumber || '—' }}</span>
+              <span>{{ user?.phoneNumber || '—' }}</span>
             </div>
           </div>
 
