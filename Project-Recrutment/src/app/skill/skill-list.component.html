@@ -1,85 +1,114 @@
-<div class="container">
-  <h2>Skill Management</h2>
-
-  <!-- Main Controls -->
-  <div class="controls">
-    <button class="add-btn" (click)="openAddModal()">Add Skill</button>
-    <button (click)="getSkills()">View All Skills</button>
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h2>Skills Management</h2>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openAddModal()">Add Skill</button>
+      <button class="btn btn-secondary" (click)="getSkills()">View All Skills</button>
+    </div>
   </div>
 
-  <!-- Search Skill Form -->
-  <div class="form-container">
-    <h3>Search Skills</h3>
-    <div class="form-group">
-      <label>Skill ID</label>
-      <input type="number" [(ngModel)]="searchId" placeholder="Enter Skill ID (optional)">
-    </div>
-
-    <div class="form-group">
-      <label>User ID</label>
-      <input type="number" [(ngModel)]="searchUserId" placeholder="Enter User ID (optional)">
-    </div>
-
-    <button (click)="searchSkill()">Search</button>
-  </div>
-
-  <!-- Status Messages -->
-  <div *ngIf="loading" class="loading">Loading...</div>
-
-  <div *ngIf="error" class="error">
+  <div *ngIf="error" class="error-message">
     {{ error }}
   </div>
 
-  <!-- Skills Table -->
-  <div *ngIf="skills.length > 0" class="table-container">
-    <h3>Skills List</h3>
-    <table class="skill-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>User ID</th>
-          <th>Skill Name</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let skill of skills">
-          <td>{{ skill.id }}</td>
-          <td>{{ skill.userId }}</td>
-          <td>{{ skill.name }}</td>
-          <td>
-            <button (click)="deleteSkill(skill.id)" class="delete-btn">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
   </div>
 
-  <!-- Add Skill Modal -->
-  <div class="modal-overlay" *ngIf="isAddModalOpen" (click)="closeAddModal()">
+  <div class="search-section">
+    <div class="search-form">
+      <div class="form-group">
+        <label for="searchId">Skill ID</label>
+        <input 
+          type="number" 
+          id="searchId" 
+          [(ngModel)]="searchId" 
+          placeholder="Enter skill ID">
+      </div>
+      <div class="form-group">
+        <label for="searchUserId">User ID</label>
+        <input 
+          type="number" 
+          id="searchUserId" 
+          [(ngModel)]="searchUserId" 
+          placeholder="Enter user ID">
+      </div>
+      <button class="btn btn-search" (click)="searchSkill()">Search</button>
+    </div>
+  </div>
+
+  <div class="skills-list" *ngIf="!loading">
+    <div class="table-container">
+      <table class="skills-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Skill Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let skill of skills">
+            <td>{{ skill.id }}</td>
+            <td>{{ skill.userId }}</td>
+            <td>{{ skill.name }}</td>
+            <td>
+              <button class="btn btn-danger" (click)="deleteSkill(skill.id)">Delete</button>
+              <button class="btn btn-warning" (click)="editSkill(skill.id)">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Loading skills...
+  </div>
+
+  <!-- Add/Edit Skill Modal -->
+  <div class="modal" *ngIf="isAddModalOpen" (click)="closeAddModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Add New Skill</h3>
+        <h3>{{ newSkill.id > 0 ? 'Edit Skill' : 'Add New Skill' }}</h3>
         <button class="close-btn" (click)="closeAddModal()">&times;</button>
       </div>
-      
       <div class="modal-body">
-        <div class="form-group">
-          <label>User ID</label>
-          <input type="number" [(ngModel)]="newSkill.userId" placeholder="Enter User ID">
+        <div *ngIf="error" class="error-message">
+          {{ error }}
         </div>
-
-        <div class="form-group">
-          <label>Skill Name</label>
-          <input type="text" [(ngModel)]="newSkill.name" placeholder="Enter Skill Name">
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button (click)="closeAddModal()" class="cancel-btn">Cancel</button>
-        <button (click)="addSkill()" [disabled]="loading" class="save-btn">
-          {{ loading ? 'Saving...' : 'Save Skill' }}
-        </button>
+        
+        <form (ngSubmit)="newSkill.id > 0 ? updateSkill() : addSkill()">
+          <div class="form-group">
+            <label for="userId">User ID</label>
+            <input 
+              type="number" 
+              id="userId" 
+              [(ngModel)]="newSkill.userId" 
+              name="userId"
+              required
+              placeholder="Enter user ID">
+          </div>
+          
+          <div class="form-group">
+            <label for="skillName">Skill Name</label>
+            <input 
+              type="text" 
+              id="skillName" 
+              [(ngModel)]="newSkill.name" 
+              name="skillName"
+              required
+              placeholder="Enter skill name">
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              {{ loading ? (newSkill.id > 0 ? 'Updating...' : 'Adding...') : (newSkill.id > 0 ? 'Update Skill' : 'Add Skill') }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

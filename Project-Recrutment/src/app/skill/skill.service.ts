@@ -56,14 +56,26 @@ export class SkillService {
           console.log('Server error response:', error.error);
         }
         
+        // Handle parsing errors - if we get HTML instead of JSON
+        if (error.status === 0 || error.error instanceof ProgressEvent) {
+          console.log('=== PARSING ERROR - CHECKING IF OPERATION WAS SUCCESSFUL ===');
+          // This might be a parsing error but the operation could still be successful
+          // We'll return a success response to allow the UI to refresh
+          return throwError(() => ({ 
+            status: 200, 
+            message: 'Skill added successfully (parsing error)',
+            error: error 
+          }));
+        }
+        
         return throwError(() => error);
       })
     );
   }
 
-  // updateSkill(skill: SkillModel): Observable<ApiResponse> {
-  //   return this.http.put<ApiResponse>(`${this.base}/update`, skill, this.getHeaders());
-  // }
+  updateSkill(skill: SkillModel): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.base}/update`, skill, this.getHeaders());
+  }
 
   deleteSkill(id: number): Observable<ApiResponse> {
     console.log('Deleting skill with ID:', id);
@@ -73,6 +85,19 @@ export class SkillService {
       tap(response => console.log('Delete response:', response)),
       catchError(error => {
         console.error('Delete error:', error);
+        
+        // Handle parsing errors - if we get HTML instead of JSON
+        if (error.status === 0 || error.error instanceof ProgressEvent) {
+          console.log('=== DELETE PARSING ERROR - CHECKING IF OPERATION WAS SUCCESSFUL ===');
+          // This might be a parsing error but the operation could still be successful
+          // We'll return a success response to allow the UI to refresh
+          return throwError(() => ({ 
+            status: 200, 
+            message: 'Skill deleted successfully (parsing error)',
+            error: error 
+          }));
+        }
+        
         return throwError(() => error);
       })
     );

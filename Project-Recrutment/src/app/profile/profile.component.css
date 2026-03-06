@@ -1,57 +1,375 @@
-.profile-container{
-  max-width:600px;
-  margin:30px auto;
-  background:#0f172a;
-  padding:25px;
-  border-radius:10px;
-  color:#fff;
+/* profile.component.css */
+
+/* Container Styles */
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
 }
 
-h2{
-  margin-bottom:20px;
+.profile-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
-.row{
-  display:flex;
-  flex-direction:column;
-  margin-bottom:12px;
+/* Header Styles */
+.profile-header {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
-label{
-  font-size:13px;
-  margin-bottom:4px;
-  color:#94a3b8;
+.profile-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff, #e2e8f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
 }
 
-input,select,textarea{
-  padding:8px 10px;
-  border-radius:6px;
-  border:1px solid #1e293b;
-  background:#020617;
-  color:#fff;
+.subtitle {
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  font-weight: 400;
+  opacity: 0.9;
 }
 
-textarea{
-  resize:none;
-  height:70px;
+/* Form Styles */
+.profile-form {
+  position: relative;
+  z-index: 1;
 }
 
-button{
-  margin-top:15px;
-  padding:10px;
-  border:none;
-  background:#2563eb;
-  color:white;
-  border-radius:6px;
-  cursor:pointer;
+/* Form Sections */
+.form-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.12);
 }
 
-.success{
-  color:#22c55e;
-  margin-top:10px;
+.form-section h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 1rem;
 }
 
-.error{
-  color:#ef4444;
-  margin-top:10px;
+.form-section h3::before {
+  content: '📋';
+  font-size: 1.5rem;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Labels */
+label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Inputs */
+.form-input, .form-select {
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,0.02);
+  font-family: inherit;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1), inset 0 1px 0 rgba(0,0,0,0.02);
+  transform: translateY(-1px);
+}
+
+.form-textarea {
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,0.02);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1), inset 0 1px 0 rgba(0,0,0,0.02);
+  transform: translateY(-1px);
+}
+
+/* Error Messages */
+.error-message {
+  font-size: 0.8rem;
+  color: #ef4444;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message::before {
+  content: '⚠️';
+  font-size: 1rem;
+}
+
+/* Form Actions */
+.form-actions {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+  display: flex;
+  justify-content: center;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  padding: 1.25rem 3rem;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  font-size: 1rem;
+  min-width: 200px;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+}
+
+.btn-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Messages */
+.messages {
+  position: relative;
+  z-index: 1;
+}
+
+.success-message {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  margin-bottom: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.success-message::before {
+  content: '✅';
+  font-size: 1.2rem;
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.15);
+  color: #b91c1c;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  margin-bottom: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.error-message::before {
+  content: '❌';
+  font-size: 1.2rem;
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 1rem;
+  }
+  
+  .profile-header h2 {
+    font-size: 1.75rem;
+  }
+  
+  .form-section {
+    padding: 1.5rem;
+  }
+  
+  .form-section h3 {
+    font-size: 1.1rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-input, .form-select, .form-textarea {
+    padding: 0.875rem;
+    font-size: 0.95rem;
+  }
+  
+  .btn-submit {
+    padding: 1rem 2rem;
+    font-size: 0.9rem;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 0.75rem;
+  }
+  
+  .profile-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .form-section {
+    padding: 1rem;
+  }
+  
+  .form-section h3 {
+    font-size: 1rem;
+  }
+  
+  .form-input, .form-select, .form-textarea {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .btn-submit {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Tablet Design */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .form-input, .form-select, .form-textarea {
+    padding: 0.875rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Focus and Interaction Enhancements */
+.form-input:hover, .form-select:hover, .form-textarea:hover {
+  border-color: #93c5fd;
+}
+
+/* Placeholder Styling */
+.form-input::placeholder, .form-textarea::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* Select Styling */
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* Validation States */
+.form-input.ng-invalid.ng-touched, .form-select.ng-invalid.ng-touched, .form-textarea.ng-invalid.ng-touched {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input.ng-valid.ng-touched, .form-select.ng-valid.ng-touched, .form-textarea.ng-valid.ng-touched {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }

@@ -307,6 +307,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // ── Navigation ────────────────────────────────────────────────────
   showSection(id: string): void {
+    if (id === 'skills') {
+      this.router.navigate(['/skills']);
+      return;
+    }
     this.currentSection = id;
     this.sidebarOpen = false;
     this.selectedUserForData = null;
