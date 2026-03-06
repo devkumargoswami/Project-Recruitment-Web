@@ -7,8 +7,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class DashboardService {
 
-  // 🔹 Centralized API base
-  private readonly API = 'http://localhost:7027';
+  private readonly API = 'https://localhost:7027/api';  // ✅ https + /api added
 
   constructor(private http: HttpClient) {}
 
@@ -32,15 +31,14 @@ export class DashboardService {
 
   getSkillsByUserId(userId: number): Observable<any[]> {
     return this.http.get<any[]>(
-      `${this.API}/Skills/GetByUserId/${userId}`,
+      `${this.API}/Skill/GetByUserId/${userId}`,
       { headers: this.getSafeAuthHeaders() }
     );
   }
 
-  // ✅ ADDED (fixes your error)
   deleteSkill(skillId: number): Observable<void> {
     return this.http.delete<void>(
-      `${this.API}/Skills/Delete/${skillId}`,
+      `${this.API}/Skill/Delete/${skillId}`,
       { headers: this.getSafeAuthHeaders() }
     );
   }
@@ -49,15 +47,14 @@ export class DashboardService {
 
   getExperienceByUserId(userId: number): Observable<any[]> {
     return this.http.get<any[]>(
-      `${this.API}/Experience/GetByUserId/${userId}`,
+      `${this.API}/Experience/Select/${userId}`,  // ✅ Fixed URL
       { headers: this.getSafeAuthHeaders() }
     );
   }
 
-  // ✅ ADDED (fixes your error)
   deleteExperience(experienceId: number): Observable<void> {
     return this.http.delete<void>(
-      `${this.API}/Experience/Delete/${experienceId}`,
+      `${this.API}/Experience/Delete/${experienceId}`,  // ✅ Fixed URL
       { headers: this.getSafeAuthHeaders() }
     );
   }
@@ -82,7 +79,14 @@ export class DashboardService {
 
   getAllUsers(): Observable<any[]> {
     return this.http.get<any[]>(
-      `${this.API}/Users`,
+      `${this.API}/User/list`,
+      { headers: this.getSafeAuthHeaders() }
+    );
+  }
+
+  deleteUser(userId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.API}/User/delete/${userId}`,
       { headers: this.getSafeAuthHeaders() }
     );
   }
@@ -91,19 +95,12 @@ export class DashboardService {
 
   getCompleteDashboard(userId: number): Observable<any> {
     return forkJoin({
-      education: this.getEducationByUserId(userId),
-      skills: this.getSkillsByUserId(userId),
+      education:  this.getEducationByUserId(userId),
+      skills:     this.getSkillsByUserId(userId),
       experience: this.getExperienceByUserId(userId),
-      documents: this.getDocumentsByUserId(userId)
+      documents:  this.getDocumentsByUserId(userId)
     });
   }
-
-  deleteUser(userId: number): Observable<void> {
-  return this.http.delete<void>(
-    `${this.API}/User/delete/${userId}`, // match your backend route
-    { headers: this.getSafeAuthHeaders() }
-  );
-}
 
   /* ───────────────── AUTH HEADERS ───────────────── */
 
@@ -131,10 +128,7 @@ export class DashboardService {
 
     } catch (error) {
       console.warn('Auth headers error:', error);
-
-      return new HttpHeaders({
-        'Content-Type': 'application/json'
-      });
+      return new HttpHeaders({ 'Content-Type': 'application/json' });
     }
   }
 }
