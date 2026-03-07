@@ -20,7 +20,7 @@ interface RoleConfig {
 interface Education  { id: number; title: string; institution: string; board?: string; year: string; duration?: string; }
 interface Skill      { id: number; name: string; level: string; }
 interface Experience { id: number; company: string; position: string; duration: string; description?: string; }
-interface Document   { id: number; name: string; type: string; uploadedAt: string; url?: string; }
+interface Document   { id: number; documentName: string; type: string; uploadedAt: string; url?: string; }
 
 type SubDataTab = 'education' | 'skills' | 'experience' | 'documents';
 
@@ -325,7 +325,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   goToSkills():     void { this.router.navigate(['/skills']); }
   goToExperience(): void { this.router.navigate(['/experience']); }
   goToDocuments():  void { this.router.navigate(['/documents']); }
-  goToAddUser():    void { this.router.navigate(['/users/add']); }
+  goToAddUser():    void { this.showSection('users'); }
 
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]); }
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]); }

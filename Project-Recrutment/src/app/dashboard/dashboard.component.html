@@ -200,7 +200,7 @@
           <div class="empty-state" *ngIf="educationList.length === 0">
             <div class="empty-icon">&#x1F393;</div>
             <p>No education records yet.</p>
-            <button class="btn-primary" (click)="goToEducation()">Add your first record</button>
+            <button class="btn-primary" (click)="goToEducation()">Add your first education</button>
           </div>
           <div class="table-wrap" *ngIf="educationList.length > 0">
             <table>
@@ -239,63 +239,107 @@
         </div>
       </section>
 
-      <!-- ====== SKILLS ====== -->
-      <section *ngIf="currentSection === 'skills'" class="section fade-in">
-        <div class="card">
-          <div class="card-head">
-            <h3>Skills</h3>
-            <button class="btn-add" (click)="goToSkills()">+ Add Skill</button>
-          </div>
-          <div class="empty-state" *ngIf="skillsList.length === 0">
-            <div class="empty-icon">&#x2699;</div>
-            <p>No skills added yet.</p>
-            <button class="btn-primary" (click)="goToSkills()">Add your first skill</button>
-          </div>
-          <div class="table-wrap" *ngIf="skillsList.length > 0">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Skill Name</th>
-                  <th>Level</th>
-                  <th>Proficiency</th>
-                  <th>Update</th>
-                  <th>Delete</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let sk of skillsList; trackBy: trackById; let i = index"
-                  [class.deleting]="deletingId === sk.id">
-                  <td class="td-num">{{ i + 1 }}</td>
-                  <td class="td-main">{{ sk.name }}</td>
-                  <td>
-                    <span class="level-badge" [style.color]="getSkillLevelColor(sk.level)"
-                      [style.border-color]="getSkillLevelColor(sk.level)">
-                      {{ sk.level }}
-                    </span>
-                  </td>
-                  <td class="td-bar">
-                    <div class="skill-bar-wrap">
-                      <div class="skill-bar-fill" [style.width]="getSkillLevelWidth(sk.level)"
-                        [style.background]="getSkillLevelColor(sk.level)">
+        <!-- ====== SKILLS ====== -->
+        <section *ngIf="currentSection === 'skills'" class="section fade-in">
+          <div class="card">
+            <div class="card-head">
+              <h3>Skills</h3>
+              <button class="btn-add" (click)="goToSkills()">+ Add Skill</button>
+            </div>
+            <div class="empty-state" *ngIf="skillsList.length === 0">
+              <div class="empty-icon">&#x2699;</div>
+              <p>No skills added yet.</p>
+              <button class="btn-primary" (click)="goToSkills()">Add your first skill</button>
+            </div>
+            <div class="table-wrap" *ngIf="skillsList.length > 0">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Skill Name</th>
+                    <th>Level</th>
+                    <th>Proficiency</th>
+                    <th>Update</th>
+                    <th>Delete</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let sk of skillsList; trackBy: trackById; let i = index"
+                    [class.deleting]="deletingId === sk.id">
+                    <td class="td-num">{{ i + 1 }}</td>
+                    <td class="td-main">{{ sk.name }}</td>
+                    <td>
+                      <span class="level-badge" [style.color]="getSkillLevelColor(sk.level)"
+                        [style.border-color]="getSkillLevelColor(sk.level)">
+                        {{ sk.level }}
+                      </span>
+                    </td>
+                    <td class="td-bar">
+                      <div class="skill-bar-wrap">
+                        <div class="skill-bar-fill" [style.width]="getSkillLevelWidth(sk.level)"
+                          [style.background]="getSkillLevelColor(sk.level)">
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editSkill(sk.id)">Update</button>
-                  </td>
-                  <td class="td-action-col">
-                    <button class="btn-action btn-delete" [disabled]="deletingId === sk.id"
-                      (click)="deleteSkill(sk.id)">
-                      {{ deletingId === sk.id ? '...' : 'Delete' }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </td>
+                    <td class="td-action-col">
+                      <button class="btn-action btn-update" (click)="editSkill(sk.id)">Update</button>
+                    </td>
+                    <td class="td-action-col">
+                      <button class="btn-action btn-delete" [disabled]="deletingId === sk.id"
+                        (click)="deleteSkill(sk.id)">
+                        {{ deletingId === sk.id ? '...' : 'Delete' }}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <!-- ====== DOCUMENTS ====== -->
+        <section *ngIf="currentSection === 'documents'" class="section fade-in">
+          <div class="card">
+            <div class="card-head">
+              <h3>Documents</h3>
+              <button class="btn-add" (click)="goToDocuments()">+ Upload Document</button>
+            </div>
+            <div class="empty-state" *ngIf="documentList.length === 0">
+              <div class="empty-icon">📁</div>
+              <p>No documents uploaded yet.</p>
+              <button class="btn-primary" (click)="goToDocuments()">Upload your first document</button>
+            </div>
+            <div class="table-wrap" *ngIf="documentList.length > 0">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Document Name</th>
+                    <th>File</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let doc of documentList; trackBy: trackById; let i = index"
+                    [class.deleting]="deletingId === doc.id">
+                    <td class="td-num">{{ i + 1 }}</td>
+                    <td class="td-main">{{ doc.documentName }}</td>
+                    <td>
+                      <button class="btn-action btn-view">View</button>
+                    </td>
+                    <td class="td-action-col">
+                      <button class="btn-action btn-update" (click)="editDocument(doc.id)">Edit</button>
+                      <button class="btn-action btn-delete" [disabled]="deletingId === doc.id"
+                        (click)="deleteDocument(doc.id)">
+                        {{ deletingId === doc.id ? '...' : 'Delete' }}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
       <!-- ====== EXPERIENCE ====== -->
       <section *ngIf="currentSection === 'experience'" class="section fade-in">
@@ -346,57 +390,6 @@
         </div>
       </section>
 
-      <!-- ====== DOCUMENTS ====== -->
-      <section *ngIf="currentSection === 'documents'" class="section fade-in">
-        <div class="card">
-          <div class="card-head">
-            <h3>Documents</h3>
-            <button class="btn-add" (click)="goToDocuments()">+ Upload Document</button>
-          </div>
-          <div class="empty-state" *ngIf="documentList.length === 0">
-            <div class="empty-icon">&#x1F4C4;</div>
-            <p>No documents uploaded yet.</p>
-            <button class="btn-primary" (click)="goToDocuments()">Upload your first document</button>
-          </div>
-          <div class="table-wrap" *ngIf="documentList.length > 0">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Uploaded</th>
-                  <th>View</th>
-                  <th>Update</th>
-                  <th>Delete</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let doc of documentList; trackBy: trackById; let i = index"
-                  [class.deleting]="deletingId === doc.id">
-                  <td class="td-num">{{ i + 1 }}</td>
-                  <td class="td-main">{{ doc.name }}</td>
-                  <td><span class="type-tag">{{ doc.type }}</span></td>
-                  <td class="td-muted">{{ doc.uploadedAt | date:'dd MMM yyyy' }}</td>
-                  <td class="td-action-col">
-                    <a *ngIf="doc.url" [href]="doc.url" target="_blank" class="btn-action btn-view">View</a>
-                    <span *ngIf="!doc.url" class="td-muted">—</span>
-                  </td>
-                  <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editDocument(doc.id)">Update</button>
-                  </td>
-                  <td class="td-action-col">
-                    <button class="btn-action btn-delete" [disabled]="deletingId === doc.id"
-                      (click)="deleteDocument(doc.id)">
-                      {{ deletingId === doc.id ? '...' : 'Delete' }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
       <!-- ====== ALL USERS (Admin / HR only) ====== -->
       <section *ngIf="currentSection === 'users' && isAdminOrHR()" class="section fade-in">
@@ -673,7 +666,7 @@
                 <tbody>
                   <tr *ngFor="let doc of subDocuments; let i = index" [class.deleting]="deletingId === doc.id">
                     <td class="td-num">{{ i + 1 }}</td>
-                    <td class="td-main">{{ doc.name }}</td>
+                    <td class="td-main">{{ doc.documentName }}</td>
                     <td><span class="type-tag">{{ doc.type }}</span></td>
                     <td class="td-muted">{{ doc.uploadedAt | date:'dd MMM yyyy' }}</td>
                     <td class="td-action-col">

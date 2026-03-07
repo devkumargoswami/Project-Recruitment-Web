@@ -93,7 +93,7 @@ export class EducationComponent implements OnInit {
         }
       });
     } else {
-      this.educationService.create(payload).subscribe({
+      this.educationService.insert(payload).subscribe({
         next: () => {
           this.loading = false;
           this.successMessage = 'Education saved successfully';

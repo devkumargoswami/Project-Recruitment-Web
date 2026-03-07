@@ -29,13 +29,21 @@
 
       <div class="form-group">
         <label>Select File *</label>
-        <input type="file" (change)="onFileSelect($event)" accept=".pdf,.jpg,.jpeg,.png" class="form-control">
+        <input
+          type="file"
+          (change)="onFileSelect($event)"
+          accept=".pdf,.jpg,.jpeg,.png"
+          class="form-control"
+        >
         <div *ngIf="selectedFile" class="file-info">
           Selected: {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(2) }} KB)
         </div>
       </div>
 
-      <button type="submit" [disabled]="documentForm.invalid || loading || !selectedFile">
+      <button
+        type="submit"
+        [disabled]="documentForm.invalid || loading || !selectedFile"
+      >
         {{ loading ? 'Uploading...' : (isEditMode ? 'Update' : 'Upload') }}
       </button>
     </form>

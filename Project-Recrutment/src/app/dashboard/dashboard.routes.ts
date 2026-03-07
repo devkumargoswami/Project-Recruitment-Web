@@ -28,13 +28,6 @@ export const dashboardRoutes: Routes = [
             .then(m => m.educationRoutes)
       },
 
-      // documents module
-      {
-        path: 'documents',
-        loadChildren: () =>
-          import('../document/document.route')
-            .then(m => m.documentRoutes)
-      },
 
       // future
       // { path: 'skills', ... }
