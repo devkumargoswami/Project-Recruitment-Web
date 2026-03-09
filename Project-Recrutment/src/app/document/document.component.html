@@ -7,6 +7,16 @@
       <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
 
       <div class="form-group">
+        <label for="userId">User ID</label>
+        <input id="userId"
+               type="text"
+               [value]="userId"
+               class="form-control readonly-input"
+               readonly
+               title="Auto-filled from session">
+      </div>
+
+      <div class="form-group">
         <label>Select Document Type *</label>
         <select formControlName="documentName" class="form-control">
           <option value="">-- Select Required Document --</option>
@@ -28,13 +38,8 @@
       </div>
 
       <div class="form-group">
-        <label>Select File *</label>
-        <input
-          type="file"
-          (change)="onFileSelect($event)"
-          accept=".pdf,.jpg,.jpeg,.png"
-          class="form-control"
-        >
+        <label for="document">Upload Document:</label>
+        <input type="file" id="document" name="document" (change)="onFileSelect($event)" accept=".pdf,.jpg,.jpeg,.png" class="form-control">
         <div *ngIf="selectedFile" class="file-info">
           Selected: {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(2) }} KB)
         </div>
@@ -42,7 +47,7 @@
 
       <button
         type="submit"
-        [disabled]="documentForm.invalid || loading || !selectedFile"
+        [disabled]="loading"
       >
         {{ loading ? 'Uploading...' : (isEditMode ? 'Update' : 'Upload') }}
       </button>

@@ -246,6 +246,8 @@
 
 .modal-body {
   padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .form-group {
@@ -268,6 +270,21 @@
   box-sizing: border-box;
 }
 
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
 .form-row {
   display: flex;
   gap: 15px;
@@ -285,6 +302,9 @@
   border-top: 1px solid #eee;
   background-color: #f8f9fa;
   border-radius: 0 0 8px 8px;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .btn-secondary {
@@ -300,4 +320,30 @@
 
 .btn-secondary:hover {
   background-color: #5a6268;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e7e34, #155724);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(40, 167, 69, 0.5);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }

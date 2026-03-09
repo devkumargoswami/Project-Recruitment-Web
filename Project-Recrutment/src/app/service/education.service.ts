@@ -1,29 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
-
-export interface Education {
-  educationId: number;
-  userId: number;
-  educationLevelId: number;
-  educationLevelName?: string;
-  schoolCollege: string;
-  boardUniversity?: string;
-  degree: string;
-  startMonth: number;
-  startYear: number;
-  endMonth?: number;
-  endYear?: number;
-  isContinue: boolean;
-}
-
-export interface ApiResponse {
-  status: number;
-  message: string;
-  data?: any;
-}
+import { EducationModel } from '../education/education.model';
 
 @Injectable({ providedIn: 'root' })
 export class EducationService {
@@ -41,18 +20,18 @@ export class EducationService {
     console.log('Headers:', this.getHeaders());
 
     // Convert to the exact format your API expects
-    const payload = {
+    const payload: EducationModel = {
+      id: 0,
       userId: educationData.userId,
       educationLevelId: educationData.educationLevelId,
       schoolCollege: educationData.schoolCollege,
-      boardUniversity: educationData.boardUniversity,
+      boardUniversity: educationData.boardUniversity || '',
       degree: educationData.degree,
       startMonth: educationData.startMonth,
       startYear: educationData.startYear,
-      endMonth: educationData.endMonth,
-      endYear: educationData.endYear,
-      isContinue: educationData.isContinue,
-      createDatetime: new Date().toISOString()
+      endMonth: educationData.endMonth || 0,
+      endYear: educationData.endYear || 0,
+      isContinue: educationData.isContinue
     };
 
     return this.http.post(`${this.API}/Insert`, payload, this.getHeaders()).pipe(
@@ -83,19 +62,18 @@ export class EducationService {
     console.log('Education data:', educationData);
 
     // Convert to the exact format your API expects
-    const payload = {
-      educationId: id,
+    const payload: EducationModel = {
+      id: id,
       userId: educationData.userId,
       educationLevelId: educationData.educationLevelId,
       schoolCollege: educationData.schoolCollege,
-      boardUniversity: educationData.boardUniversity,
+      boardUniversity: educationData.boardUniversity || '',
       degree: educationData.degree,
       startMonth: educationData.startMonth,
       startYear: educationData.startYear,
-      endMonth: educationData.endMonth,
-      endYear: educationData.endYear,
-      isContinue: educationData.isContinue,
-      createDatetime: new Date().toISOString()
+      endMonth: educationData.endMonth || 0,
+      endYear: educationData.endYear || 0,
+      isContinue: educationData.isContinue
     };
 
     return this.http.put(`${this.API}/Update/${id}`, payload, this.getHeaders()).pipe(
@@ -122,18 +100,46 @@ export class EducationService {
   }
 
   /** ✅ GET BY ID - Get education by ID */
-  getById(id: number): Observable<Education> {
+  getById(id: number): Observable<EducationModel> {
     console.log('Getting education by ID:', id);
-    return this.http.get<Education>(`${this.API}/Get/${id}`, this.getHeaders());
+    return this.http.get<EducationModel>(`${this.API}/Get/${id}`, this.getHeaders());
   }
 
   /** ✅ GET BY USER ID */
-  getByUserId(userId: number): Observable<Education[]> {
+  getByUserId(userId: number): Observable<EducationModel[]> {
     console.log('Getting education by userId:', userId);
-    return this.http.get<Education[]>(
+    return this.http.get<EducationModel[]>(
       `${this.API}/GetByUser/${userId}`, 
       this.getHeaders()
+    ).pipe(
+      tap(response => console.log('Education loaded:', response)),
+      catchError(error => {
+        console.error('Get education error:', error);
+        return throwError(() => error);
+      })
     );
+  }
+
+  /** ✅ GET CURRENT USER ID - Use profile service to get current user ID */
+  getCurrentUserId(): Observable<number> {
+    // Use localStorage user ID as fallback since we can't import ProfileService
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        const userId = user?.id;
+        if (userId && userId > 0) {
+          console.log('Current user from localStorage:', userId);
+          return of(userId);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to get user from localStorage:', error);
+    }
+    
+    // Fallback to 0 if no user found
+    console.log('No user found, returning 0');
+    return of(0);
   }
 
   /** ✅ EXACT SAME HEADERS as SkillService */

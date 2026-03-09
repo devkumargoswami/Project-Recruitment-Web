@@ -3,6 +3,7 @@ import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angula
 import { CommonModule } from '@angular/common';
 import { EducationService } from '../service/education.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ProfileService, UserProfile } from '../service/profile.service';
 
 @Component({
   selector: 'app-education',
@@ -20,11 +21,20 @@ export class EducationComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  educationLevels = [
+    { id: 1, name: 'SSC (10th)' },
+    { id: 2, name: 'HSC (12th)' },
+    { id: 3, name: 'UG (Bachelor)' },
+    { id: 4, name: 'PG (Master)' },
+    { id: 5, name: 'PhD' }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private educationService: EducationService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private profileService: ProfileService
   ) {
     this.educationForm = this.fb.group({
       educationLevelId: ['', Validators.required],
@@ -40,18 +50,34 @@ export class EducationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!user?.id) {
-      this.router.navigate(['/login']);
-      return;
-    }
-    this.userId = user.id;
+    // Auto-fill user ID from profile API
+    this.loadUserIdFromProfile();
 
     this.educationId = Number(this.route.snapshot.paramMap.get('id'));
     if (this.educationId) {
       this.isEditMode = true;
       this.loadEducationById(this.educationId);
     }
+  }
+
+  private loadUserIdFromProfile(): void {
+    this.profileService.getProfile().subscribe({
+      next: (user: UserProfile) => {
+        this.userId = user.id;
+      },
+      error: (error) => {
+        console.error('Failed to load user profile:', error);
+        // Fallback to session storage if API fails
+        try {
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          if (user?.id) {
+            this.userId = user.id;
+          }
+        } catch (sessionError) {
+          console.warn('Failed to load user from session:', sessionError);
+        }
+      }
+    });
   }
 
   loadEducationById(id: number): void {
@@ -69,8 +95,50 @@ export class EducationComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.educationForm.invalid) {
-      this.errorMessage = 'Please fill all required fields correctly';
+    // Check if all required fields are filled
+    const formValue = this.educationForm.value;
+    const requiredFields = [
+      { name: 'Education Level', value: formValue.educationLevelId },
+      { name: 'School/College', value: formValue.schoolCollege },
+      { name: 'Board/University', value: formValue.boardUniversity },
+      { name: 'Degree', value: formValue.degree },
+      { name: 'Start Month', value: formValue.startMonth },
+      { name: 'Start Year', value: formValue.startYear }
+    ];
+
+    // Check for empty required fields
+    const emptyFields = requiredFields.filter(field => 
+      !field.value || field.value.toString().trim() === ''
+    );
+
+    if (emptyFields.length > 0) {
+      this.errorMessage = 'All fields are required';
+      return;
+    }
+
+    // If not currently studying, check end date
+    if (!formValue.isContinue) {
+      if (!formValue.endMonth || !formValue.endYear || 
+          formValue.endMonth.toString().trim() === '' || formValue.endYear.toString().trim() === '') {
+        this.errorMessage = 'All fields are required';
+        return;
+      }
+    }
+
+    // Validate userId is not null or zero
+    if (!this.userId || this.userId <= 0) {
+      this.errorMessage = 'User ID is required';
+      return;
+    }
+
+    // Final validation: ensure all form values are non-null and non-empty
+    const allFormValues = Object.values(formValue);
+    const hasNullValues = allFormValues.some(value => 
+      value === null || value === undefined || value.toString().trim() === ''
+    );
+
+    if (hasNullValues) {
+      this.errorMessage = 'All fields are required';
       return;
     }
 

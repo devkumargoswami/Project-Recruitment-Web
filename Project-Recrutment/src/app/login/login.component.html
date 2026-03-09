@@ -21,19 +21,6 @@
         </div>
       </div>
 
-      <!-- Role -->
-      <div class="field-group">
-        <label class="field-label" for="roleId">Login As</label>
-        <select id="roleId" class="field-input field-select" formControlName="roleId"
-          [class.field-error]="loginForm.get('roleId')?.touched && loginForm.get('roleId')?.invalid">
-          <option value="" disabled>Select your role</option>
-          <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
-        </select>
-        <div class="error-message" *ngIf="loginForm.get('roleId')?.touched && loginForm.get('roleId')?.invalid">
-          <small>Please select a role.</small>
-        </div>
-      </div>
-
       <!-- Password -->
       <div class="field-group">
         <label class="field-label" for="password">Password</label>

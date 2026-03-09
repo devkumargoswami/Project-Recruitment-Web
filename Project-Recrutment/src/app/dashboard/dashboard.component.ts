@@ -17,10 +17,10 @@ interface RoleConfig {
   color: string; grad: string; badge: string;
   stats: string[]; nav: NavItem[]; actions: Record<string, string>;
 }
-interface Education  { id: number; title: string; institution: string; board?: string; year: string; duration?: string; }
+interface Education  { educationId: number; userId: number; educationLevelId: number; schoolCollege: string; boardUniversity?: string; degree: string; startMonth: number; startYear: number; endMonth: number; endYear: number; isContinue: boolean; }
 interface Skill      { id: number; name: string; level: string; }
 interface Experience { id: number; company: string; position: string; duration: string; description?: string; }
-interface Document   { id: number; documentName: string; type: string; uploadedAt: string; url?: string; }
+interface Document   { documentId: number; userId: number; documentName: string; documentPath?: string; type?: string; uploadedAt?: string; url?: string; }
 
 type SubDataTab = 'education' | 'skills' | 'experience' | 'documents';
 
@@ -37,72 +37,76 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly ROLE_CONFIG: Record<string, RoleConfig> = {
     Admin: {
       color: '#60a5fa', grad: 'linear-gradient(135deg,#3b82f6,#6366f1)', badge: 'badge-blue',
-      stats: ['Education', 'Skills', 'Experience', 'Documents'],
+      stats: ['Education', 'Skills', 'Experience', 'Documents', 'Results'],
       nav: [
         { id: 'profile',    icon: '&#x1F464;', label: 'Profile' },
         { id: 'education',  icon: '&#x1F393;', label: 'Education' },
         { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
         { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
         { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'results',    icon: '&#x1F4CB;', label: 'Results' },
         { divider: true, dlabel: 'Management' },
         { id: 'users', icon: '&#x1F465;', label: 'All Users', admin: true }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
-        experience: '+ Add Experience', documents: '+ Upload Document', users: '+ Add User'
+        experience: '+ Add Experience', documents: '+ Upload Document', results: '+ Add Result', users: '+ Add User'
       }
     },
     HR: {
       color: '#fcd34d', grad: 'linear-gradient(135deg,#f59e0b,#d97706)', badge: 'badge-amber',
-      stats: ['Education', 'Skills', 'Experience', 'Documents'],
+      stats: ['Education', 'Skills', 'Experience', 'Documents', 'Results'],
       nav: [
         { id: 'profile',    icon: '&#x1F464;', label: 'Profile' },
         { id: 'education',  icon: '&#x1F393;', label: 'Education' },
         { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
         { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
         { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'results',    icon: '&#x1F4CB;', label: 'Results' },
         { divider: true, dlabel: 'Management' },
         { id: 'users', icon: '&#x1F465;', label: 'All Users', admin: true }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
-        experience: '+ Add Experience', documents: '+ Upload Document', users: '+ Add User'
+        experience: '+ Add Experience', documents: '+ Upload Document', results: '+ Add Result', users: '+ Add User'
       }
     },
     Employer: {
       color: '#a78bfa', grad: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', badge: 'badge-violet',
-      stats: ['Skills', 'Experience', 'Documents'],
+      stats: ['Skills', 'Experience', 'Documents', 'Results'],
       nav: [
         { id: 'profile',    icon: '&#x1F464;', label: 'Profile' },
         { id: 'education',  icon: '&#x1F393;', label: 'Education' },
         { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
         { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
-        { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' }
+        { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'results',    icon: '&#x1F4CB;', label: 'Results' }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
-        experience: '+ Add Experience', documents: '+ Upload Document'
+        experience: '+ Add Experience', documents: '+ Upload Document', results: '+ Add Result'
       }
     },
     Candidate: {
       color: '#a2e1c8', grad: 'linear-gradient(135deg,#10b981,#059669)', badge: 'badge-green',
-      stats: ['Education','Skills','Documents'],
+      stats: ['Education','Skills','Documents', 'Results'],
       nav: [
         { id: 'profile',   icon: '&#x1F464;', label: 'Profile' },
         { id: 'education', icon: '&#x1F393;', label: 'Education' },
         { id: 'skills',    icon: '&#x2699;',  label: 'Skills' },
-        { id: 'documents', icon: '&#x1F4C4;', label: 'Documents' }
+        { id: 'documents', icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'results',   icon: '&#x1F4CB;', label: 'Results' }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education',
-        skills: '+ Add Skill', documents: '+ Upload Document'
+        skills: '+ Add Skill', documents: '+ Upload Document', results: '+ Add Result'
       }
     }
   };
 
   readonly SECTION_TITLE: Record<string, string> = {
     profile: 'Profile', education: 'Education', skills: 'Skills',
-    experience: 'Work Experience', documents: 'Documents', users: 'All Users'
+    experience: 'Work Experience', documents: 'Documents', results: 'Results', users: 'All Users'
   };
 
   readonly SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
@@ -211,6 +215,79 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   refresh(): void { this.loadDashboard(); }
 
+  // ── Load education and document data directly ─────────────────────
+  private loadEducationData(): void {
+    if (!this.user?.id) return;
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    this.dashboardService.getEducationByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data: any[]) => {
+        this.educationList = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private loadDocumentData(): void {
+    if (!this.user?.id) return;
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    this.dashboardService.getDocumentsByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data: any[]) => {
+        this.documentList = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private loadSkillsData(): void {
+    if (!this.user?.id) return;
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    this.dashboardService.getSkillsByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data: any[]) => {
+        this.skillsList = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private loadExperienceData(): void {
+    if (!this.user?.id) return;
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    this.dashboardService.getExperienceByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data: any[]) => {
+        this.experienceList = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   // ── Getters ───────────────────────────────────────────────────────
   get roleConfig(): RoleConfig {
     return this.ROLE_CONFIG[this.currentRole] || this.ROLE_CONFIG['Candidate'];
@@ -299,7 +376,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Misc helpers ──────────────────────────────────────────────────
-  trackById(_: number, item: { id: number }): number { return item.id; }
+  trackById(_: number, item: any): number { 
+    return item.id || item.educationId || item.documentId || 0; 
+  }
 
   getInitials(name?: string | null): string {
     return (name || '').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -310,6 +389,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.currentSection = id;
     this.sidebarOpen = false;
     this.selectedUserForData = null;
+    
+    // Load data for sections that require user data
+    if (id === 'education') {
+      this.loadEducationData();
+    } else if (id === 'skills') {
+      this.loadSkillsData();
+    } else if (id === 'experience') {
+      this.loadExperienceData();
+    } else if (id === 'documents') {
+      this.loadDocumentData();
+    }
+    
     this.cdr.markForCheck();
   }
 
@@ -321,10 +412,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (routes[this.currentSection]) this.router.navigate([routes[this.currentSection]]);
   }
 
-  goToEducation():  void { this.router.navigate(['/education']); }
-  goToSkills():     void { this.router.navigate(['/skills']); }
-  goToExperience(): void { this.router.navigate(['/experience']); }
-  goToDocuments():  void { this.router.navigate(['/documents']); }
+  goToEducation():  void { this.showSection('education'); }
+  goToSkills():     void { this.showSection('skills'); }
+  goToExperience(): void { this.showSection('experience'); }
+  goToDocuments():  void { this.showSection('documents'); }
   goToAddUser():    void { this.showSection('users'); }
 
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]); }
@@ -356,7 +447,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this education record?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteEducation(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next:  () => { this.educationList  = this.educationList.filter(e => e.id !== id);  this.deletingId = null; this.cdr.markForCheck(); },
+      next:  () => { this.educationList  = this.educationList.filter(e => e.educationId !== id);  this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -383,7 +474,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this document?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteDocument(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next:  () => { this.documentList = this.documentList.filter(d => d.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
+      next:  () => { this.documentList = this.documentList.filter(d => d.documentId !== id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -410,7 +501,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteEducation(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
-        this.subEducation = this.subEducation.filter(e => e.id !== id);
+        this.subEducation = this.subEducation.filter(e => e.educationId !== id);
         this.patchCache('education', id);
         this.deletingId = null; this.cdr.markForCheck();
       },
@@ -449,7 +540,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteDocument(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
-        this.subDocuments = this.subDocuments.filter(d => d.id !== id);
+        this.subDocuments = this.subDocuments.filter(d => d.documentId !== id);
         this.patchCache('documents', id);
         this.deletingId = null; this.cdr.markForCheck();
       },
@@ -460,8 +551,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private patchCache(tab: SubDataTab, id: number): void {
     if (!this.selectedUserForData) return;
     const cache = this.userDataCache.get(this.selectedUserForData.id);
-    if (cache) (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.id !== id);
+    if (cache) {
+      if (tab === 'education') {
+        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.educationId !== id);
+      } else if (tab === 'documents') {
+        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.documentId !== id);
+      } else {
+        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.id !== id);
+      }
+    }
   }
 
   logout(): void { this.auth.logout(); }
+
 }

@@ -1,13 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EducationService, Education } from '../service/education.service';
-
-interface ApiResponse {
-  status: number;
-  message: string;
-  data?: any;
-}
+import { EducationService } from '../service/education.service';
+import { EducationModel } from './education.model';
 
 @Component({
   selector: 'app-education-list',
@@ -16,69 +11,131 @@ interface ApiResponse {
   templateUrl: './education-list.component.html',
   styleUrls: ['./education-list.component.css']
 })
-export class EducationListComponent {
-  educationList: Education[] = [];
+export class EducationListComponent implements OnInit {
+
+  educationList: EducationModel[] = [];
   loading = false;
   error: string | null = null;
-  
-  // Form fields for adding new education
-  newEducation: Education = { 
-    educationId: 0, 
-    userId: 0, 
-    educationLevelId: 0, 
-    schoolCollege: '', 
-    boardUniversity: '', 
-    degree: '', 
-    startMonth: 1, 
-    startYear: 2020, 
-    endMonth: 1, 
-    endYear: 2021, 
-    isContinue: false 
-  };
-  
+
   // Form fields for searching
   searchId: number | null = null;
   searchUserId: number | null = null;
-  
-  // Modal state
+
   isAddModalOpen = false;
-  
+
+  newEducation: EducationModel = {
+    id: 0,
+    userId: 0,
+    educationLevelId: 0,
+    schoolCollege: '',
+    boardUniversity: '',
+    degree: '',
+    startMonth: 1,
+    startYear: 2020,
+    endMonth: 1,
+    endYear: 2021,
+    isContinue: false
+  };
+
   constructor(private educationService: EducationService) {}
 
+  ngOnInit(): void {
+    this.getEducation();
+  }
+
+  /** OPEN MODAL */
   openAddModal() {
     this.isAddModalOpen = true;
-    this.newEducation = { 
-      educationId: 0, 
-      userId: 0, 
-      educationLevelId: 0, 
-      schoolCollege: '', 
-      boardUniversity: '', 
-      degree: '', 
-      startMonth: 1, 
-      startYear: 2020, 
-      endMonth: 1, 
-      endYear: 2021, 
-      isContinue: false 
-    };
+    this.resetForm();
   }
 
+  /** CLOSE MODAL */
   closeAddModal() {
     this.isAddModalOpen = false;
-    this.newEducation = { 
-      educationId: 0, 
-      userId: 0, 
-      educationLevelId: 0, 
-      schoolCollege: '', 
-      boardUniversity: '', 
-      degree: '', 
-      startMonth: 1, 
-      startYear: 2020, 
-      endMonth: 1, 
-      endYear: 2021, 
-      isContinue: false 
+    this.resetForm();
+  }
+
+  /** RESET FORM */
+  resetForm() {
+    this.newEducation = {
+      id: 0,
+      userId: 0,
+      educationLevelId: 0,
+      schoolCollege: '',
+      boardUniversity: '',
+      degree: '',
+      startMonth: 1,
+      startYear: 2020,
+      endMonth: 1,
+      endYear: 2021,
+      isContinue: false
     };
   }
 
+  /** LOAD EDUCATION */
+  getEducation() {
+    this.loading = true;
+    this.error = null;
+
+    this.educationService.getCurrentUserId().subscribe({
+      next: (userId: number) => {
+        this.educationService.getByUserId(userId).subscribe({
+          next: (data: EducationModel[]) => {
+            this.educationList = data;
+            this.loading = false;
+          },
+          error: (err) => {
+            this.error = 'Error loading education: ' + err.message;
+            this.loading = false;
+          }
+        });
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = 'Error getting user ID: ' + err.message;
+      }
+    });
+  }
+
+  /** SEARCH EDUCATION */
+  searchEducation() {
+    this.loading = true;
+    this.error = null;
+
+    if (this.searchId) {
+      this.educationService.getById(this.searchId).subscribe({
+        next: (data: EducationModel) => {
+          this.loading = false;
+          this.educationList = data ? [data] : [];
+          if (this.educationList.length === 0) {
+            this.error = 'No education record found with this ID';
+          }
+        },
+        error: (err: any) => {
+          this.loading = false;
+          this.error = 'Error searching education: ' + err.message;
+        }
+      });
+    } else if (this.searchUserId) {
+      this.educationService.getByUserId(this.searchUserId).subscribe({
+        next: (data: EducationModel[]) => {
+          this.loading = false;
+          this.educationList = data;
+          if (data.length === 0) {
+            this.error = 'No education records found for this user';
+          }
+        },
+        error: (err: any) => {
+          this.loading = false;
+          this.error = 'Error searching education: ' + err.message;
+        }
+      });
+    } else {
+      this.getEducation();
+    }
+  }
+
+  /** ADD EDUCATION */
   addEducation() {
     console.log('=== ADD EDUCATION BUTTON CLICKED ===');
     console.log('Form data:', this.newEducation);
@@ -86,6 +143,8 @@ export class EducationListComponent {
     console.log('User ID value:', this.newEducation.userId);
     console.log('School/College type:', typeof this.newEducation.schoolCollege);
     console.log('School/College value:', this.newEducation.schoolCollege);
+    console.log('Degree type:', typeof this.newEducation.degree);
+    console.log('Degree value:', this.newEducation.degree);
     
     // Convert userId to number if it's a string (common issue)
     if (typeof this.newEducation.userId === 'string') {
@@ -94,8 +153,9 @@ export class EducationListComponent {
     }
     
     // Trim whitespace from fields
-    this.newEducation.schoolCollege = this.newEducation.schoolCollege.trim();
-    this.newEducation.degree = this.newEducation.degree.trim();
+    this.newEducation.schoolCollege = this.newEducation.schoolCollege?.trim() || '';
+    this.newEducation.degree = this.newEducation.degree?.trim() || '';
+    this.newEducation.boardUniversity = this.newEducation.boardUniversity?.trim() || '';
     console.log('Trimmed fields:', this.newEducation);
     
     if (!this.newEducation.userId || !this.newEducation.schoolCollege || !this.newEducation.degree) {
@@ -106,7 +166,6 @@ export class EducationListComponent {
 
     console.log('=== VALIDATION PASSED ===');
     console.log('Final data to send:', this.newEducation);
-    console.log('Final data JSON:', JSON.stringify(this.newEducation));
     console.log('Proceeding with API call');
     this.loading = true;
     this.error = null;
@@ -141,102 +200,12 @@ export class EducationListComponent {
     });
   }
 
-  searchEducation() {
-    this.loading = true;
-    this.error = null;
-
-    if (this.searchId) {
-      this.educationService.getById(this.searchId).subscribe({
-        next: (data: Education) => {
-          this.loading = false;
-          this.educationList = data ? [data] : [];
-          if (this.educationList.length === 0) {
-            this.error = 'No education record found with this ID';
-          } else {
-            this.error = null;
-          }
-        },
-        error: (err: any) => {
-          this.loading = false;
-          this.error = 'Error searching education: ' + err.message;
-        }
-      });
-    } else if (this.searchUserId) {
-      this.educationService.getByUserId(this.searchUserId).subscribe({
-        next: (data: Education[]) => {
-          this.loading = false;
-          this.educationList = data;
-          if (data.length === 0) {
-            this.error = 'No education records found for this user';
-          } else {
-            this.error = null;
-          }
-        },
-        error: (err: any) => {
-          this.loading = false;
-          this.error = 'Error searching education: ' + err.message;
-        }
-      });
-    } else {
-      this.getEducation();
-    }
-  }
-
-  getEducation() {
-    this.loading = true;
-    this.error = null;
-
-    // Get current user ID from localStorage or use a default
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userId = user?.id || 1; // Default to 1 if no user found
-
-    this.educationService.getByUserId(userId).subscribe({
-      next: (data: Education[]) => {
-        this.loading = false;
-        this.educationList = data;
-        this.error = null;
-      },
-      error: (err: any) => {
-        this.loading = false;
-        this.error = 'Error loading education: ' + err.message;
-      }
-    });
-  }
-
-  deleteEducation(id: number) {
-    if (confirm('Are you sure you want to delete this education record?')) {
-      this.loading = true;
-      this.error = null;
-
-      this.educationService.delete(id).subscribe({
-        next: (response: any) => {
-          this.loading = false;
-          // Check if response indicates success (handle different response formats)
-          if (response && (response.status === 200 || response.success || response === null)) {
-            this.error = null;
-            // Refresh the list
-            this.getEducation();
-          } else if (response && response.message) {
-            this.error = response.message;
-          } else {
-            this.error = 'Education deleted successfully';
-            // Still refresh the list since the operation likely succeeded
-            this.getEducation();
-          }
-        },
-        error: (err: any) => {
-          this.loading = false;
-          this.error = 'Error deleting education: ' + err.message;
-        }
-      });
-    }
-  }
-
-  editEducation(edu: any) {
+  /** EDIT EDUCATION */
+  editEducation(edu: EducationModel) {
     // Open the add modal with the education data pre-filled
     this.isAddModalOpen = true;
     this.newEducation = {
-      educationId: edu.educationId,
+      id: edu.id,
       userId: edu.userId,
       educationLevelId: edu.educationLevelId,
       schoolCollege: edu.schoolCollege,
@@ -244,12 +213,13 @@ export class EducationListComponent {
       degree: edu.degree,
       startMonth: edu.startMonth,
       startYear: edu.startYear,
-      endMonth: edu.endMonth,
-      endYear: edu.endYear,
+      endMonth: edu.endMonth || 1,
+      endYear: edu.endYear || 2021,
       isContinue: edu.isContinue
     };
   }
 
+  /** UPDATE EDUCATION */
   updateEducation() {
     console.log('=== UPDATE EDUCATION BUTTON CLICKED ===');
     console.log('Form data:', this.newEducation);
@@ -263,6 +233,7 @@ export class EducationListComponent {
     // Trim whitespace from fields
     this.newEducation.schoolCollege = this.newEducation.schoolCollege?.trim() || '';
     this.newEducation.degree = this.newEducation.degree?.trim() || '';
+    this.newEducation.boardUniversity = this.newEducation.boardUniversity?.trim() || '';
     console.log('Trimmed fields:', this.newEducation);
     
     if (!this.newEducation.userId || !this.newEducation.schoolCollege || !this.newEducation.degree) {
@@ -277,7 +248,7 @@ export class EducationListComponent {
     this.loading = true;
     this.error = null;
 
-    this.educationService.update(this.newEducation.educationId, this.newEducation).subscribe({
+    this.educationService.update(this.newEducation.id, this.newEducation).subscribe({
       next: (response: any) => {
         console.log('=== UPDATE SUCCESS ===');
         console.log('Response:', response);
@@ -307,9 +278,47 @@ export class EducationListComponent {
     });
   }
 
-  viewEducation(edu: any) {
+  /** DELETE EDUCATION */
+  deleteEducation(id: number) {
+    if (confirm('Are you sure you want to delete this education record?')) {
+      this.loading = true;
+      this.error = null;
+
+      this.educationService.delete(id).subscribe({
+        next: (response: any) => {
+          this.loading = false;
+          // Check if response indicates success (handle different response formats)
+          if (response && (response.status === 200 || response.success || response === null)) {
+            this.error = null;
+            // Refresh the list
+            this.getEducation();
+          } else if (response && response.message) {
+            this.error = response.message;
+          } else {
+            this.error = 'Education deleted successfully';
+            // Still refresh the list since the operation likely succeeded
+            this.getEducation();
+          }
+        },
+        error: (err: any) => {
+          this.loading = false;
+          this.error = 'Error deleting education: ' + err.message;
+        }
+      });
+    }
+  }
+
+  /** VIEW EDUCATION */
+  viewEducation(edu: EducationModel) {
     // View education functionality - could open a modal or navigate to detail view
     console.log('Viewing education:', edu);
-    alert(`Viewing education: ${edu.degree} at ${edu.schoolCollege}`);
+    alert(
+      `Viewing education:\n` +
+      `Degree: ${edu.degree}\n` +
+      `School/College: ${edu.schoolCollege}\n` +
+      `Board/University: ${edu.boardUniversity || 'N/A'}\n` +
+      `Start: ${edu.startMonth}/${edu.startYear}\n` +
+      `End: ${edu.isContinue ? 'Present' : edu.endMonth + '/' + edu.endYear}`
+    );
   }
 }

@@ -1,20 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
-import { DocumentModel, ApiResponse } from '../document/document.model';  // ✅ Import models
+import { DocumentModel } from '../document/document.model';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class DocumentService {
-  // ✅ FIXED: Match your API specification
-  private readonly API = 'https://localhost:7027/api/Document';  // Use /api/Document endpoints
+
+  private readonly API = 'https://localhost:7027/api/Document';
 
   constructor(private http: HttpClient) {}
 
-  /** ✅ GET - Get documents by user ID */
-  getDocuments(userId: number): Observable<DocumentModel[]> {
-    console.log('=== GETTING DOCUMENTS ===');
+  /** GET documents by user */
+  getByUserId(userId: number): Observable<DocumentModel[]> {
+    console.log('Getting documents by userId:', userId);
     return this.http.get<DocumentModel[]>(
       `${this.API}/GetByUser/${userId}`, 
       this.getHeaders()
@@ -27,7 +28,13 @@ export class DocumentService {
     );
   }
 
-  /** ✅ INSERT - Match your API specification */
+  /** GET document by ID */
+  getById(id: number): Observable<DocumentModel> {
+    console.log('Getting document by ID:', id);
+    return this.http.get<DocumentModel>(`${this.API}/Get/${id}`, this.getHeaders());
+  }
+
+  /** INSERT document */
   insert(documentData: any): Observable<any> {
     console.log('=== INSERT DOCUMENT DEBUG ===');
     console.log('Document data:', documentData);
@@ -38,7 +45,7 @@ export class DocumentService {
     const payload = {
       userId: documentData.userId,
       documentName: documentData.documentName,
-      documentPath: documentData.documentPath,
+      documentPath: documentData.documentPath || '',
       createDatetime: new Date().toISOString()
     };
 
@@ -64,7 +71,7 @@ export class DocumentService {
     );
   }
 
-  /** ✅ UPDATE - Match your API specification */
+  /** UPDATE document */
   update(id: number, documentData: any): Observable<any> {
     console.log('=== UPDATE DOCUMENT DEBUG ===', id);
     console.log('Document data:', documentData);
@@ -74,7 +81,7 @@ export class DocumentService {
       documentId: id,
       userId: documentData.userId,
       documentName: documentData.documentName,
-      documentPath: documentData.documentPath,
+      documentPath: documentData.documentPath || '',
       createDatetime: new Date().toISOString()
     };
 
@@ -87,22 +94,7 @@ export class DocumentService {
     );
   }
 
-  /** ✅ GET BY ID - Get document by ID */
-  getById(id: number): Observable<DocumentModel> {
-    console.log('Getting document by ID:', id);
-    return this.http.get<DocumentModel>(`${this.API}/Get/${id}`, this.getHeaders());
-  }
-
-  /** ✅ GET BY USER ID */
-  getByUserId(userId: number): Observable<DocumentModel[]> {
-    console.log('Getting documents by userId:', userId);
-    return this.http.get<DocumentModel[]>(
-      `${this.API}/GetByUser/${userId}`, 
-      this.getHeaders()
-    );
-  }
-
-  /** ✅ DELETE - Delete by document ID */
+  /** DELETE document */
   delete(id: number): Observable<any> {
     console.log('Deleting document with ID:', id);
     console.log('API URL:', `${this.API}/Delete/${id}`);
@@ -116,10 +108,31 @@ export class DocumentService {
     );
   }
 
-  /** ✅ EXACT SAME HEADERS as SkillService */
+  /** Get logged user id from localStorage */
+  getCurrentUserId(): Observable<number> {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        const userId = user?.id;
+        if (userId && userId > 0) {
+          console.log('Current user from localStorage:', userId);
+          return of(userId);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to get user from localStorage:', error);
+    }
+    
+    // Fallback to 0 if no user found
+    console.log('No user found, returning 0');
+    return of(0);
+  }
+
+  /** HTTP Headers */
   private getHeaders() {
     let headers = new HttpHeaders({
-      'Content-Type': 'application/json'  // Note: FormData will override this
+      'Content-Type': 'application/json'
     });
 
     try {

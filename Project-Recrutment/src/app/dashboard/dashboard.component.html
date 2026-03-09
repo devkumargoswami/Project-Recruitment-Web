@@ -199,7 +199,7 @@
           </div>
           <div class="empty-state" *ngIf="educationList.length === 0">
             <div class="empty-icon">&#x1F393;</div>
-            <p>No education records yet.</p>
+            <p>No education records found.</p>
             <button class="btn-primary" (click)="goToEducation()">Add your first education</button>
           </div>
           <div class="table-wrap" *ngIf="educationList.length > 0">
@@ -207,29 +207,29 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Title</th>
-                  <th>Institution</th>
-                  <th>Board</th>
-                  <th>Year</th>
+                  <th>Degree</th>
+                  <th>School/College</th>
+                  <th>Board/University</th>
+                  <th>Duration</th>
                   <th>Update</th>
                   <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let edu of educationList; trackBy: trackById; let i = index"
-                  [class.deleting]="deletingId === edu.id">
+                  [class.deleting]="deletingId === edu.educationId">
                   <td class="td-num">{{ i + 1 }}</td>
-                  <td class="td-main">{{ edu.title }}</td>
-                  <td>{{ edu.institution }}</td>
-                  <td>{{ edu.board || '—' }}</td>
-                  <td>{{ edu.duration || edu.year }}</td>
+                  <td class="td-main">{{ edu.degree }}</td>
+                  <td>{{ edu.schoolCollege }}</td>
+                  <td>{{ edu.boardUniversity || '—' }}</td>
+                  <td>{{ edu.startYear }} - {{ edu.endYear }}</td>
                   <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editEducation(edu.id)">Update</button>
+                    <button class="btn-action btn-update" (click)="editEducation(edu.educationId)">Update</button>
                   </td>
                   <td class="td-action-col">
-                    <button class="btn-action btn-delete" [disabled]="deletingId === edu.id"
-                      (click)="deleteEducation(edu.id)">
-                      {{ deletingId === edu.id ? '...' : 'Delete' }}
+                    <button class="btn-action btn-delete" [disabled]="deletingId === edu.educationId"
+                      (click)="deleteEducation(edu.educationId)">
+                      {{ deletingId === edu.educationId ? '...' : 'Delete' }}
                     </button>
                   </td>
                 </tr>
@@ -315,23 +315,23 @@
                   <tr>
                     <th>#</th>
                     <th>Document Name</th>
-                    <th>File</th>
+                    <th>Type</th>
+                    <th>Uploaded</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let doc of documentList; trackBy: trackById; let i = index"
-                    [class.deleting]="deletingId === doc.id">
+                    [class.deleting]="deletingId === doc.documentId">
                     <td class="td-num">{{ i + 1 }}</td>
                     <td class="td-main">{{ doc.documentName }}</td>
-                    <td>
-                      <button class="btn-action btn-view">View</button>
-                    </td>
+                    <td><span class="type-tag">{{ doc.type || 'Document' }}</span></td>
+                    <td class="td-muted">{{ doc.uploadedAt ? (doc.uploadedAt | date:'dd MMM yyyy') : 'Not specified' }}</td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-update" (click)="editDocument(doc.id)">Edit</button>
-                      <button class="btn-action btn-delete" [disabled]="deletingId === doc.id"
-                        (click)="deleteDocument(doc.id)">
-                        {{ deletingId === doc.id ? '...' : 'Delete' }}
+                      <button class="btn-action btn-update" (click)="editDocument(doc.documentId)">Edit</button>
+                      <button class="btn-action btn-delete" [disabled]="deletingId === doc.documentId"
+                        (click)="deleteDocument(doc.documentId)">
+                        {{ deletingId === doc.documentId ? '...' : 'Delete' }}
                       </button>
                     </td>
                   </tr>
@@ -528,28 +528,28 @@
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Title</th>
-                    <th>Institution</th>
-                    <th>Board</th>
-                    <th>Year</th>
+                    <th>Degree</th>
+                    <th>School/College</th>
+                    <th>Board/University</th>
+                    <th>Duration</th>
                     <th>Update</th>
                     <th>Delete</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let edu of subEducation; let i = index" [class.deleting]="deletingId === edu.id">
+                  <tr *ngFor="let edu of subEducation; let i = index" [class.deleting]="deletingId === edu.educationId">
                     <td class="td-num">{{ i + 1 }}</td>
-                    <td class="td-main">{{ edu.title }}</td>
-                    <td>{{ edu.institution }}</td>
-                    <td>{{ edu.board || '—' }}</td>
-                    <td>{{ edu.duration || edu.year }}</td>
+                    <td class="td-main">{{ edu.degree }}</td>
+                    <td>{{ edu.schoolCollege }}</td>
+                    <td>{{ edu.boardUniversity || '—' }}</td>
+                    <td>{{ edu.startYear }} - {{ edu.endYear }}</td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-update" (click)="editEducation(edu.id)">Update</button>
+                      <button class="btn-action btn-update" (click)="editEducation(edu.educationId)">Update</button>
                     </td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-delete" [disabled]="deletingId === edu.id"
-                        (click)="deleteSubEducation(edu.id)">
-                        {{ deletingId === edu.id ? '...' : 'Delete' }}
+                      <button class="btn-action btn-delete" [disabled]="deletingId === edu.educationId"
+                        (click)="deleteSubEducation(edu.educationId)">
+                        {{ deletingId === edu.educationId ? '...' : 'Delete' }}
                       </button>
                     </td>
                   </tr>
@@ -655,7 +655,7 @@
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Name</th>
+                    <th>Document Name</th>
                     <th>Type</th>
                     <th>Uploaded</th>
                     <th>View</th>
@@ -664,22 +664,22 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let doc of subDocuments; let i = index" [class.deleting]="deletingId === doc.id">
+                  <tr *ngFor="let doc of subDocuments; let i = index" [class.deleting]="deletingId === doc.documentId">
                     <td class="td-num">{{ i + 1 }}</td>
                     <td class="td-main">{{ doc.documentName }}</td>
-                    <td><span class="type-tag">{{ doc.type }}</span></td>
-                    <td class="td-muted">{{ doc.uploadedAt | date:'dd MMM yyyy' }}</td>
+                    <td><span class="type-tag">{{ doc.type || 'Document' }}</span></td>
+                    <td class="td-muted">{{ doc.uploadedAt ? (doc.uploadedAt | date:'dd MMM yyyy') : 'Not specified' }}</td>
                     <td class="td-action-col">
                       <a *ngIf="doc.url" [href]="doc.url" target="_blank" class="btn-action btn-view">View</a>
                       <span *ngIf="!doc.url" class="td-muted">—</span>
                     </td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-update" (click)="editDocument(doc.id)">Update</button>
+                      <button class="btn-action btn-update" (click)="editDocument(doc.documentId)">Update</button>
                     </td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-delete" [disabled]="deletingId === doc.id"
-                        (click)="deleteSubDocument(doc.id)">
-                        {{ deletingId === doc.id ? '...' : 'Delete' }}
+                      <button class="btn-action btn-delete" [disabled]="deletingId === doc.documentId"
+                        (click)="deleteSubDocument(doc.documentId)">
+                        {{ deletingId === doc.documentId ? '...' : 'Delete' }}
                       </button>
                     </td>
                   </tr>

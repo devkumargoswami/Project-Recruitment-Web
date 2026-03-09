@@ -19,6 +19,23 @@
       <form (ngSubmit)="onSubmit()" #expForm="ngForm">
         <div class="row g-4">
 
+          <!-- User ID -->
+          <div class="col-md-6">
+            <div class="input-group-custom">
+              <div class="input-icon">
+                <i class="bi bi-person-fill"></i>
+              </div>
+              <div class="input-wrapper">
+                <input type="text"
+                       id="userId"
+                       class="custom-input"
+                       [value]="userId"
+                       readonly>
+                <label for="userId" class="floating-label always-up">User ID</label>
+              </div>
+            </div>
+          </div>
+
           <!-- Company Name -->
           <div class="col-md-6">
             <div class="input-group-custom">

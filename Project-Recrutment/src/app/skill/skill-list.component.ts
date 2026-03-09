@@ -26,11 +26,26 @@ export class SkillComponent {
   // Modal state
   isAddModalOpen = false;
   
-  constructor(private skillService: SkillService) {}
+  constructor(private skillService: SkillService) {
+    // Auto-fill user ID from session
+    this.loadUserIdFromSession();
+  }
+
+  private loadUserIdFromSession(): void {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user?.id) {
+        this.newSkill.userId = user.id;
+      }
+    } catch (error) {
+      console.warn('Failed to load user from session:', error);
+    }
+  }
 
   openAddModal() {
     this.isAddModalOpen = true;
-    this.newSkill = { id: 0, userId: 0, name: '' };
+    // Reset form but keep user ID
+    this.newSkill = { id: 0, userId: this.newSkill.userId, name: '' };
   }
 
   closeAddModal() {

@@ -7,6 +7,17 @@
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
       <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
 
+      <!-- User ID -->
+      <div class="form-group">
+        <label for="userId">User ID</label>
+        <input id="userId"
+               type="text"
+               [value]="userId"
+               class="form-control readonly-input"
+               readonly
+               title="Auto-filled from session">
+      </div>
+
       <!-- Education Level -->
       <div class="form-group">
         <label for="educationLevelId">Education Level *</label>
@@ -14,13 +25,12 @@
                 formControlName="educationLevelId"
                 class="form-control"
                 title="Select education level">
-          <option value="">-- Select Level --</option>
-          <option value="1">SSC (10th)</option>
-          <option value="2">HSC (12th)</option>
-          <option value="3">Bachelor</option>
-          <option value="4">Master</option>
-          <option value="5">PhD</option>
+          <option value="" disabled>Select education level</option>
+          <option *ngFor="let level of educationLevels" [value]="level.id">{{ level.name }}</option>
         </select>
+        <div class="error" *ngIf="educationForm.get('educationLevelId')?.invalid && educationForm.get('educationLevelId')?.touched">
+          Education level is required
+        </div>
       </div>
 
       <!-- School -->
@@ -116,8 +126,7 @@
       </div>
 
       <!-- Button -->
-      <button type="submit"
-              [disabled]="educationForm.invalid || loading">
+      <button type="submit" [disabled]="loading">
         {{ loading ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
       </button>
 
