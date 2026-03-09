@@ -76,13 +76,21 @@ export const routes: Routes = [
         .then(m => m.skillRoutes)
   },
 
-  // Experience
+  // Education
   {
-    path: 'experience',
+    path: 'education',
     canActivate: [authGuard],
     loadChildren: () =>
-      import('./experience/experience.routes')
-        .then(m => m.experienceRoutes)
+      import('./education/education.routes')
+        .then(m => m.educationRoutes)
+  },
+
+  // Documents
+  {
+    path: 'documents',
+    canActivate: [authGuard],
+    loadChildren: () => 
+      import('./document/document.route').then(m => m.documentRoutes)
   }
 
 ];

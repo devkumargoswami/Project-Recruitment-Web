@@ -33,7 +33,8 @@ export class SkillComponent {
 
   openAddModal() {
     this.isAddModalOpen = true;
-    this.newSkill = { id: 0, userId: 0, name: '' };
+    // Reset form but keep user ID
+    this.newSkill = { id: 0, userId: this.newSkill.userId, name: '' };
   }
 
   closeAddModal() {

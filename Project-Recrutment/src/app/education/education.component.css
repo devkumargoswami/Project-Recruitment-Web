@@ -1,5 +1,5 @@
 .auth-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
@@ -8,7 +8,7 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  padding: 2.5rem;
+  padding: 2rem;
   margin-bottom: 2rem;
 }
 
@@ -91,26 +91,33 @@
 
 button {
   width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  padding: 1.2rem;
+  background: linear-gradient(135deg, #28a745, #1e7e34);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+  margin-top: 1.5rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0056b3, #004085);
+  background: linear-gradient(135deg, #1e7e34, #155724);
   transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(40, 167, 69, 0.5);
 }
 
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .file-info {

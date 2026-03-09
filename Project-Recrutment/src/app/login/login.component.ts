@@ -5,11 +5,6 @@ import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { RouterModule } from '@angular/router';
 
-interface Role {
-  id: number;
-  name: string;
-}
-
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -23,13 +18,6 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   showPassword = false;
   errorMessage = '';
-
-  roles: Role[] = [
-    { id: 1, name: 'Admin' },
-    { id: 2, name: 'HR' },
-    { id: 3, name: 'Employer' },
-    { id: 4, name: 'Candidate' }
-  ];
 
   constructor(
     private fb: FormBuilder,
@@ -45,7 +33,6 @@ export class LoginComponent implements OnInit {
 
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      roleId: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(4)]]
     });
   }
@@ -63,8 +50,8 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const { email, password, roleId } = this.loginForm.value;
-    const loginPayload = { email, password, roleId: Number(roleId) };
+    const { email, password } = this.loginForm.value;
+    const loginPayload = { email, password };
     
     console.log('Login attempt with payload:', loginPayload);
 
@@ -77,7 +64,7 @@ export class LoginComponent implements OnInit {
           console.log('Login successful, navigating to dashboard');
           this.router.navigateByUrl('/dashboard');
         } else {
-          this.errorMessage = 'Invalid email, password or role.';
+          this.errorMessage = 'Invalid email or password.';
           console.log('Login failed - invalid credentials');
         }
       },

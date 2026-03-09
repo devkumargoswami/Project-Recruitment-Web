@@ -18,7 +18,7 @@ export class ForgotPasswordComponent {
   message = '';
   error = '';
 
-  private apiUrl = 'http://localhost:7027/api/user/forgot-password'; 
+  private apiUrl = 'https://localhost:7027/api/User/update-password'; 
   // change URL according to your backend
 
   constructor(

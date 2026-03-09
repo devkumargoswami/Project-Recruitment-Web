@@ -70,9 +70,6 @@
           </div>
           <div class="profile-meta">
             <h2>{{ user?.firstName }} {{ user?.lastName }}</h2>
-            <!-- <div class="p-username" *ngIf="user?.username">
-              &#64;<span>{{ user?.username }}</span>
-            </div> -->  
             <div class="p-email">{{ user?.email }}</div>
             <div class="pill-row">
               <span class="badge" [ngClass]="roleConfig.badge">{{ currentRole }}</span>
@@ -199,37 +196,37 @@
           </div>
           <div class="empty-state" *ngIf="educationList.length === 0">
             <div class="empty-icon">&#x1F393;</div>
-            <p>No education records yet.</p>
-            <button class="btn-primary" (click)="goToEducation()">Add your first record</button>
+            <p>No education records found.</p>
+            <button class="btn-primary" (click)="goToEducation()">Add your first education</button>
           </div>
           <div class="table-wrap" *ngIf="educationList.length > 0">
             <table>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Title</th>
-                  <th>Institution</th>
-                  <th>Board</th>
-                  <th>Year</th>
+                  <th>Degree</th>
+                  <th>School/College</th>
+                  <th>Board/University</th>
+                  <th>Duration</th>
                   <th>Update</th>
                   <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let edu of educationList; trackBy: trackById; let i = index"
-                  [class.deleting]="deletingId === edu.id">
+                  [class.deleting]="deletingId === edu.educationId">
                   <td class="td-num">{{ i + 1 }}</td>
-                  <td class="td-main">{{ edu.title }}</td>
-                  <td>{{ edu.institution }}</td>
-                  <td>{{ edu.board || '—' }}</td>
-                  <td>{{ edu.duration || edu.year }}</td>
+                  <td class="td-main">{{ edu.degree }}</td>
+                  <td>{{ edu.schoolCollege }}</td>
+                  <td>{{ edu.boardUniversity || '—' }}</td>
+                  <td>{{ edu.startYear }} - {{ edu.endYear }}</td>
                   <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editEducation(edu.id)">Update</button>
+                    <button class="btn-action btn-update" (click)="editEducation(edu.educationId)">Update</button>
                   </td>
                   <td class="td-action-col">
-                    <button class="btn-action btn-delete" [disabled]="deletingId === edu.id"
-                      (click)="deleteEducation(edu.id)">
-                      {{ deletingId === edu.id ? '...' : 'Delete' }}
+                    <button class="btn-action btn-delete" [disabled]="deletingId === edu.educationId"
+                      (click)="deleteEducation(edu.educationId)">
+                      {{ deletingId === edu.educationId ? '...' : 'Delete' }}
                     </button>
                   </td>
                 </tr>
@@ -239,63 +236,107 @@
         </div>
       </section>
 
-      <!-- ====== SKILLS ====== -->
-      <section *ngIf="currentSection === 'skills'" class="section fade-in">
-        <div class="card">
-          <div class="card-head">
-            <h3>Skills</h3>
-            <button class="btn-add" (click)="goToSkills()">+ Add Skill</button>
-          </div>
-          <div class="empty-state" *ngIf="skillsList.length === 0">
-            <div class="empty-icon">&#x2699;</div>
-            <p>No skills added yet.</p>
-            <button class="btn-primary" (click)="goToSkills()">Add your first skill</button>
-          </div>
-          <div class="table-wrap" *ngIf="skillsList.length > 0">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Skill Name</th>
-                  <th>Level</th>
-                  <th>Proficiency</th>
-                  <th>Update</th>
-                  <th>Delete</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let sk of skillsList; trackBy: trackById; let i = index"
-                  [class.deleting]="deletingId === sk.id">
-                  <td class="td-num">{{ i + 1 }}</td>
-                  <td class="td-main">{{ sk.name }}</td>
-                  <td>
-                    <span class="level-badge" [style.color]="getSkillLevelColor(sk.level)"
-                      [style.border-color]="getSkillLevelColor(sk.level)">
-                      {{ sk.level }}
-                    </span>
-                  </td>
-                  <td class="td-bar">
-                    <div class="skill-bar-wrap">
-                      <div class="skill-bar-fill" [style.width]="getSkillLevelWidth(sk.level)"
-                        [style.background]="getSkillLevelColor(sk.level)">
+        <!-- ====== SKILLS ====== -->
+        <section *ngIf="currentSection === 'skills'" class="section fade-in">
+          <div class="card">
+            <div class="card-head">
+              <h3>Skills</h3>
+              <button class="btn-add" (click)="goToSkills()">+ Add Skill</button>
+            </div>
+            <div class="empty-state" *ngIf="skillsList.length === 0">
+              <div class="empty-icon">&#x2699;</div>
+              <p>No skills added yet.</p>
+              <button class="btn-primary" (click)="goToSkills()">Add your first skill</button>
+            </div>
+            <div class="table-wrap" *ngIf="skillsList.length > 0">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Skill Name</th>
+                    <th>Level</th>
+                    <th>Proficiency</th>
+                    <th>Update</th>
+                    <th>Delete</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let sk of skillsList; trackBy: trackById; let i = index"
+                    [class.deleting]="deletingId === sk.id">
+                    <td class="td-num">{{ i + 1 }}</td>
+                    <td class="td-main">{{ sk.name }}</td>
+                    <td>
+                      <span class="level-badge" [style.color]="getSkillLevelColor(sk.level)"
+                        [style.border-color]="getSkillLevelColor(sk.level)">
+                        {{ sk.level }}
+                      </span>
+                    </td>
+                    <td class="td-bar">
+                      <div class="skill-bar-wrap">
+                        <div class="skill-bar-fill" [style.width]="getSkillLevelWidth(sk.level)"
+                          [style.background]="getSkillLevelColor(sk.level)">
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editSkill(sk.id)">Update</button>
-                  </td>
-                  <td class="td-action-col">
-                    <button class="btn-action btn-delete" [disabled]="deletingId === sk.id"
-                      (click)="deleteSkill(sk.id)">
-                      {{ deletingId === sk.id ? '...' : 'Delete' }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </td>
+                    <td class="td-action-col">
+                      <button class="btn-action btn-update" (click)="editSkill(sk.id)">Update</button>
+                    </td>
+                    <td class="td-action-col">
+                      <button class="btn-action btn-delete" [disabled]="deletingId === sk.id"
+                        (click)="deleteSkill(sk.id)">
+                        {{ deletingId === sk.id ? '...' : 'Delete' }}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <!-- ====== DOCUMENTS ====== -->
+        <section *ngIf="currentSection === 'documents'" class="section fade-in">
+          <div class="card">
+            <div class="card-head">
+              <h3>Documents</h3>
+              <button class="btn-add" (click)="goToDocuments()">+ Upload Document</button>
+            </div>
+            <div class="empty-state" *ngIf="documentList.length === 0">
+              <div class="empty-icon">📁</div>
+              <p>No documents uploaded yet.</p>
+              <button class="btn-primary" (click)="goToDocuments()">Upload your first document</button>
+            </div>
+            <div class="table-wrap" *ngIf="documentList.length > 0">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Document Name</th>
+                    <th>Type</th>
+                    <th>Uploaded</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let doc of documentList; trackBy: trackById; let i = index"
+                    [class.deleting]="deletingId === doc.documentId">
+                    <td class="td-num">{{ i + 1 }}</td>
+                    <td class="td-main">{{ doc.documentName }}</td>
+                    <td><span class="type-tag">{{ doc.type || 'Document' }}</span></td>
+                    <td class="td-muted">{{ doc.uploadedAt ? (doc.uploadedAt | date:'dd MMM yyyy') : 'Not specified' }}</td>
+                    <td class="td-action-col">
+                      <button class="btn-action btn-update" (click)="editDocument(doc.documentId)">Edit</button>
+                      <button class="btn-action btn-delete" [disabled]="deletingId === doc.documentId"
+                        (click)="deleteDocument(doc.documentId)">
+                        {{ deletingId === doc.documentId ? '...' : 'Delete' }}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
       <!-- ====== EXPERIENCE ====== -->
       <section *ngIf="currentSection === 'experience'" class="section fade-in">
@@ -346,54 +387,25 @@
         </div>
       </section>
 
-      <!-- ====== DOCUMENTS ====== -->
-      <section *ngIf="currentSection === 'documents'" class="section fade-in">
+
+      <!-- ====== INTERVIEW SCHEDULE ====== -->
+      <section *ngIf="currentSection === 'interview'" class="section fade-in">
         <div class="card">
           <div class="card-head">
-            <h3>Documents</h3>
-            <button class="btn-add" (click)="goToDocuments()">+ Upload Document</button>
+            <h3>Interview Schedule</h3>
+            <div class="d-flex gap-2">
+              <button class="btn-add" (click)="goToInterviewSchedule()">+ Schedule Interview</button>
+              <button class="btn-add" (click)="goToInterviewScheduleList()">View Scheduled Interviews</button>
+            </div>
           </div>
-          <div class="empty-state" *ngIf="documentList.length === 0">
-            <div class="empty-icon">&#x1F4C4;</div>
-            <p>No documents uploaded yet.</p>
-            <button class="btn-primary" (click)="goToDocuments()">Upload your first document</button>
-          </div>
-          <div class="table-wrap" *ngIf="documentList.length > 0">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Uploaded</th>
-                  <th>View</th>
-                  <th>Update</th>
-                  <th>Delete</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let doc of documentList; trackBy: trackById; let i = index"
-                  [class.deleting]="deletingId === doc.id">
-                  <td class="td-num">{{ i + 1 }}</td>
-                  <td class="td-main">{{ doc.name }}</td>
-                  <td><span class="type-tag">{{ doc.type }}</span></td>
-                  <td class="td-muted">{{ doc.uploadedAt | date:'dd MMM yyyy' }}</td>
-                  <td class="td-action-col">
-                    <a *ngIf="doc.url" [href]="doc.url" target="_blank" class="btn-action btn-view">View</a>
-                    <span *ngIf="!doc.url" class="td-muted">—</span>
-                  </td>
-                  <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editDocument(doc.id)">Update</button>
-                  </td>
-                  <td class="td-action-col">
-                    <button class="btn-action btn-delete" [disabled]="deletingId === doc.id"
-                      (click)="deleteDocument(doc.id)">
-                      {{ deletingId === doc.id ? '...' : 'Delete' }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+
+          <div class="empty-state">
+            <div class="empty-icon">&#x1F4C5;</div>
+            <p>Manage and track interview schedules from here.</p>
+            <div class="d-flex gap-2" style="justify-content:center; flex-wrap:wrap;">
+              <button class="btn-primary" (click)="goToInterviewSchedule()">Open Schedule Form</button>
+              <button class="btn-primary" (click)="goToInterviewScheduleList()">Open Interview List</button>
+            </div>
           </div>
         </div>
       </section>
@@ -458,14 +470,14 @@
           <div class="filter-bar">
             <input class="filter-input" placeholder="Search name or email..." [value]="userSearchTerm"
               (input)="onUserSearch($event)">
-            <select class="filter-sel" [value]="userRoleFilter" (change)="onRoleFilter($event)">
+            <select class="filter-sel" title="Filter by role" [value]="userRoleFilter" (change)="onRoleFilter($event)">
               <option value="">All Roles</option>
               <option>Admin</option>
               <option>HR</option>
               <option>Employer</option>
               <option>Candidate</option>
             </select>
-            <select class="filter-sel" [value]="userStatusFilter" (change)="onStatusFilter($event)">
+            <select class="filter-sel" title="Filter by status" [value]="userStatusFilter" (change)="onStatusFilter($event)">
               <option value="">All Status</option>
               <option>Active</option>
               <option>Inactive</option>
@@ -542,11 +554,11 @@
                     </button>
                   </td>
                   <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editUser(u.id)">Update</button>
+                    <button class="btn-action btn-update" (click)="editUser(u.id)">Table Update</button>
                   </td>
                   <td class="td-action-col">
                     <button class="btn-action btn-delete" [disabled]="deletingId === u.id" (click)="deleteUser(u.id)">
-                      {{ deletingId === u.id ? '...' : 'Delete' }}
+                      {{ deletingId === u.id ? '...' : 'Table Delete' }}
                     </button>
                   </td>
                 </tr>
@@ -584,28 +596,28 @@
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Title</th>
-                    <th>Institution</th>
-                    <th>Board</th>
-                    <th>Year</th>
+                    <th>Degree</th>
+                    <th>School/College</th>
+                    <th>Board/University</th>
+                    <th>Duration</th>
                     <th>Update</th>
                     <th>Delete</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let edu of subEducation; let i = index" [class.deleting]="deletingId === edu.id">
+                  <tr *ngFor="let edu of subEducation; let i = index" [class.deleting]="deletingId === edu.educationId">
                     <td class="td-num">{{ i + 1 }}</td>
-                    <td class="td-main">{{ edu.title }}</td>
-                    <td>{{ edu.institution }}</td>
-                    <td>{{ edu.board || '—' }}</td>
-                    <td>{{ edu.duration || edu.year }}</td>
+                    <td class="td-main">{{ edu.degree }}</td>
+                    <td>{{ edu.schoolCollege }}</td>
+                    <td>{{ edu.boardUniversity || '—' }}</td>
+                    <td>{{ edu.startYear }} - {{ edu.endYear }}</td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-update" (click)="editEducation(edu.id)">Update</button>
+                      <button class="btn-action btn-update" (click)="editEducation(edu.educationId)">Update</button>
                     </td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-delete" [disabled]="deletingId === edu.id"
-                        (click)="deleteSubEducation(edu.id)">
-                        {{ deletingId === edu.id ? '...' : 'Delete' }}
+                      <button class="btn-action btn-delete" [disabled]="deletingId === edu.educationId"
+                        (click)="deleteSubEducation(edu.educationId)">
+                        {{ deletingId === edu.educationId ? '...' : 'Delete' }}
                       </button>
                     </td>
                   </tr>
@@ -711,7 +723,7 @@
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Name</th>
+                    <th>Document Name</th>
                     <th>Type</th>
                     <th>Uploaded</th>
                     <th>View</th>
@@ -720,22 +732,22 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let doc of subDocuments; let i = index" [class.deleting]="deletingId === doc.id">
+                  <tr *ngFor="let doc of subDocuments; let i = index" [class.deleting]="deletingId === doc.documentId">
                     <td class="td-num">{{ i + 1 }}</td>
-                    <td class="td-main">{{ doc.name }}</td>
-                    <td><span class="type-tag">{{ doc.type }}</span></td>
-                    <td class="td-muted">{{ doc.uploadedAt | date:'dd MMM yyyy' }}</td>
+                    <td class="td-main">{{ doc.documentName }}</td>
+                    <td><span class="type-tag">{{ doc.type || 'Document' }}</span></td>
+                    <td class="td-muted">{{ doc.uploadedAt ? (doc.uploadedAt | date:'dd MMM yyyy') : 'Not specified' }}</td>
                     <td class="td-action-col">
                       <a *ngIf="doc.url" [href]="doc.url" target="_blank" class="btn-action btn-view">View</a>
                       <span *ngIf="!doc.url" class="td-muted">—</span>
                     </td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-update" (click)="editDocument(doc.id)">Update</button>
+                      <button class="btn-action btn-update" (click)="editDocument(doc.documentId)">Update</button>
                     </td>
                     <td class="td-action-col">
-                      <button class="btn-action btn-delete" [disabled]="deletingId === doc.id"
-                        (click)="deleteSubDocument(doc.id)">
-                        {{ deletingId === doc.id ? '...' : 'Delete' }}
+                      <button class="btn-action btn-delete" [disabled]="deletingId === doc.documentId"
+                        (click)="deleteSubDocument(doc.documentId)">
+                        {{ deletingId === doc.documentId ? '...' : 'Delete' }}
                       </button>
                     </td>
                   </tr>

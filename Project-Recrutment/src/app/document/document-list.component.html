@@ -1,39 +1,132 @@
-<div class="card">
-  <div class="card-head">
-    <h3>Documents</h3>
-    <button class="btn-add" (click)="addNew()">+ Add Document</button>
+<div class="container">
+  <div class="header">
+    <h1>Document Management</h1>
+    <button class="btn-primary" (click)="openAddModal()">+ Add Document</button>
   </div>
 
-  <div class="table-wrap" *ngIf="documents.length; else empty">
-    <table>
+  <div class="search-section">
+    <div class="search-group">
+      <label for="searchId">Search by Document ID:</label>
+      <input 
+        type="number" 
+        id="searchId" 
+        [(ngModel)]="searchId" 
+        placeholder="Enter Document ID"
+      >
+    </div>
+    <div class="search-group">
+      <label for="searchUserId">Search by User ID:</label>
+      <input 
+        type="number" 
+        id="searchUserId" 
+        [(ngModel)]="searchUserId" 
+        placeholder="Enter User ID"
+      >
+    </div>
+    <button class="btn-search" (click)="searchDocument()">Search</button>
+    <button class="btn-refresh" (click)="getDocuments()">Refresh</button>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    Loading...
+  </div>
+
+  <div class="table-container" *ngIf="!loading && documents.length > 0">
+    <table class="data-table">
       <thead>
         <tr>
-          <th>#</th>
+          <th>ID</th>
+          <th>User ID</th>
           <th>Document Name</th>
-          <th>File</th>
+          <th>Document Path</th>
+          <th>Created Date</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let d of documents; index as i">
-          <td>{{ i + 1 }}</td>
-          <td class="td-main">{{ d.documentName }}</td>
+        <tr *ngFor="let doc of documents; let i = index">
+          <td>{{ doc.documentId }}</td>
+          <td>{{ doc.userId }}</td>
+          <td>{{ doc.documentName }}</td>
+          <td>{{ doc.documentPath || 'N/A' }}</td>
+          <td>{{ doc.createDatetime ? (doc.createDatetime | date:'medium') : 'N/A' }}</td>
           <td>
-            <button class="btn-action btn-view">View</button>
-          </td>
-          <td class="td-action-col">
-            <button class="btn-action btn-update" (click)="edit(d.id)">Edit</button>
-            <button class="btn-action btn-delete" (click)="delete(d.id)">Delete</button>
+            <button class="btn-view" (click)="viewDocument(doc)">View</button>
+            <button class="btn-edit" (click)="editDocument(doc)">Edit</button>
+            <button class="btn-delete" (click)="deleteDocument(doc.documentId)">Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <ng-template #empty>
-    <div class="empty-state">
-      <div class="empty-icon">📁</div>
-      No documents added
+  <div class="empty-state" *ngIf="!loading && documents.length === 0 && !error">
+    No documents found. Add a new document to get started.
+  </div>
+
+  <!-- Add/Edit Document Modal -->
+  <div class="modal" *ngIf="isAddModalOpen" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ newDocument.documentId === 0 ? 'Add New Document' : 'Edit Document' }}</h2>
+        <button class="close-btn" (click)="closeAddModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="userId">User ID:</label>
+          <input 
+            type="number" 
+            id="userId" 
+            [(ngModel)]="newDocument.userId" 
+            placeholder="Enter User ID"
+            [disabled]="newDocument.documentId !== 0"
+          >
+        </div>
+        <div class="form-group">
+          <label for="documentName">Document Name:</label>
+          <select 
+            id="documentName" 
+            [(ngModel)]="newDocument.documentName" 
+            required
+          >
+            <option value="">-- Select Document Type --</option>
+            <option value="Resume/CV">Resume / CV</option>
+            <option value="Cover Letter">Cover Letter</option>
+            <option value="10th Marksheet">10th Marksheet</option>
+            <option value="12th Marksheet">12th Marksheet</option>
+            <option value="Graduation Certificate">Graduation Certificate</option>
+            <option value="Post Graduation Certificate">Post Graduation Certificate</option>
+            <option value="Experience Certificate">Experience Certificate</option>
+            <option value="Aadhar Card">Aadhar Card</option>
+            <option value="PAN Card">PAN Card</option>
+            <option value="Passport">Passport</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="documentPath">Document Path/URL:</label>
+          <input 
+            type="text" 
+            id="documentPath" 
+            [(ngModel)]="newDocument.documentPath" 
+            placeholder="Enter document path or URL"
+          >
+          <small class="form-hint">Enter the path where the document is stored (e.g., file server path, cloud storage URL, etc.)</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button *ngIf="newDocument.documentId === 0" class="btn-primary" (click)="addDocument()" [disabled]="loading">
+          {{ loading ? 'Adding...' : 'Add Document' }}
+        </button>
+        <button *ngIf="newDocument.documentId !== 0" class="btn-primary" (click)="updateDocument()" [disabled]="loading">
+          {{ loading ? 'Updating...' : 'Update Document' }}
+        </button>
+      </div>
     </div>
-  </ng-template>
+  </div>
 </div>

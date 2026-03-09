@@ -15,6 +15,7 @@ export class ExperienceListComponent {
   experiences: ExperienceModel[] = [];
   loading = false;
   error: string | null = null;
+  successMessage: string | null = null;
 
   newExperience: ExperienceModel = {
     id: 0, userId: 0, companyName: '', designation: '',
@@ -29,6 +30,7 @@ export class ExperienceListComponent {
 
   openAddModal() {
     this.isAddModalOpen = true;
+    this.error = null;
     this.newExperience = {
       id: 0, userId: 0, companyName: '', designation: '',
       startDate: '', endDate: '', isCurrent: false
@@ -37,12 +39,14 @@ export class ExperienceListComponent {
 
   closeAddModal() {
     this.isAddModalOpen = false;
+    this.error = null;
     this.newExperience = {
       id: 0, userId: 0, companyName: '', designation: '',
       startDate: '', endDate: '', isCurrent: false
     };
   }
 
+  // ✅ ADD
   addExperience() {
     if (typeof this.newExperience.userId === 'string') {
       this.newExperience.userId = parseInt(this.newExperience.userId, 10);
@@ -56,9 +60,7 @@ export class ExperienceListComponent {
       return;
     }
 
-    if (this.newExperience.isCurrent) {
-      this.newExperience.endDate = null;
-    }
+    if (this.newExperience.isCurrent) this.newExperience.endDate = null;
 
     this.loading = true;
     this.error = null;
@@ -67,12 +69,10 @@ export class ExperienceListComponent {
     this.experienceService.insertExperience(this.newExperience).subscribe({
       next: (response: ApiResponse) => {
         this.loading = false;
-        if (response.status === 200) {
-          this.closeAddModal();
-          this.getExperiences();
-        } else {
-          this.error = response.message || 'Failed to add experience';
-        }
+        this.closeAddModal();
+        this.successMessage = 'Experience added successfully!';
+        this.getExperiences();
+        setTimeout(() => this.successMessage = null, 3000);
       },
       error: (err) => {
         this.loading = false;
@@ -81,6 +81,58 @@ export class ExperienceListComponent {
     });
   }
 
+  // ✅ UPDATE
+  updateExperience() {
+    if (typeof this.newExperience.userId === 'string') {
+      this.newExperience.userId = parseInt(this.newExperience.userId, 10);
+    }
+
+    if (!this.newExperience.userId || !this.newExperience.companyName ||
+        !this.newExperience.designation || !this.newExperience.startDate) {
+      this.error = 'Please fill in all required fields';
+      return;
+    }
+
+    if (this.newExperience.isCurrent) this.newExperience.endDate = null;
+
+    this.loading = true;
+    this.error = null;
+
+    const formData = {
+      experienceId: this.newExperience.id,
+      userId: this.newExperience.userId,
+      companyName: this.newExperience.companyName,
+      designation: this.newExperience.designation,
+      startDate: this.newExperience.startDate,
+      endDate: this.newExperience.endDate,
+      isCurrent: this.newExperience.isCurrent
+    };
+
+    this.experienceService.updateExperience(formData as any).subscribe({
+      next: (response: ApiResponse) => {
+        this.loading = false;
+        this.closeAddModal();
+        this.successMessage = 'Experience updated successfully!';
+        this.getExperiences();
+        setTimeout(() => this.successMessage = null, 3000);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = 'Error updating experience: ' + err.message;
+      }
+    });
+  }
+
+  // ✅ EDIT - open modal with existing data
+  editExperience(id: number) {
+    const exp = this.experiences.find(e => e.id === id);
+    if (!exp) { this.error = 'Experience not found'; return; }
+    this.newExperience = { ...exp };
+    this.isAddModalOpen = true;
+    this.error = null;
+  }
+
+  // ✅ GET ALL
   getExperiences() {
     this.loading = true;
     this.error = null;
@@ -98,6 +150,7 @@ export class ExperienceListComponent {
     });
   }
 
+  // ✅ SEARCH
   searchExperience() {
     this.loading = true;
     this.error = null;
@@ -109,11 +162,7 @@ export class ExperienceListComponent {
       next: (data: ExperienceModel[]) => {
         this.loading = false;
         this.experiences = data;
-        if (data.length === 0) {
-          this.error = 'No experiences found';
-        } else {
-          this.error = null;
-        }
+        this.error = data.length === 0 ? 'No experiences found' : null;
       },
       error: (err) => {
         this.loading = false;
@@ -122,6 +171,7 @@ export class ExperienceListComponent {
     });
   }
 
+  // ✅ DELETE
   deleteExperience(id: number) {
     if (confirm('Are you sure you want to delete this experience?')) {
       this.loading = true;
@@ -130,11 +180,9 @@ export class ExperienceListComponent {
       this.experienceService.deleteExperience(id).subscribe({
         next: (response: ApiResponse) => {
           this.loading = false;
-          if (response.status === 200) {
-            this.getExperiences();
-          } else {
-            this.error = response.message || 'Failed to delete experience';
-          }
+          this.successMessage = 'Experience deleted successfully!';
+          this.getExperiences();
+          setTimeout(() => this.successMessage = null, 3000);
         },
         error: (err) => {
           this.loading = false;
