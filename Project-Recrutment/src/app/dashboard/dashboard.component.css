@@ -44,7 +44,7 @@
 /* Nav */
 .nav { flex: 1; padding: .5rem .9rem; }
 .nav-divider { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; color: var(--muted); padding: .9rem .6rem .3rem; }
-.nav-item { position: relative; display: flex; align-items: center; gap: .7rem; width: 100%; padding: .62rem .85rem; background: none; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; color: var(--muted); font-size: .875rem; font-weight: 500; text-align: left; transition: all .18s; margin-bottom: 2px; user-select: none; }
+.nav-item { position: relative; display: flex; align-items: center; gap: .7rem; width: 100%; padding: .62rem .85rem; background: none; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; color: var(--muted); font-size: .875rem; font-weight: 500; text-align: left; transition: all .18s; margin-bottom: 2px; -webkit-user-select: none; user-select: none; }
 .nav-item:hover { background: var(--surface2); color: var(--text); border-color: var(--border); }
 .nav-item.active { background: var(--surface3); color: var(--text); border-color: var(--border2); font-weight: 600; }
 .nav-item.active .nav-icon { opacity: 1; }

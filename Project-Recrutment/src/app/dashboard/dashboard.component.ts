@@ -44,12 +44,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
         { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
         { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'interview',  icon: '&#x1F4C5;', label: 'Interview Schedule' },
         { divider: true, dlabel: 'Management' },
         { id: 'users', icon: '&#x1F465;', label: 'All Users', admin: true }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
-        experience: '+ Add Experience', documents: '+ Upload Document', users: '+ Add User'
+        experience: '+ Add Experience', documents: '+ Upload Document',
+        interview: '+ Schedule Interview', users: '+ Add User'
       }
     },
     HR: {
@@ -61,12 +63,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
         { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
         { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'interview',  icon: '&#x1F4C5;', label: 'Interview Schedule' },
         { divider: true, dlabel: 'Management' },
         { id: 'users', icon: '&#x1F465;', label: 'All Users', admin: true }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
-        experience: '+ Add Experience', documents: '+ Upload Document', users: '+ Add User'
+        experience: '+ Add Experience', documents: '+ Upload Document',
+        interview: '+ Schedule Interview', users: '+ Add User'
       }
     },
     Employer: {
@@ -102,7 +106,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   readonly SECTION_TITLE: Record<string, string> = {
     profile: 'Profile', education: 'Education', skills: 'Skills',
-    experience: 'Work Experience', documents: 'Documents', users: 'All Users'
+    experience: 'Work Experience', documents: 'Documents',
+    interview: 'Interview Schedule', users: 'All Users'
   };
 
   readonly SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
@@ -165,6 +170,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.user = sessionUser;
     // ✅ Always read role from session — fixes "shows as Candidate" bug
     this.currentRole = sessionUser.role ?? 'Candidate';
+    if (this.currentRole === 'HR') {
+      this.currentSection = 'users';
+    }
     this.loadDashboard();
   }
 
@@ -320,7 +328,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   handleTopAction(): void {
     const routes: Record<string, string> = {
       profile: '/profile', education: '/education', skills: '/skills',
-      experience: '/experience', documents: '/documents', users: '/users/add'
+      experience: '/experience', documents: '/documents',
+      interview: '/interview-schedule', users: '/user'
     };
     if (routes[this.currentSection]) this.router.navigate([routes[this.currentSection]]);
   }
@@ -329,13 +338,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   goToSkills():     void { this.router.navigate(['/skills']); }
   goToExperience(): void { this.router.navigate(['/experience']); }
   goToDocuments():  void { this.router.navigate(['/documents']); }
-  goToAddUser():    void { this.router.navigate(['/users/add']); }
+  goToAddUser():    void { this.router.navigate(['/user']); }
+  goToInterviewSchedule(): void { this.router.navigate(['/interview-schedule']); }
+  goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule/list']); }
 
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]); }
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]); }
   editExperience(id: number): void { this.router.navigate([`/experience/edit/${id}`]); }
   editDocument(id: number):   void { this.router.navigate([`/documents/edit/${id}`]); }
-  editUser(id: number):       void { this.router.navigate([`/users/edit/${id}`]); }
+  editUser(_: number):       void { this.router.navigate(['/user']); }
 
   openSidebar():  void { this.sidebarOpen = true;  this.cdr.markForCheck(); }
   closeSidebar(): void { this.sidebarOpen = false; this.cdr.markForCheck(); }
@@ -393,19 +404,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Delete: user row ──────────────────────────────────────────────
-  async deleteUser(id: number): Promise<void> {
-    if (!confirm('Delete this user? This cannot be undone.')) return;
-    this.deletingId = id; this.cdr.markForCheck();
-    this.dashboardService.deleteUser(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.allUsers      = this.allUsers.filter(u => u.id !== id);
-        this.filteredUsers = this.filteredUsers.filter(u => u.id !== id);
-        this.userDataCache.delete(id);
-        if (this.selectedUserForData?.id === id) this.selectedUserForData = null;
-        this.deletingId = null; this.cdr.markForCheck();
-      },
-      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
-    });
+  async deleteUser(_: number): Promise<void> {
+    this.router.navigate(['/user']);
   }
 
   // ── Delete: sub-panel data ────────────────────────────────────────

@@ -83,6 +83,24 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./experience/experience.routes')
         .then(m => m.experienceRoutes)
+  },
+
+  // Interview Schedule (form)
+  {
+    path: 'interview-schedule',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./interview Schedule/interview-schedule.component')
+        .then(m => m.InterviewScheduleComponent)
+  },
+
+  // Interview Schedule List
+  {
+    path: 'interview-schedule/list',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./interview Schedule/interview-schedule-list.component')
+        .then(m => m.InterviewScheduleListComponent)
   }
 
 ];

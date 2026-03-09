@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { InterviewScheduleService, InterviewSchedule } from '../service/interview-schedule.service';
 
 @Component({
   selector: 'app-interview-schedule',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './interview-schedule.component.html',
   styleUrls: ['./interview-schedule.component.css']
 })

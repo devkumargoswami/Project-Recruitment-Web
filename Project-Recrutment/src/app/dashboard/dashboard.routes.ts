@@ -8,10 +8,8 @@ export const dashboardRoutes: Routes = [
     component: DashboardComponent,
     canActivate: [authGuard],
     children: [
-
       // default dashboard page
       { path: '', redirectTo: 'profile', pathMatch: 'full' },
-
       // profile
       {
         path: 'profile',
@@ -19,7 +17,6 @@ export const dashboardRoutes: Routes = [
           import('../profile/profile.component')
             .then(m => m.ProfileComponent)
       },
-
       // education module
       {
         path: 'education',
@@ -27,18 +24,13 @@ export const dashboardRoutes: Routes = [
           import('../education/education.routes')
             .then(m => m.educationRoutes)
       },
-
       // documents module
       {
         path: 'documents',
         loadChildren: () =>
           import('../document/document.route')
             .then(m => m.documentRoutes)
-      },
-
-      // future
-      // { path: 'skills', ... }
-      // { path: 'users', ... }
+      }
     ]
   }
 ];
