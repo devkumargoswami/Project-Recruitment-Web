@@ -197,11 +197,52 @@ export class UserListComponent implements OnInit {
     this.showPasswordModal = true;
   }
 
+  private toNumberOrUndefined(value: any): number | undefined {
+    if (value === null || value === undefined || value === '') return undefined;
+    const n = Number(value);
+    return Number.isNaN(n) ? undefined : n;
+  }
+
+  private toNumberOrZero(value: any): number {
+    const n = Number(value);
+    return Number.isNaN(n) ? 0 : n;
+  }
+
+  private isSuccessResponse(res: any): boolean {
+    if (!res) return true;
+    return res.status === 1 || res.status === 200 || res.success === true || res.isSuccess === true;
+  }
+
   submitForm(): void {
 
-    const payload = {
+    if (!this.formData.firstName?.trim() ||
+        !this.formData.lastName?.trim() ||
+        !this.formData.username?.trim() ||
+        !this.formData.email?.trim() ||
+        !this.formData.dateOfBirth) {
+      this.showToast('Please fill all required fields', 'error');
+      return;
+    }
+
+    if (!this.isEditMode && !this.formData.password?.trim()) {
+      this.showToast('Password is required for new user', 'error');
+      return;
+    }
+
+    const dateOfBirth = this.formData.dateOfBirth.includes('T')
+      ? this.formData.dateOfBirth
+      : `${this.formData.dateOfBirth}T00:00:00`;
+
+    const payload: UserModel = {
       ...this.formData,
-      dateOfBirth: this.formData.dateOfBirth + 'T00:00:00'
+      roleId: this.toNumberOrZero(this.formData.roleId),
+      offerCTC: this.toNumberOrZero(this.formData.offerCTC),
+      interviewStatus: this.toNumberOrUndefined(this.formData.interviewStatus),
+      countryId: this.toNumberOrUndefined(this.formData.countryId),
+      stateId: this.toNumberOrUndefined(this.formData.stateId),
+      totalExperience: this.toNumberOrUndefined(this.formData.totalExperience),
+      phoneNumber: this.toNumberOrUndefined(this.formData.phoneNumber),
+      dateOfBirth
     };
 
     const call = this.isEditMode
@@ -209,9 +250,9 @@ export class UserListComponent implements OnInit {
       : this.userService.insertUser(payload);
 
     call.subscribe({
-      next: (res: ApiResponse) => {
+      next: (res: ApiResponse | any) => {
 
-        if (res.status === 1) {
+        if (this.isSuccessResponse(res)) {
 
           this.showToast(
             this.isEditMode
@@ -224,11 +265,11 @@ export class UserListComponent implements OnInit {
 
         } else {
 
-          this.showToast(res.message || 'Failed', 'error');
+          this.showToast(res?.message || 'Failed', 'error');
         }
       },
 
-      error: () => this.showToast('Network error', 'error')
+      error: (err) => this.showToast(err?.error?.message || err?.message || 'Network error', 'error')
     });
   }
 
@@ -238,9 +279,9 @@ export class UserListComponent implements OnInit {
 
     this.userService.deleteUser(this.selectedUser.id).subscribe({
 
-      next: (res: ApiResponse) => {
+      next: (res: ApiResponse | any) => {
 
-        if (res.status === 1) {
+        if (this.isSuccessResponse(res)) {
 
           this.showToast('User deleted!');
           this.showDeleteModal = false;
@@ -248,11 +289,11 @@ export class UserListComponent implements OnInit {
 
         } else {
 
-          this.showToast(res.message || 'Failed', 'error');
+          this.showToast(res?.message || 'Failed', 'error');
         }
       },
 
-      error: () => this.showToast('Network error', 'error')
+      error: (err) => this.showToast(err?.error?.message || err?.message || 'Network error', 'error')
     });
   }
 
@@ -260,20 +301,20 @@ export class UserListComponent implements OnInit {
 
     this.userService.updatePassword(this.passwordForm).subscribe({
 
-      next: (res: ApiResponse) => {
+      next: (res: ApiResponse | any) => {
 
-        if (res.status === 1) {
+        if (this.isSuccessResponse(res)) {
 
           this.showToast('Password updated!');
           this.showPasswordModal = false;
 
         } else {
 
-          this.showToast(res.message || 'Failed', 'error');
+          this.showToast(res?.message || 'Failed', 'error');
         }
       },
 
-      error: () => this.showToast('Network error', 'error')
+      error: (err) => this.showToast(err?.error?.message || err?.message || 'Network error', 'error')
     });
   }
 
