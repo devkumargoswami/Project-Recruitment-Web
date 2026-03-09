@@ -1,44 +1,196 @@
-<div class="card">
-  <div class="card-head">
-    <h3>Education</h3>
-    <button class="btn-add" (click)="addNew()">+ Add Education</button>
+<div class="container">
+  <div class="header">
+    <h1>Education Management</h1>
+    <button class="btn-primary" (click)="openAddModal()">+ Add Education</button>
   </div>
 
-  <div class="table-wrap" *ngIf="educationList.length; else empty">
-    <table>
+  <div class="search-section">
+    <div class="search-group">
+      <label for="searchId">Search by Education ID:</label>
+      <input 
+        type="number" 
+        id="searchId" 
+        [(ngModel)]="searchId" 
+        placeholder="Enter Education ID"
+      >
+    </div>
+    <div class="search-group">
+      <label for="searchUserId">Search by User ID:</label>
+      <input 
+        type="number" 
+        id="searchUserId" 
+        [(ngModel)]="searchUserId" 
+        placeholder="Enter User ID"
+      >
+    </div>
+    <button class="btn-search" (click)="searchEducation()">Search</button>
+    <button class="btn-refresh" (click)="getEducation()">Refresh</button>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    Loading...
+  </div>
+
+  <div class="table-container" *ngIf="!loading && educationList.length > 0">
+    <table class="data-table">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Level</th>
-          <th>Institute</th>
+          <th>ID</th>
+          <th>User ID</th>
+          <th>Education Level</th>
+          <th>School/College</th>
           <th>Degree</th>
-          <th>Duration</th>
+          <th>Start Date</th>
+          <th>End Date</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let e of educationList; index as i">
-          <td>{{ i + 1 }}</td>
-          <td>{{ e.educationLevelName || e.educationLevelId }}</td>
-          <td class="td-main">{{ e.schoolCollege }}</td>
-          <td>{{ e.degree }}</td>
-          <td class="td-muted">
-            {{ e.startMonth }}/{{ e.startYear }} -
-            {{ e.isContinue ? 'Present' : (e.endMonth + '/' + e.endYear) }}
-          </td>
-          <td class="td-action-col">
-            <button class="btn-action btn-update" (click)="edit(e.id)">Edit</button>
-            <button class="btn-action btn-delete" (click)="delete(e.id)">Delete</button>
+        <tr *ngFor="let edu of educationList; let i = index">
+          <td>{{ edu.id }}</td>
+          <td>{{ edu.userId }}</td>
+          <td>{{ edu.educationLevelId }}</td>
+          <td>{{ edu.schoolCollege }}</td>
+          <td>{{ edu.degree }}</td>
+          <td>{{ edu.startMonth }}/{{ edu.startYear }}</td>
+          <td>{{ edu.isContinue ? 'Present' : (edu.endMonth + '/' + edu.endYear) }}</td>
+          <td>
+            <button class="btn-view" (click)="viewEducation(edu)">View</button>
+            <button class="btn-edit" (click)="editEducation(edu)">Edit</button>
+            <button class="btn-delete" (click)="deleteEducation(edu.id)">Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <ng-template #empty>
-    <div class="empty-state">
-      <div class="empty-icon">🎓</div>
-      No education records
+  <div class="empty-state" *ngIf="!loading && educationList.length === 0 && !error">
+    No education records found. Add a new education record to get started.
+  </div>
+
+  <!-- Add Education Modal -->
+  <div class="modal" *ngIf="isAddModalOpen" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Add New Education</h2>
+        <button class="close-btn" (click)="closeAddModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="userId">User ID:</label>
+          <input 
+            type="number" 
+            id="userId" 
+            [(ngModel)]="newEducation.userId" 
+            placeholder="Enter User ID"
+          >
+        </div>
+        <div class="form-group">
+          <label for="educationLevelId">Education Level:</label>
+          <select 
+            id="educationLevelId" 
+            [(ngModel)]="newEducation.educationLevelId"
+            name="educationLevelId"
+          >
+            <option value="">-- Select Education Level --</option>
+            <option value="1">SSC (10th)</option>
+            <option value="2">HSC (12th)</option>
+            <option value="3">UG (Bachelor)</option>
+            <option value="4">PG (Master)</option>
+            <option value="5">PhD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="schoolCollege">School/College:</label>
+          <input 
+            type="text" 
+            id="schoolCollege" 
+            [(ngModel)]="newEducation.schoolCollege" 
+            placeholder="Enter School/College Name"
+          >
+        </div>
+        <div class="form-group">
+          <label for="boardUniversity">Board/University:</label>
+          <input 
+            type="text" 
+            id="boardUniversity" 
+            [(ngModel)]="newEducation.boardUniversity" 
+            placeholder="Enter Board/University Name"
+          >
+        </div>
+        <div class="form-group">
+          <label for="degree">Degree:</label>
+          <input 
+            type="text" 
+            id="degree" 
+            [(ngModel)]="newEducation.degree" 
+            placeholder="Enter Degree"
+          >
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startMonth">Start Month:</label>
+            <input 
+              type="number" 
+              id="startMonth" 
+              [(ngModel)]="newEducation.startMonth" 
+              placeholder="1-12"
+            >
+          </div>
+          <div class="form-group">
+            <label for="startYear">Start Year:</label>
+            <input 
+              type="number" 
+              id="startYear" 
+              [(ngModel)]="newEducation.startYear" 
+              placeholder="e.g., 2020"
+            >
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="endMonth">End Month:</label>
+            <input 
+              type="number" 
+              id="endMonth" 
+              [(ngModel)]="newEducation.endMonth" 
+              placeholder="1-12"
+            >
+          </div>
+          <div class="form-group">
+            <label for="endYear">End Year:</label>
+            <input 
+              type="number" 
+              id="endYear" 
+              [(ngModel)]="newEducation.endYear" 
+              placeholder="e.g., 2024"
+            >
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="isContinue">
+            <input 
+              type="checkbox" 
+              id="isContinue" 
+              [(ngModel)]="newEducation.isContinue"
+            >
+            Currently Studying
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button *ngIf="newEducation.id === 0" class="btn-primary" (click)="addEducation()" [disabled]="loading">
+          {{ loading ? 'Adding...' : 'Add Education' }}
+        </button>
+        <button *ngIf="newEducation.id !== 0" class="btn-primary" (click)="updateEducation()" [disabled]="loading">
+          {{ loading ? 'Updating...' : 'Update Education' }}
+        </button>
+      </div>
     </div>
-  </ng-template>
+  </div>
 </div>

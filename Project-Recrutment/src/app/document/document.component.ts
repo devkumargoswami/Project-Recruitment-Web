@@ -3,6 +3,7 @@ import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angula
 import { CommonModule } from '@angular/common';
 import { DocumentService } from '../service/document.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ProfileService, UserProfile } from '../service/profile.service';
 
 @Component({
   selector: 'app-document',
@@ -25,7 +26,8 @@ export class DocumentComponent implements OnInit {
     private fb: FormBuilder,
     private documentService: DocumentService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private profileService: ProfileService
   ) {
     this.documentForm = this.fb.group({
       documentName: ['', Validators.required]
@@ -33,18 +35,34 @@ export class DocumentComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!user?.id) {
-      this.router.navigate(['/login']);
-      return;
-    }
-    this.userId = user.id;
+    // Auto-fill user ID from profile API
+    this.loadUserIdFromProfile();
     
     this.documentId = Number(this.route.snapshot.paramMap.get('id'));
     if (this.documentId) {
       this.isEditMode = true;
       this.loadDocumentById(this.documentId);
     }
+  }
+
+  private loadUserIdFromProfile(): void {
+    this.profileService.getProfile().subscribe({
+      next: (user: UserProfile) => {
+        this.userId = user.id;
+      },
+      error: (error) => {
+        console.error('Failed to load user profile:', error);
+        // Fallback to session storage if API fails
+        try {
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          if (user?.id) {
+            this.userId = user.id;
+          }
+        } catch (sessionError) {
+          console.warn('Failed to load user from session:', sessionError);
+        }
+      }
+    });
   }
 
   loadDocumentById(id: number): void {
@@ -79,8 +97,22 @@ export class DocumentComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.documentForm.invalid || !this.selectedFile) {
-      this.errorMessage = 'Please fill all required fields and select a file';
+    // Check if document type is selected
+    const formValue = this.documentForm.value;
+    if (!formValue.documentName || formValue.documentName.toString().trim() === '') {
+      this.errorMessage = 'All fields are required';
+      return;
+    }
+
+    // For new documents, check if file is selected
+    if (!this.isEditMode && !this.selectedFile) {
+      this.errorMessage = 'All fields are required';
+      return;
+    }
+
+    // Validate userId is not null or zero
+    if (!this.userId || this.userId <= 0) {
+      this.errorMessage = 'User ID is required';
       return;
     }
 
@@ -89,7 +121,9 @@ export class DocumentComponent implements OnInit {
     const formData = new FormData();
     formData.append('UserId', this.userId.toString());
     formData.append('DocumentName', this.documentForm.value.documentName);
-    formData.append('DocumentFile', this.selectedFile);
+    if (this.selectedFile) {
+      formData.append('DocumentFile', this.selectedFile);
+    }
 
     const req = this.isEditMode
       ? this.documentService.update(this.documentId!, formData)
@@ -103,7 +137,7 @@ export class DocumentComponent implements OnInit {
           : 'Document uploaded successfully';
         setTimeout(() => this.router.navigate(['/dashboard/documents']), 1200);
       },
-      error: () => {
+      error: () => { 
         this.loading = false;
         this.errorMessage = 'Operation failed. Try again.';
       }

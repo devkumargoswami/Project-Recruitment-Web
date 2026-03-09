@@ -28,7 +28,6 @@ export interface AuthUser {
 export interface UserLoginDTO {
   email: string;
   password: string;
-  roleId: number;
 }
 
 const ROLE_MAP: Record<number, string> = {

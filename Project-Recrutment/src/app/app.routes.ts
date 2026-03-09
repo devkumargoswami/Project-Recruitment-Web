@@ -76,31 +76,21 @@ export const routes: Routes = [
         .then(m => m.skillRoutes)
   },
 
-  // Experience
+  // Education
   {
-    path: 'experience',
+    path: 'education',
     canActivate: [authGuard],
     loadChildren: () =>
-      import('./experience/experience.routes')
-        .then(m => m.experienceRoutes)
+      import('./education/education.routes')
+        .then(m => m.educationRoutes)
   },
 
-  // Interview Schedule (form)
+  // Documents
   {
-    path: 'interview-schedule',
+    path: 'documents',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./interview Schedule/interview-schedule.component')
-        .then(m => m.InterviewScheduleComponent)
-  },
-
-  // Interview Schedule List
-  {
-    path: 'interview-schedule/list',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./interview Schedule/interview-schedule-list.component')
-        .then(m => m.InterviewScheduleListComponent)
+    loadChildren: () => 
+      import('./document/document.route').then(m => m.documentRoutes)
   }
 
 ];

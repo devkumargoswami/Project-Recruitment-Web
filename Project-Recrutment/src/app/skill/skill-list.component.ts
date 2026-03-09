@@ -33,7 +33,8 @@ export class SkillComponent {
 
   openAddModal() {
     this.isAddModalOpen = true;
-    this.newSkill = { id: 0, userId: 0, name: '' };
+    // Reset form but keep user ID
+    this.newSkill = { id: 0, userId: this.newSkill.userId, name: '' };
   }
 
   closeAddModal() {
@@ -279,6 +280,7 @@ export class SkillComponent {
         this.loading = false;
         if (response.status === 200) {
           this.error = null;
+          this.successMessage = 'Skill successfully updated!';
           // Close modal and clear form
           this.closeAddModal();
           // Clear the form data
@@ -286,6 +288,11 @@ export class SkillComponent {
           // Refresh the list
           console.log('Refreshing skills list after successful update');
           this.getSkills();
+          
+          // Auto-hide success message after 3 seconds
+          setTimeout(() => {
+            this.successMessage = null;
+          }, 3000);
         } else {
           this.error = response.message || 'Failed to update skill';
         }
@@ -294,7 +301,27 @@ export class SkillComponent {
         console.log('=== API CALL FAILED ===');
         console.log('Error details:', err);
         this.loading = false;
-        this.error = 'Error updating skill: ' + err.message;
+        
+        // Check if this is a parsing error but the operation might have succeeded
+        if (err.status === 200 || err.message?.includes('parsing error')) {
+          console.log('=== UPDATE PARSING ERROR BUT OPERATION LIKELY SUCCEEDED ===');
+          this.error = null;
+          this.successMessage = 'Skill successfully updated!';
+          // Close modal and clear form
+          this.closeAddModal();
+          // Clear the form data
+          this.newSkill = { id: 0, userId: 0, name: '' };
+          // Refresh the list
+          console.log('Refreshing skills list after successful update (despite parsing error)');
+          this.getSkills();
+          
+          // Auto-hide success message after 3 seconds
+          setTimeout(() => {
+            this.successMessage = null;
+          }, 3000);
+        } else {
+          this.error = 'Error updating skill: ' + err.message;
+        }
       }
     });
   }

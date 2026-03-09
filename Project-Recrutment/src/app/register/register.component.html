@@ -200,23 +200,6 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="roleId">Role</label>
-          <select 
-            id="roleId" 
-            formControlName="roleId"
-            class="form-control"
-            [class.error]="registerForm.get('roleId')?.invalid && registerForm.get('roleId')?.touched">
-            <option value="">Select role</option>
-            <option value="1">Admin</option>
-            <option value="2">User</option>
-            <option value="3">Manager</option>
-          </select>
-          <div *ngIf="registerForm.get('roleId')?.invalid && registerForm.get('roleId')?.touched" class="error-message">
-            Role is required
-          </div>
-        </div>
-
-        <div class="form-group">
           <label for="offerCTC">Offer CTC (Annual)</label>
           <input 
             type="number" 
