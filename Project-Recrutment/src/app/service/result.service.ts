@@ -8,7 +8,7 @@ import { Result } from '../result/result.model';
 })
 export class ResultService {
 
-  private apiUrl = 'https://localhost:5001/api/Result'; // change if needed
+  private apiUrl = 'https://localhost:7027/api/Result';
 
   constructor(private http: HttpClient) {}
 

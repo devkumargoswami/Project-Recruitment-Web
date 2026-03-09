@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SkillService } from './skill.service';
 import { SkillModel, ApiResponse } from './skill.model';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-skill',
@@ -15,6 +16,8 @@ export class SkillComponent {
   skills: SkillModel[] = [];
   loading = false;
   error: string | null = null;
+  currentUserId: number | null = null;
+  currentUserRole: string | null = null;
   
   // Form fields for adding new skill
   newSkill: SkillModel = { id: 0, userId: 0, name: '' };
@@ -29,7 +32,52 @@ export class SkillComponent {
   // Success message state
   successMessage: string | null = null;
   
-  constructor(private skillService: SkillService) {}
+  constructor(
+    private skillService: SkillService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadSkills();
+  }
+
+  loadSkills(): void {
+    this.loading = true;
+    this.error = null;
+
+    // Get current user information
+    const currentUser = this.authService.getUser();
+    if (!currentUser) {
+      this.loading = false;
+      this.error = 'User not authenticated';
+      return;
+    }
+
+    this.currentUserId = currentUser.id;
+    this.currentUserRole = currentUser.role;
+    console.log('Current user ID:', this.currentUserId, 'Role:', this.currentUserRole);
+
+    this.skillService.getSkills().subscribe({
+      next: (data: SkillModel[]) => {
+        this.loading = false;
+        // Apply role-based filtering
+        if (this.currentUserRole === 'HR' || this.currentUserRole === 'Admin') {
+          // HR/Admin can see all skills
+          this.skills = data;
+          console.log('HR/Admin user - showing all skills:', data.length);
+        } else {
+          // Regular users see only their own skills
+          this.skills = data.filter(skill => skill.userId === this.currentUserId);
+          console.log('Regular user - showing personal skills:', this.skills.length);
+        }
+        this.error = null;
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = 'Error loading skills: ' + err.message;
+      }
+    });
+  }
 
   openAddModal() {
     this.isAddModalOpen = true;
@@ -157,7 +205,16 @@ export class SkillComponent {
     this.skillService.getSkills().subscribe({
       next: (data: SkillModel[]) => {
         this.loading = false;
-        this.skills = data;
+        // Apply role-based filtering
+        if (this.currentUserRole === 'HR' || this.currentUserRole === 'Admin') {
+          // HR/Admin can see all skills
+          this.skills = data;
+          console.log('HR/Admin user - showing all skills:', data.length);
+        } else {
+          // Regular users see only their own skills
+          this.skills = data.filter(skill => skill.userId === this.currentUserId);
+          console.log('Regular user - showing personal skills:', this.skills.length);
+        }
         this.error = null;
       },
       error: (err) => {

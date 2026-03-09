@@ -1,31 +1,40 @@
 <div class="form-container">
-  <h2>Add Result</h2>
+  <h2>{{ isEditing ? 'Edit Result' : 'Add Result' }}</h2>
 
   <form [formGroup]="resultForm" (ngSubmit)="onSubmit()">
 
     <div class="form-group">
-      <label>Result ID</label>
-      <input type="number" formControlName="result_id">
-    </div>
-
-    <div class="form-group">
       <label>Candidate ID</label>
       <input type="number" formControlName="candidate_id">
+      <div class="error" *ngIf="resultForm.get('candidate_id')?.invalid && resultForm.get('candidate_id')?.touched">
+        Candidate ID is required and must be greater than 0
+      </div>
     </div>
 
     <div class="form-group">
       <label>Technical Marks</label>
       <input type="number" formControlName="technical_marks">
+      <div class="error" *ngIf="resultForm.get('technical_marks')?.invalid && resultForm.get('technical_marks')?.touched">
+        Technical marks are required and must be between 0 and 100
+      </div>
     </div>
 
     <div class="form-group">
       <label>HR Marks</label>
       <input type="number" formControlName="hr_marks">
+      <div class="error" *ngIf="resultForm.get('hr_marks')?.invalid && resultForm.get('hr_marks')?.touched">
+        HR marks are required and must be between 0 and 100
+      </div>
     </div>
 
-    <button type="submit" [disabled]="resultForm.invalid || submitting">
-      {{ submitting ? 'Submitting...' : 'Submit Result' }}
-    </button>
+    <div class="form-actions">
+      <button type="submit" [disabled]="resultForm.invalid || submitting">
+        {{ submitting ? 'Submitting...' : (isEditing ? 'Update Result' : 'Add Result') }}
+      </button>
+      <button type="button" (click)="onCancel()" class="btn-cancel">
+        Cancel
+      </button>
+    </div>
 
   </form>
 </div>
