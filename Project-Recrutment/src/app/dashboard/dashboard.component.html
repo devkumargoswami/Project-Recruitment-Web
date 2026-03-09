@@ -437,19 +437,19 @@
               </thead>
               <tbody>
                 <tr *ngFor="let result of resultList; trackBy: trackById; let i = index"
-                  [class.deleting]="deletingId === result.id">
+                  [class.deleting]="deletingId === result.result_id">
                   <td class="td-num">{{ i + 1 }}</td>
-                  <td class="td-main">{{ result.candidateId }}</td>
-                  <td>{{ result.technicalMarks }}</td>
-                  <td>{{ result.hrMarks }}</td>
-                  <td class="td-total">{{ result.technicalMarks + result.hrMarks }}</td>
+                  <td class="td-main">{{ result.candidate_id }}</td>
+                  <td>{{ result.technical_marks }}</td>
+                  <td>{{ result.hr_marks }}</td>
+                  <td class="td-total">{{ result.technical_marks + result.hr_marks }}</td>
                   <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editResult(result.id)">Update</button>
+                    <button class="btn-action btn-update" (click)="editResult(result.result_id)">Update</button>
                   </td>
                   <td class="td-action-col">
-                    <button class="btn-action btn-delete" [disabled]="deletingId === result.id"
-                      (click)="deleteResult(result.id)">
-                      {{ deletingId === result.id ? '...' : 'Delete' }}
+                    <button class="btn-action btn-delete" [disabled]="deletingId === result.result_id"
+                      (click)="deleteResult(result.result_id)">
+                      {{ deletingId === result.result_id ? '...' : 'Delete' }}
                     </button>
                   </td>
                 </tr>

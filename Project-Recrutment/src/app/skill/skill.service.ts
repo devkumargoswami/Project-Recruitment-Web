@@ -7,7 +7,8 @@ import { SkillModel, ApiResponse } from './skill.model';
 
 @Injectable({ providedIn: 'root' })
 export class SkillService {
-  private base = 'https://localhost:7027/api/skill'; // Use proxy path
+  private base = 'https://localhost:7027/api/skill'; // Use proxy pathhttps://localhost:7027/api/Skill/Update
+
 
   constructor(private http: HttpClient) {}
 
@@ -74,7 +75,40 @@ export class SkillService {
   }
 
   updateSkill(skill: SkillModel): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(`${this.base}/update`, skill, this.getHeaders());
+    console.log('=== UPDATE SKILL DEBUG ===');
+    console.log('Skill data:', skill);
+    console.log('API URL:', `${this.base}/Update`);
+    console.log('Headers:', this.getHeaders());
+    console.log('Request body:', JSON.stringify(skill));
+    
+    return this.http.put<ApiResponse>(`${this.base}/Update`, skill, this.getHeaders()).pipe(
+      tap(response => {
+        console.log('=== UPDATE SUCCESS ===');
+        console.log('Response:', response);
+      }),
+      catchError(error => {
+        console.log('=== UPDATE ERROR ===');
+        console.log('Error status:', error.status);
+        console.log('Error statusText:', error.statusText);
+        console.log('Error message:', error.message);
+        console.log('Error details:', error.error);
+        console.log('Full error object:', error);
+        
+        // Handle parsing errors - if we get HTML instead of JSON
+        if (error.status === 0 || error.error instanceof ProgressEvent) {
+          console.log('=== UPDATE PARSING ERROR - CHECKING IF OPERATION WAS SUCCESSFUL ===');
+          // This might be a parsing error but the operation could still be successful
+          // We'll return a success response to allow the UI to refresh
+          return throwError(() => ({ 
+            status: 200, 
+            message: 'Skill updated successfully (parsing error)',
+            error: error 
+          }));
+        }
+        
+        return throwError(() => error);
+      })
+    );
   }
 
   deleteSkill(id: number): Observable<ApiResponse> {

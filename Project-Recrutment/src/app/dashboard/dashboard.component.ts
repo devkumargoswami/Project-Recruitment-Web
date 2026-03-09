@@ -8,6 +8,7 @@ import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService, AuthUser } from '../auth.service';
 import { DashboardService } from '../service/dashboard.service';
+import { Result } from '../result/result.model';
 
 interface NavItem {
   id?: string; icon?: string; label?: string;
@@ -197,7 +198,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => { console.error(err); return of(null); }));
 
     const users$ = this.isAdminOrHR()
-      ? this.dashboardService.getAllUsers().pipe(catchError(() => of([])))
+      ? this.dashboardService.getAllUsers().pipe(
+          catchError(err => { 
+            console.error('Error loading users:', err);
+            return of([]);
+          })
+        )
       : of([]);
 
     forkJoin({ dashboard: dashboard$, users: users$ })
@@ -211,12 +217,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.documentList   = dashboard.documents  ?? [];
             this.resultList     = dashboard.results    ?? [];
           }
-          this.allUsers      = (users ?? []) as AuthUser[];
+          
+          // Map API response to AuthUser format with correct property names
+          this.allUsers = (users ?? []).map(user => this.mapUserFromAPI(user));
           this.filteredUsers = [...this.allUsers];
+          
+          console.log('Dashboard loaded successfully:', {
+            dashboard: dashboard ? 'Loaded' : 'Not loaded',
+            users: this.allUsers.length,
+            filteredUsers: this.filteredUsers.length
+          });
+          
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: () => { this.loading = false; this.cdr.markForCheck(); }
+        error: (err) => { 
+          console.error('Dashboard loading error:', err);
+          this.loading = false; 
+          this.cdr.markForCheck(); 
+        }
       });
   }
 
@@ -435,12 +454,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   goToSkills():     void { this.showSection('skills'); }
   goToExperience(): void { this.showSection('experience'); }
   goToDocuments():  void { this.showSection('documents'); }
+  goToResults():    void { this.showSection('results'); }
+  goToInterviewSchedule(): void { this.router.navigate(['/interview-schedule']); }
+  goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule/list']); }
   goToAddUser():    void { this.showSection('users'); }
 
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]); }
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]); }
   editExperience(id: number): void { this.router.navigate([`/experience/edit/${id}`]); }
   editDocument(id: number):   void { this.router.navigate([`/documents/edit/${id}`]); }
+  editResult(id: number):     void { this.router.navigate([`/results/edit/${id}`]); }
   editUser(_: number):       void { this.router.navigate(['/user']); }
 
   openSidebar():  void { this.sidebarOpen = true;  this.cdr.markForCheck(); }
@@ -498,9 +521,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Delete: user row ──────────────────────────────────────────────
-  async deleteUser(_: number): Promise<void> {
-    this.router.navigate(['/user']);
+  async deleteResult(id: number): Promise<void> {
+    if (!confirm('Delete this result?')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.dashboardService.deleteResult(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next:  () => { this.resultList = this.resultList.filter(r => r.result_id !== id); this.deletingId = null; this.cdr.markForCheck(); },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
   }
 
   // ── Delete: user row ──────────────────────────────────────────────
@@ -566,7 +593,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteResult(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
-        this.subResults = this.subResults.filter(r => r.id !== id);
+        this.subResults = this.subResults.filter(r => r.result_id !== id);
         this.patchCache('results', id);
         this.deletingId = null; this.cdr.markForCheck();
       },
@@ -582,6 +609,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.educationId !== id);
       } else if (tab === 'documents') {
         (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.documentId !== id);
+      } else if (tab === 'results') {
+        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.result_id !== id);
       } else {
         (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.id !== id);
       }
@@ -589,5 +618,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   logout(): void { this.auth.logout(); }
+
+  // Custom mapping function to handle the API response structure
+  private mapUserFromAPI(raw: any): AuthUser {
+    const roleId = raw.roleId ?? raw.RoleId ?? 4;
+    const firstName = raw.firstName ?? raw.FirstName ?? '';
+    const lastName = raw.lastName ?? raw.LastName ?? '';
+    return {
+      id: raw.id ?? raw.Id,
+      username: raw.username ?? raw.Username ?? '',
+      email: raw.email ?? raw.Email ?? '',
+      firstName,
+      lastName,
+      gender: raw.gender ?? raw.Gender ?? null,
+      phonenumber: raw.phoneNumber ?? raw.PhoneNumber ?? null, // Fixed property name
+      dataOfBirth: raw.dateOfBirth ?? raw.DateOfBirth ?? null, // Fixed property name
+      address: raw.address ?? raw.Address ?? null,
+      countryId: raw.countryId ?? raw.CountryId ?? null,
+      stateId: raw.stateId ?? raw.StateId ?? null,
+      city: raw.city ?? raw.City ?? null,
+      roleId,
+      role: this.getRoleName(roleId),
+      offerCTC: raw.offerCTC ?? raw.OfferCTC ?? null,
+      totalExperience: raw.totalExperience ?? raw.TotalExperience ?? null,
+      createdDateTime: raw.createdDateTime ?? raw.CreatedDateTime ?? null,
+      status: raw.status ?? 'Active',
+      name: `${firstName} ${lastName}`.trim() || (raw.username ?? raw.Username ?? ''),
+    };
+  }
+
+  private getRoleName(roleId: number): string {
+    const ROLE_MAP: Record<number, string> = {
+      1: 'HR',
+      2: 'Admin',
+      3: 'Employer',
+      4: 'Candidate'
+    };
+    return ROLE_MAP[roleId] ?? 'Candidate';
+  }
 
 }
