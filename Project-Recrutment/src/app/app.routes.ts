@@ -33,6 +33,15 @@ export const routes: Routes = [
         .then(m => m.dashboardRoutes)
   },
 
+  // Profile
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./profile/profile.component')
+        .then(m => m.ProfileComponent)
+  },
+
   // Test Login
   {
     path: 'test-login',

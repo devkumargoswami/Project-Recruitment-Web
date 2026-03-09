@@ -8,10 +8,8 @@ export const dashboardRoutes: Routes = [
     component: DashboardComponent,
     canActivate: [authGuard],
     children: [
-
       // default dashboard page
       { path: '', redirectTo: 'profile', pathMatch: 'full' },
-
       // profile
       {
         path: 'profile',
@@ -19,7 +17,6 @@ export const dashboardRoutes: Routes = [
           import('../profile/profile.component')
             .then(m => m.ProfileComponent)
       },
-
       // education module
       {
         path: 'education',

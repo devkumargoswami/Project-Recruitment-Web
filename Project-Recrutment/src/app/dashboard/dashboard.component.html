@@ -70,9 +70,6 @@
           </div>
           <div class="profile-meta">
             <h2>{{ user?.firstName }} {{ user?.lastName }}</h2>
-            <div class="p-username" *ngIf="user?.username">
-              &#64;<span>{{ user?.username }}</span>
-            </div>
             <div class="p-email">{{ user?.email }}</div>
             <div class="pill-row">
               <span class="badge" [ngClass]="roleConfig.badge">{{ currentRole }}</span>
@@ -391,6 +388,28 @@
       </section>
 
 
+      <!-- ====== INTERVIEW SCHEDULE ====== -->
+      <section *ngIf="currentSection === 'interview'" class="section fade-in">
+        <div class="card">
+          <div class="card-head">
+            <h3>Interview Schedule</h3>
+            <div class="d-flex gap-2">
+              <button class="btn-add" (click)="goToInterviewSchedule()">+ Schedule Interview</button>
+              <button class="btn-add" (click)="goToInterviewScheduleList()">View Scheduled Interviews</button>
+            </div>
+          </div>
+
+          <div class="empty-state">
+            <div class="empty-icon">&#x1F4C5;</div>
+            <p>Manage and track interview schedules from here.</p>
+            <div class="d-flex gap-2" style="justify-content:center; flex-wrap:wrap;">
+              <button class="btn-primary" (click)="goToInterviewSchedule()">Open Schedule Form</button>
+              <button class="btn-primary" (click)="goToInterviewScheduleList()">Open Interview List</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ====== ALL USERS (Admin / HR only) ====== -->
       <section *ngIf="currentSection === 'users' && isAdminOrHR()" class="section fade-in">
         <div class="card">
@@ -402,14 +421,14 @@
           <div class="filter-bar">
             <input class="filter-input" placeholder="Search name or email..." [value]="userSearchTerm"
               (input)="onUserSearch($event)">
-            <select class="filter-sel" [value]="userRoleFilter" (change)="onRoleFilter($event)">
+            <select class="filter-sel" title="Filter by role" [value]="userRoleFilter" (change)="onRoleFilter($event)">
               <option value="">All Roles</option>
               <option>Admin</option>
               <option>HR</option>
               <option>Employer</option>
               <option>Candidate</option>
             </select>
-            <select class="filter-sel" [value]="userStatusFilter" (change)="onStatusFilter($event)">
+            <select class="filter-sel" title="Filter by status" [value]="userStatusFilter" (change)="onStatusFilter($event)">
               <option value="">All Status</option>
               <option>Active</option>
               <option>Inactive</option>
@@ -486,11 +505,11 @@
                     </button>
                   </td>
                   <td class="td-action-col">
-                    <button class="btn-action btn-update" (click)="editUser(u.id)">Update</button>
+                    <button class="btn-action btn-update" (click)="editUser(u.id)">Table Update</button>
                   </td>
                   <td class="td-action-col">
                     <button class="btn-action btn-delete" [disabled]="deletingId === u.id" (click)="deleteUser(u.id)">
-                      {{ deletingId === u.id ? '...' : 'Delete' }}
+                      {{ deletingId === u.id ? '...' : 'Table Delete' }}
                     </button>
                   </td>
                 </tr>

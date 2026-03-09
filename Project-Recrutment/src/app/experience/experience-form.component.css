@@ -1,0 +1,138 @@
+.form-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  font-family: Arial, sans-serif;
+}
+
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1976d2;
+}
+
+.hint {
+  font-size: 12px;
+  color: #999;
+  font-weight: normal;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="datetime-local"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25,118,210,0.2);
+}
+
+.disabled-input {
+  background-color: #e9ecef !important;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+/* ✅ Separate buttons */
+.btn-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.add-btn {
+  flex: 1;
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  font-size: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-btn:hover {
+  background-color: #218838;
+}
+
+.add-btn:disabled {
+  background-color: #90caf9;
+  cursor: not-allowed;
+}
+
+.update-btn {
+  flex: 1;
+  padding: 10px;
+  background-color: #1976d2;
+  color: white;
+  font-size: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.update-btn:hover {
+  background-color: #1565c0;
+}
+
+.update-btn:disabled {
+  background-color: #90caf9;
+  cursor: not-allowed;
+}

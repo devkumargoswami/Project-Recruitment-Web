@@ -1,15 +1,14 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { ExperienceComponent } from './experience.component';
 import { ExperienceListComponent } from './experience-list.component';
 
-const routes: Routes = [
-  { path: 'experience', component: ExperienceComponent },
-  { path: 'experience-list', component: ExperienceListComponent }
+export const experienceRoutes: Routes = [
+  {
+    path: '',
+    component: ExperienceComponent       // localhost:4200/experience → Form
+  },
+  {
+    path: 'list',
+    component: ExperienceListComponent   // localhost:4200/experience/list → List
+  }
 ];
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
-})
-export class ExperienceRoutingModule { }

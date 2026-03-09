@@ -169,6 +169,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.user = sessionUser;
     // ✅ Always read role from session — fixes "shows as Candidate" bug
     this.currentRole = sessionUser.role ?? 'Candidate';
+    if (this.currentRole === 'HR') {
+      this.currentSection = 'users';
+    }
     this.loadDashboard();
   }
 
@@ -386,6 +389,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // ── Navigation ────────────────────────────────────────────────────
   showSection(id: string): void {
+    if (id === 'skills') {
+      this.router.navigate(['/skills']);
+      return;
+    }
     this.currentSection = id;
     this.sidebarOpen = false;
     this.selectedUserForData = null;
@@ -407,7 +414,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   handleTopAction(): void {
     const routes: Record<string, string> = {
       profile: '/profile', education: '/education', skills: '/skills',
-      experience: '/experience', documents: '/documents', users: '/users/add'
+      experience: '/experience', documents: '/documents',
+      interview: '/interview-schedule', users: '/user'
     };
     if (routes[this.currentSection]) this.router.navigate([routes[this.currentSection]]);
   }
@@ -422,7 +430,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]); }
   editExperience(id: number): void { this.router.navigate([`/experience/edit/${id}`]); }
   editDocument(id: number):   void { this.router.navigate([`/documents/edit/${id}`]); }
-  editUser(id: number):       void { this.router.navigate([`/users/edit/${id}`]); }
+  editUser(_: number):       void { this.router.navigate(['/user']); }
 
   openSidebar():  void { this.sidebarOpen = true;  this.cdr.markForCheck(); }
   closeSidebar(): void { this.sidebarOpen = false; this.cdr.markForCheck(); }
@@ -480,19 +488,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Delete: user row ──────────────────────────────────────────────
-  async deleteUser(id: number): Promise<void> {
-    if (!confirm('Delete this user? This cannot be undone.')) return;
-    this.deletingId = id; this.cdr.markForCheck();
-    this.dashboardService.deleteUser(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.allUsers      = this.allUsers.filter(u => u.id !== id);
-        this.filteredUsers = this.filteredUsers.filter(u => u.id !== id);
-        this.userDataCache.delete(id);
-        if (this.selectedUserForData?.id === id) this.selectedUserForData = null;
-        this.deletingId = null; this.cdr.markForCheck();
-      },
-      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
-    });
+  async deleteUser(_: number): Promise<void> {
+    this.router.navigate(['/user']);
   }
 
   // ── Delete: sub-panel data ────────────────────────────────────────

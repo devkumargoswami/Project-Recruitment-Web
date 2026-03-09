@@ -14,6 +14,8 @@ import { UserService } from '../service/register.service';
 export class RegisterComponent {
 
   registerForm: FormGroup;
+  errorMessage: string | null = null;
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -22,24 +24,31 @@ export class RegisterComponent {
   ) {
     // Match backend property names exactly
     this.registerForm = this.fb.group({
+      username: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      email: ['', [Validators.required, Validators.email]],
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      mobile: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+      dateOfBirth: ['', Validators.required],
+      gender: ['', Validators.required],
+      phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
       address: ['', Validators.required],
       countryId: [0, Validators.required],
       stateId: [0, Validators.required],
-      roleId: [0, Validators.required],
       totalExperience: [0, [Validators.required, Validators.min(0)]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      roleId: [0, Validators.required],
+      offerCTC: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
   onSubmit() {
     if (this.registerForm.invalid) {
-      alert('Please fill all required fields correctly.');
+      this.errorMessage = 'Please fill all required fields correctly.';
       return;
     }
+
+    this.loading = true;
+    this.errorMessage = null;
 
     // Convert numeric fields to number type
     const payload = {
@@ -47,7 +56,8 @@ export class RegisterComponent {
       countryId: Number(this.registerForm.value.countryId),
       stateId: Number(this.registerForm.value.stateId),
       roleId: Number(this.registerForm.value.roleId),
-      totalExperience: Number(this.registerForm.value.totalExperience)
+      totalExperience: Number(this.registerForm.value.totalExperience),
+      offerCTC: Number(this.registerForm.value.offerCTC)
     };
 
     console.log('Payload to send:', payload);
@@ -55,12 +65,15 @@ export class RegisterComponent {
     this.userService.register(payload).subscribe({
       next: (res) => {
         console.log('API response:', res);
+        this.loading = false;
+        this.errorMessage = null;
         alert('User registered successfully!');
         this.router.navigate(['/login']); // Navigate after success
       },
       error: (err) => {
         console.error('Registration error:', err);
-        alert('Failed to register user. Check console for details.');
+        this.loading = false;
+        this.errorMessage = 'Failed to register user. Check console for details.';
       }
     });
   }

@@ -1,65 +1,250 @@
 <div class="auth-container">
   <div class="auth-card">
-    <h2>Register</h2>
+    <h2>Create Account</h2>
+    <p>Join us today and get started</p>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      
+      <!-- Basic Information -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            formControlName="username"
+            class="form-control"
+            [class.error]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
+            placeholder="Enter your username">
+          <div *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched" class="error-message">
+            Username is required
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label>First Name</label>
-        <input type="text" formControlName="firstName">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email"
+            class="form-control"
+            [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+            placeholder="Enter your email">
+          <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-message">
+            Valid email is required
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Last Name</label>
-        <input type="text" formControlName="lastName">
+      <!-- Password Fields -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="password"
+            class="form-control"
+            [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            placeholder="Create a password">
+          <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-message">
+            Password must be at least 6 characters
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" formControlName="email">
+      <!-- Personal Information -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            formControlName="firstName"
+            class="form-control"
+            [class.error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+            placeholder="Enter your first name">
+          <div *ngIf="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched" class="error-message">
+            First name is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            formControlName="lastName"
+            class="form-control"
+            [class.error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+            placeholder="Enter your last name">
+          <div *ngIf="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched" class="error-message">
+            Last name is required
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Mobile</label>
-        <input type="text" formControlName="mobile">
+      <!-- Additional Information -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dateOfBirth">Date of Birth</label>
+          <input 
+            type="date" 
+            id="dateOfBirth" 
+            formControlName="dateOfBirth"
+            class="form-control"
+            [class.error]="registerForm.get('dateOfBirth')?.invalid && registerForm.get('dateOfBirth')?.touched">
+          <div *ngIf="registerForm.get('dateOfBirth')?.invalid && registerForm.get('dateOfBirth')?.touched" class="error-message">
+            Date of birth is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gender">Gender</label>
+          <select 
+            id="gender" 
+            formControlName="gender"
+            class="form-control"
+            [class.error]="registerForm.get('gender')?.invalid && registerForm.get('gender')?.touched">
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+          <div *ngIf="registerForm.get('gender')?.invalid && registerForm.get('gender')?.touched" class="error-message">
+            Gender is required
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Address</label>
-        <textarea formControlName="address" rows="3"></textarea>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number</label>
+          <input 
+            type="tel" 
+            id="phoneNumber" 
+            formControlName="phoneNumber"
+            class="form-control"
+            [class.error]="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched"
+            placeholder="Enter your phone number">
+          <div *ngIf="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched" class="error-message">
+            Phone number is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="totalExperience">Total Experience (Years)</label>
+          <input 
+            type="number" 
+            id="totalExperience" 
+            formControlName="totalExperience"
+            class="form-control"
+            [class.error]="registerForm.get('totalExperience')?.invalid && registerForm.get('totalExperience')?.touched"
+            placeholder="0">
+          <div *ngIf="registerForm.get('totalExperience')?.invalid && registerForm.get('totalExperience')?.touched" class="error-message">
+            Total experience is required
+          </div>
+        </div>
       </div>
 
+      <!-- Address Information -->
       <div class="form-group">
-        <label>Country</label>
-        <input type="number" formControlName="countryId">
+        <label for="address">Address</label>
+        <textarea 
+          id="address" 
+          formControlName="address"
+          class="form-control"
+          [class.error]="registerForm.get('address')?.invalid && registerForm.get('address')?.touched"
+          placeholder="Enter your address"
+          rows="3"></textarea>
+        <div *ngIf="registerForm.get('address')?.invalid && registerForm.get('address')?.touched" class="error-message">
+          Address is required
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>State</label>
-        <input type="number" formControlName="stateId">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="countryId">Country</label>
+          <select 
+            id="countryId" 
+            formControlName="countryId"
+            class="form-control"
+            [class.error]="registerForm.get('countryId')?.invalid && registerForm.get('countryId')?.touched">
+            <option value="">Select country</option>
+            <option value="1">India</option>
+            <option value="2">USA</option>
+            <option value="3">UK</option>
+          </select>
+          <div *ngIf="registerForm.get('countryId')?.invalid && registerForm.get('countryId')?.touched" class="error-message">
+            Country is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="stateId">State</label>
+          <select 
+            id="stateId" 
+            formControlName="stateId"
+            class="form-control"
+            [class.error]="registerForm.get('stateId')?.invalid && registerForm.get('stateId')?.touched">
+            <option value="">Select state</option>
+            <option value="1">Gujarat</option>
+            <option value="2">Maharashtra</option>
+            <option value="3">Delhi</option>
+          </select>
+          <div *ngIf="registerForm.get('stateId')?.invalid && registerForm.get('stateId')?.touched" class="error-message">
+            State is required
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Role</label>
-        <input type="number" formControlName="roleId">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="roleId">Role</label>
+          <select 
+            id="roleId" 
+            formControlName="roleId"
+            class="form-control"
+            [class.error]="registerForm.get('roleId')?.invalid && registerForm.get('roleId')?.touched">
+            <option value="">Select role</option>
+            <option value="1">Admin</option>
+            <option value="2">User</option>
+            <option value="3">Manager</option>
+          </select>
+          <div *ngIf="registerForm.get('roleId')?.invalid && registerForm.get('roleId')?.touched" class="error-message">
+            Role is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="offerCTC">Offer CTC (Annual)</label>
+          <input 
+            type="number" 
+            id="offerCTC" 
+            formControlName="offerCTC"
+            class="form-control"
+            [class.error]="registerForm.get('offerCTC')?.invalid && registerForm.get('offerCTC')?.touched"
+            placeholder="0">
+          <div *ngIf="registerForm.get('offerCTC')?.invalid && registerForm.get('offerCTC')?.touched" class="error-message">
+            Offer CTC is required
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Total Experience (Years)</label>
-        <input type="number" formControlName="totalExperience" min="0">
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
       </div>
 
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" formControlName="password">
-      </div>
-
-      <button type="submit" [disabled]="registerForm.invalid">Register</button>
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="registerForm.invalid || loading">
+        {{ loading ? 'Creating Account...' : 'Create Account' }}
+      </button>
 
       <div class="auth-links">
         <button type="button" (click)="navigateToLogin()">Already have an account? Login</button>
       </div>
-
     </form>
   </div>
 </div>
