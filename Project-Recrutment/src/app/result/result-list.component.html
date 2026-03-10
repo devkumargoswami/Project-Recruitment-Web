@@ -1,6 +1,17 @@
 <div class="result-container">
   <h2>Candidate Results</h2>
 
+  <div class="toolbar" *ngIf="isHR">
+    <input
+      type="number"
+      [(ngModel)]="candidateId"
+      placeholder="Enter candidate ID"
+      class="search-input"
+    />
+    <button type="button" (click)="loadResults()">Search</button>
+    <button type="button" (click)="goToAdd()">Add Result</button>
+  </div>
+
   <div *ngIf="loading" class="loading">
     Loading results...
   </div>

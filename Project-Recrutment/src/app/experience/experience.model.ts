@@ -1,15 +1,21 @@
-export interface ExperienceModel {
-  id: number;
+export interface Experience {
   userId: number;
   companyName: string;
   designation: string;
   startDate: string;
-  endDate: string | null;
+  endDate: string;
   isCurrent: boolean;
+  id?: number;
+}
+
+export interface ExperienceResponse {
+  success: boolean;
+  data: Experience[];
+  message: string;
 }
 
 export interface ApiResponse {
-  status: number;
+  statusCode: number;
+  data: any;
   message: string;
-  data?: any;
 }

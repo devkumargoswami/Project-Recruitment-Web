@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './auth/auth.guard';
-import { skillRoutes } from './skill/skill.route';
 
 export const routes: Routes = [
 
@@ -91,6 +90,24 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => 
       import('./document/document.route').then(m => m.documentRoutes)
+  },
+
+  // Experience
+  {
+    path: 'experience',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./experience/experience.route')
+        .then(m => m.experienceRoutes)
+  },
+
+  // Results
+  {
+    path: 'results',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./result/result.routes')
+        .then(m => m.resultRoutes)
   }
 
 ];

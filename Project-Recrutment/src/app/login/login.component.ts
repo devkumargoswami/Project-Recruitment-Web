@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../service/auth.service';
 import { RouterModule } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -71,7 +72,14 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         this.isLoading = false;
         console.error('Login error:', error);
-        this.errorMessage = 'Login failed. Please check your network connection and try again.';
+        const httpError = error as HttpErrorResponse;
+        if (httpError.status === 0) {
+          this.errorMessage = 'Cannot reach login server. Start backend API and run frontend with proxy (npm start).';
+        } else if (httpError.status === 401) {
+          this.errorMessage = 'Invalid email or password.';
+        } else {
+          this.errorMessage = 'Login failed. Please try again.';
+        }
       }
     });
   }

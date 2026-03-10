@@ -96,22 +96,23 @@ export class UserService {
   // ============= UPDATE USER =============
   updateUser(user: UserModel): Observable<ApiResponse> {
     const payload = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      gender: user.gender,
-      phoneNumber: user.phoneNumber,
+      id: Number(user.id),
+      username: user.username?.trim(),
+      email: user.email?.trim(),
+      firstName: user.firstName?.trim(),
+      lastName: user.lastName?.trim(),
+      gender: user.gender ?? '',
+      phoneNumber: user.phoneNumber ?? 0,
       dateOfBirth: user.dateOfBirth,
-      address: user.address,
-      countryId: user.countryId,
-      stateId: user.stateId,
-      city: user.city,
-      roleId: user.roleId,
-      offerCTC: user.offerCTC,
-      interviewStatus: user.interviewStatus,
-      totalExperience: user.totalExperience
+      address: user.address ?? '',
+      countryId: user.countryId ?? 0,
+      stateId: user.stateId ?? 0,
+      city: user.city ?? '',
+      roleId: user.roleId ?? 0,
+      offerCTC: user.offerCTC ?? 0,
+      interviewStatus: user.interviewStatus ?? 0,
+      totalExperience: user.totalExperience ?? 0,
+      createdDateTime: user.createdDateTime ?? new Date().toISOString()
     };
 
     console.log('Updating user with payload:', payload);

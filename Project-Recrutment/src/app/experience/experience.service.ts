@@ -1,113 +1,105 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
-import { ExperienceModel, ApiResponse } from './experience.model';
+import { catchError } from 'rxjs/operators';
+import { Experience, ExperienceResponse } from './experience.model';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class ExperienceService {
-  private base = 'https://localhost:7027/api/Experience'; // ✅ Capital E
+  private apiUrl = 'https://localhost:7027/api/Experience';
 
   constructor(private http: HttpClient) {}
 
-  getExperiences(): Observable<ExperienceModel[]> {
-    return this.http.get<ExperienceModel[]>(`${this.base}/Select`, this.getHeaders());
-  }
-
-  insertExperience(experience: ExperienceModel): Observable<ApiResponse> {
-    console.log('=== INSERT EXPERIENCE DEBUG ===');
-    console.log('Experience data:', experience);
-    console.log('API URL:', `${this.base}/Insert`);
-    console.log('Request body:', JSON.stringify(experience));
-
-    return this.http.post<ApiResponse>(`${this.base}/Insert`, experience, this.getHeaders()).pipe(
-      tap(response => {
-        console.log('=== INSERT SUCCESS ===');
-        console.log('Response:', response);
-      }),
-      catchError(error => {
-        console.log('=== INSERT ERROR ===');
-        console.log('Error status:', error.status);
-        console.log('Error message:', error.message);
-        console.log('Error details:', error.error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  updateExperience(experience: ExperienceModel): Observable<ApiResponse> {
-    console.log('=== UPDATE EXPERIENCE DEBUG ===');
-    console.log('Experience data:', experience);
-    console.log('API URL:', `${this.base}/Update`);
-    console.log('Request body:', JSON.stringify(experience));
-
-    return this.http.put<ApiResponse>(`${this.base}/Update`, experience, this.getHeaders()).pipe(
-      tap(response => {
-        console.log('=== UPDATE SUCCESS ===');
-        console.log('Response:', response);
-      }),
-      catchError(error => {
-        console.log('=== UPDATE ERROR ===');
-        console.log('Error status:', error.status);
-        console.log('Error message:', error.message);
-        console.log('Error details:', error.error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  deleteExperience(id: number): Observable<ApiResponse> {
-    console.log('Deleting experience with ID:', id);
-    console.log('API URL:', `${this.base}/Delete/${id}`);
-
-    return this.http.delete<ApiResponse>(`${this.base}/Delete/${id}`, this.getHeaders()).pipe(
-      tap(response => console.log('Delete response:', response)),
-      catchError(error => {
-        console.error('Delete error:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  searchExperience(id?: number, userId?: number): Observable<ExperienceModel[]> {
-    let url = `${this.base}/Select`;
-    const params: string[] = [];
-
-    if (id) params.push(`id=${id}`);
-    if (userId) params.push(`userId=${userId}`);
-
-    if (params.length > 0) {
-      url += `?${params.join('&')}`;
+  getAllExperiences(userId: number, includeAll = false): Observable<Experience[] | ExperienceResponse> {
+    if (includeAll) {
+      return this.http
+        .get<Experience[] | ExperienceResponse>(`${this.apiUrl}/Select`)
+        .pipe(
+          catchError(() =>
+            this.http.get<Experience[] | ExperienceResponse>(`${this.apiUrl}/Select/${userId}`)
+          )
+        );
     }
 
-    console.log('Search URL:', url);
-    return this.http.get<ExperienceModel[]>(url, this.getHeaders());
+    return this.http.get<Experience[] | ExperienceResponse>(`${this.apiUrl}/Select/${userId}`);
   }
 
-  private getHeaders() {
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
+  getExperienceById(id: number): Observable<Experience> {
+    return this.http.get<Experience>(`${this.apiUrl}/Select/${id}`).pipe(
+      catchError(() =>
+        this.http.get<Experience>(`${this.apiUrl}/Get/${id}`).pipe(
+          catchError(() =>
+            this.http.get<Experience>(`${this.apiUrl}/SelectById/${id}`)
+          )
+        )
+      )
+    );
+  }
 
-    try {
-      let token = localStorage.getItem('token');
+  createExperience(experience: Experience): Observable<Experience> {
+    return this.http.post<Experience>(
+      `${this.apiUrl}/Insert`,
+      this.toApiPayload(experience, experience.id ?? 0)
+    );
+  }
 
-      if (!token) {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          token = user?.token || user?.accessToken || user?.authToken;
-        }
-      }
+  updateExperience(id: number, experience: Experience): Observable<Experience> {
+    const payload = this.toApiPayload(experience, id);
+    return this.http.put<Experience>(`${this.apiUrl}/Update`, payload).pipe(
+      catchError(() =>
+        this.http.put<Experience>(`${this.apiUrl}/Update/${id}`, payload).pipe(
+          catchError(() =>
+            this.http.post<Experience>(`${this.apiUrl}/Update`, payload)
+          )
+        )
+      )
+    );
+  }
 
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
-    } catch (error) {
-      console.warn('Auth headers error:', error);
-    }
+  deleteExperience(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/Delete/${id}`);
+  }
 
-    return { headers };
+  private toApiPayload(experience: Experience, id: number): any {
+    const userId = Number((experience as any).userId ?? 0);
+    const isCurrent = !!(experience as any).isCurrent;
+
+    // Accept YYYY-MM from form and send full date format backend usually expects.
+    const startDate = this.normalizeDate(experience.startDate);
+    const endDate = isCurrent ? null : this.normalizeDate(experience.endDate);
+
+    return {
+      id,
+      experienceId: id,
+      experienceID: id,
+      experience_Id: id,
+      expId: id,
+      userId,
+      companyName: experience.companyName,
+      designation: experience.designation,
+      startDate,
+      endDate,
+      isCurrent,
+
+      // Alias fields for stricter backends expecting PascalCase or alternate names.
+      Id: id,
+      ExperienceId: id,
+      ExperienceID: id,
+      Experience_Id: id,
+      UserId: userId,
+      CompanyName: experience.companyName,
+      Designation: experience.designation,
+      StartDate: startDate,
+      EndDate: endDate,
+      IsCurrent: isCurrent
+    };
+  }
+
+  private normalizeDate(value?: string): string | null {
+    if (!value) return null;
+    if (/^\d{4}-\d{2}$/.test(value)) return `${value}-01`;
+    return value;
   }
 }

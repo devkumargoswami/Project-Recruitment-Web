@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserService } from '../service/User.Service';
+import { UserService } from '../service/User.Service';  // ← service folder
+import { AuthService } from '../service/auth.service'; // ← auth folder
 import { UserModel, UpdatePasswordDTO, ApiResponse } from './User.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-list',
@@ -41,6 +43,10 @@ export class UserListComponent implements OnInit {
 
   toast: { message: string; type: 'success' | 'error' } | null = null;
 
+  // Current logged-in user info
+  currentUserId = 0;
+  currentUserRole = '';
+
   roleMap: Record<number, string> = {
     1: 'Admin',
     2: 'HR',
@@ -57,10 +63,23 @@ export class UserListComponent implements OnInit {
 
   genderOptions = ['Male', 'Female', 'Other'];
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.loadUsers();
+    // Get current logged-in user
+    const user = this.authService.getUser();
+    if (user) {
+      this.currentUserId = user.id;
+      this.currentUserRole = user.role; // 'HR', 'Admin', 'Candidate', etc.
+      this.loadUsers();
+    } else {
+      alert('Please login first');
+      this.router.navigate(['/login']);
+    }
   }
 
   emptyUser(): UserModel {
@@ -91,7 +110,15 @@ export class UserListComponent implements OnInit {
 
     this.userService.getUsers().subscribe({
       next: (data: UserModel[]) => {
-        this.users = data;
+        // Filter based on role
+        if (this.currentUserRole === 'HR' || this.currentUserRole === 'Admin') {
+          // HR/Admin sees all users
+          this.users = data;
+        } else {
+          // Candidate/Other roles see only themselves
+          this.users = data.filter(u => u.id === this.currentUserId);
+        }
+        
         this.applyFilter();
         this.loading = false;
       },
@@ -162,6 +189,11 @@ export class UserListComponent implements OnInit {
   }
 
   openAdd(): void {
+    // Only HR/Admin can add new users
+    if (this.currentUserRole !== 'HR' && this.currentUserRole !== 'Admin') {
+      this.showToast('Only HR can add new users', 'error');
+      return;
+    }
 
     this.formData = this.emptyUser();
     this.isEditMode = false;
@@ -169,6 +201,11 @@ export class UserListComponent implements OnInit {
   }
 
   openEdit(user: UserModel): void {
+    // Users can only edit themselves (or HR can edit anyone)
+    if (this.currentUserId !== user.id && this.currentUserRole !== 'HR' && this.currentUserRole !== 'Admin') {
+      this.showToast('You can only edit your own profile', 'error');
+      return;
+    }
 
     this.formData = {
       ...user,
@@ -181,12 +218,22 @@ export class UserListComponent implements OnInit {
   }
 
   openDelete(user: UserModel): void {
+    // Only HR/Admin can delete
+    if (this.currentUserRole !== 'HR' && this.currentUserRole !== 'Admin') {
+      this.showToast('Only HR can delete users', 'error');
+      return;
+    }
 
     this.selectedUser = user;
     this.showDeleteModal = true;
   }
 
   openPassword(user: UserModel): void {
+    // Users can only change their own password (or HR can change anyone's)
+    if (this.currentUserId !== user.id && this.currentUserRole !== 'HR' && this.currentUserRole !== 'Admin') {
+      this.showToast('You can only change your own password', 'error');
+      return;
+    }
 
     this.passwordForm = {
       userId: user.id,
@@ -377,4 +424,8 @@ export class UserListComponent implements OnInit {
     return this.users.filter(u => u.interviewStatus === 2).length;
   }
 
+  // Check if current user is HR/Admin (for showing add button etc)
+  get isHR(): boolean {
+    return this.currentUserRole === 'HR' || this.currentUserRole === 'Admin';
+  }
 }
