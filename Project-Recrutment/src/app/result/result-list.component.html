@@ -10,30 +10,14 @@
       </span>
       <span class="user-name">{{ currentUser.name }}</span>
     </div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-large" (click)="addResult()">Add Result</button>
+    </div>
   </div>
-
-  <!-- Add Result Button - Only for HR/Admin -->
-  <div *ngIf="currentUser?.role === 'HR' || currentUser?.role === 'Admin'" class="actions-section">
-    <button class="btn btn-primary" (click)="addResult()">Add Result</button>
-  </div>
-
-  <div class="toolbar" *ngIf="isHR">
-    <input
-      type="number"
-      [(ngModel)]="candidateId"
-      placeholder="Enter candidate ID"
-      class="search-input"
-    />
-    <button type="button" (click)="loadResults()">Search</button>
-    <button type="button" (click)="goToAdd()">Add Result</button>
-  </div>
+  
 
   <div *ngIf="loading" class="loading">
     Loading results...
-  </div>
-
-  <div class="back-section">
-    <button class="btn btn-secondary" (click)="goBack()">Back to Profile</button>
   </div>
 
   <div *ngIf="error" class="error">
@@ -95,5 +79,9 @@
     <p *ngIf="currentUser?.role !== 'HR' && currentUser?.role !== 'Admin'">
       You haven't taken any assessments yet. Please complete your assessments to see results here.
     </p>
+  </div>
+
+  <div class="back-section">
+    <button class="btn btn-secondary" (click)="goBack()">Back to Profile</button>
   </div>
 </div>

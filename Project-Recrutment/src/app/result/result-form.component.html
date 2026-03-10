@@ -1,14 +1,6 @@
 <div class="form-container">
   <div class="form-header">
-    <div class="header-actions">
-      <button class="btn-back" (click)="onCancel()">
-        ← Back to Results
-      </button>
-    </div>
     <h2>{{ isEditing ? 'Edit Result' : 'Add Result' }}</h2>
-    <div class="form-subtitle" *ngIf="isEditing">
-      Editing result ID: {{ resultId }}
-    </div>
   </div>
 
   <form [formGroup]="resultForm" (ngSubmit)="onSubmit()">

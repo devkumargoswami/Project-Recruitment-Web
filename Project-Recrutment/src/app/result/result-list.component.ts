@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ResultService } from '../service/result.service';
 import { Result } from '../result/result.model';
-import { AuthService, AuthUser } from '../auth.service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-result-list',
@@ -18,7 +18,9 @@ export class ResultListComponent implements OnInit {
   loading = false;
   error: string | null = null;
   currentUserId: number | null = null;
-  currentUser: AuthUser | null = null;
+  currentUser: any | null = null;
+  isHR: boolean = false;
+  candidateId: number | null = null;
 
   constructor(
     private resultService: ResultService,
@@ -38,25 +40,22 @@ export class ResultListComponent implements OnInit {
     }
 
     this.isHR = user.role === 'HR' || user.role === 'Admin';
+    this.currentUserId = user.id;
+    this.currentUser = user;
 
     if (!this.isHR) {
       this.candidateId = user.id;
-      this.loadResults();
     }
+    
+    this.loadResults();
   }
 
   loadResults(): void {
-    if (!this.candidateId || this.candidateId <= 0) {
-      this.error = 'Please enter a valid candidate ID.';
-      return;
-    }
-
-    this.currentUserId = currentUser.id;
-    this.currentUser = currentUser;
-    console.log('Current user ID:', this.currentUserId, 'Role:', currentUser.role);
+    this.loading = true;
+    this.error = null;
 
     // Check if user is HR or Admin - they can see all results
-    if (currentUser.role === 'HR' || currentUser.role === 'Admin') {
+    if (this.isHR) {
       console.log('HR/Admin user - loading all results');
       // Use dedicated GetAllResult API for HR/Admin
       this.resultService.getAllResults().subscribe({
@@ -73,12 +72,18 @@ export class ResultListComponent implements OnInit {
       });
     } else {
       // Regular users (Candidates, Employers) see only their own results
-      console.log('Regular user - loading personal results for user', this.currentUserId);
-      this.resultService.getResultByCandidate(this.currentUserId).subscribe({
+      if (!this.candidateId || this.candidateId <= 0) {
+        this.error = 'Please enter a valid candidate ID.';
+        this.loading = false;
+        return;
+      }
+      
+      console.log('Regular user - loading personal results for user', this.candidateId);
+      this.resultService.getResultByCandidate(this.candidateId).subscribe({
         next: (data: Result[]) => {
           this.loading = false;
           this.results = data;
-          console.log('Personal results loaded successfully for user', this.currentUserId, ':', data);
+          console.log('Personal results loaded successfully for user', this.candidateId, ':', data);
         },
         error: (err: any) => {
           this.loading = false;
@@ -148,5 +153,9 @@ export class ResultListComponent implements OnInit {
 
   goToAdd(): void {
     this.router.navigate(['/results/add']);
+  }
+
+  getTotalMarks(result: Result): number {
+    return result.technical_marks + result.hr_marks;
   }
 }

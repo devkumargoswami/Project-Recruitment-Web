@@ -18,6 +18,7 @@ export class ResultComponent implements OnInit {
   submitting = false;
   error = '';
   isEditMode = false;
+  resultId: number | null = null;
   get isEditing(): boolean { return this.isEditMode; }
 
   constructor(
@@ -31,10 +32,17 @@ export class ResultComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.isEditing = true;
+        this.isEditMode = true;
         this.resultId = +params['id'];
         this.loadResult(this.resultId);
       }
+    });
+
+    // Initialize form
+    this.resultForm = this.fb.group({
+      candidate_id: ['', [Validators.required, Validators.min(1)]],
+      technical_marks: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      hr_marks: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
     });
   }
 
@@ -75,7 +83,7 @@ export class ResultComponent implements OnInit {
       hr_marks: this.resultForm.value.hr_marks
     };
 
-    if (this.isEditing && this.resultId) {
+    if (this.isEditMode && this.resultId) {
       // Update existing result
       const updateData: Result = {
         result_id: this.resultId,
@@ -88,7 +96,9 @@ export class ResultComponent implements OnInit {
           this.submitting = false;
           console.log('Result updated successfully:', response);
           // Navigate back to results list after successful update
-          this.router.navigate(['/results']);
+          setTimeout(() => {
+            this.router.navigate(['/results']);
+          }, 100);
         },
         error: (err: any) => {
           this.submitting = false;
@@ -102,7 +112,9 @@ export class ResultComponent implements OnInit {
           this.submitting = false;
           console.log('Result added successfully:', response);
           // Navigate back to results list after successful addition
-          this.router.navigate(['/results']);
+          setTimeout(() => {
+            this.router.navigate(['/results']);
+          }, 100);
         },
         error: (err: any) => {
           this.submitting = false;
