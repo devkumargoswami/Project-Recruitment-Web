@@ -1,0 +1,262 @@
+.page-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  color: #f1f5f9;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.page-header {
+  margin-bottom: 1.25rem;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.btn-back {
+  width: fit-content;
+  border: 1px solid #475569;
+  background: rgba(51, 65, 85, 0.35);
+  color: #cbd5e1;
+  border-radius: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  background: rgba(71, 85, 105, 0.45);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: linear-gradient(to right, #60a5fa, #06b6d4, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-sub {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 2.5rem;
+  color: #94a3b8;
+  background: rgba(51, 65, 85, 0.3);
+  border: 1px solid #475569;
+  border-radius: 0.75rem;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #334155;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  margin: 0 auto 0.8rem;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.form-card {
+  background: rgba(51, 65, 85, 0.28);
+  border: 1px solid #475569;
+  border-radius: 0.9rem;
+  padding: 1.4rem;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.alert-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  background: rgba(127, 29, 29, 0.28);
+  color: #fecaca;
+  border-radius: 0.55rem;
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+label {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.req {
+  color: #f87171;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  color: #f8fafc;
+  padding: 0.72rem 0.85rem;
+  font-size: 0.92rem;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+input.invalid,
+textarea.invalid,
+select.invalid {
+  border-color: #ef4444;
+}
+
+.datetime-input {
+  max-width: 280px;
+}
+
+.err-msg {
+  color: #fca5a5;
+  font-size: 0.76rem;
+}
+
+.select-wrap {
+  position: relative;
+}
+
+.select-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2rem;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  font-size: 0.72rem;
+}
+
+.form-footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.btn-cancel,
+.btn-save {
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  padding: 0.62rem 0.95rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  border-color: #475569;
+  background: rgba(51, 65, 85, 0.4);
+  color: #cbd5e1;
+}
+
+.btn-cancel:hover {
+  background: rgba(71, 85, 105, 0.45);
+}
+
+.btn-save {
+  color: #fff;
+  background: linear-gradient(to right, #2563eb, #0891b2);
+}
+
+.btn-save:hover {
+  transform: translateY(-1px);
+}
+
+.btn-save:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.35rem;
+}
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: 1rem;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .datetime-input {
+    max-width: 100%;
+  }
+
+  .form-footer {
+    flex-direction: column-reverse;
+  }
+
+  .btn-cancel,
+  .btn-save {
+    width: 100%;
+  }
+}

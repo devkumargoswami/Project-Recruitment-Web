@@ -225,3 +225,61 @@ tr.deleting { opacity: .45; pointer-events: none; }
 
 /* Focus */
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Theme classes to avoid inline style bindings */
+.app.theme-admin { --role-color: #60a5fa; --role-grad: linear-gradient(135deg,#3b82f6,#6366f1); }
+.app.theme-hr { --role-color: #fcd34d; --role-grad: linear-gradient(135deg,#f59e0b,#d97706); }
+.app.theme-employer { --role-color: #a78bfa; --role-grad: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.app.theme-candidate { --role-color: #a2e1c8; --role-grad: linear-gradient(135deg,#10b981,#059669); }
+
+.avatar.theme-admin, .avatar-lg.theme-admin, .avatar-xs.theme-admin {
+  background: linear-gradient(135deg,#3b82f6,#6366f1);
+}
+.avatar.theme-hr, .avatar-lg.theme-hr, .avatar-xs.theme-hr {
+  background: linear-gradient(135deg,#f59e0b,#d97706);
+}
+.avatar.theme-employer, .avatar-lg.theme-employer, .avatar-xs.theme-employer {
+  background: linear-gradient(135deg,#8b5cf6,#6d28d9);
+}
+.avatar.theme-candidate, .avatar-lg.theme-candidate, .avatar-xs.theme-candidate {
+  background: linear-gradient(135deg,#10b981,#059669);
+}
+
+.u-role.theme-admin, .stat-num.theme-admin { color: #60a5fa; }
+.u-role.theme-hr, .stat-num.theme-hr { color: #fcd34d; }
+.u-role.theme-employer, .stat-num.theme-employer { color: #a78bfa; }
+.u-role.theme-candidate, .stat-num.theme-candidate { color: #a2e1c8; }
+
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: .15rem .5rem;
+  font-size: .72rem;
+  font-weight: 700;
+}
+.level-beginner { color: #fbbf24; }
+.level-intermediate { color: #60a5fa; }
+.level-advanced { color: #34d399; }
+.level-expert { color: #f87171; }
+.level-unknown { color: #8892a4; }
+
+.skill-bar-wrap {
+  width: 100%;
+  max-width: 140px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface3);
+  overflow: hidden;
+}
+.skill-bar-fill { height: 100%; border-radius: 999px; }
+.skill-bar-fill.level-beginner { background: #fbbf24; }
+.skill-bar-fill.level-intermediate { background: #60a5fa; }
+.skill-bar-fill.level-advanced { background: #34d399; }
+.skill-bar-fill.level-expert { background: #f87171; }
+.skill-bar-fill.level-unknown { background: #8892a4; }
+.level-w-25 { width: 25%; }
+.level-w-50 { width: 50%; }
+.level-w-75 { width: 75%; }
+.level-w-100 { width: 100%; }

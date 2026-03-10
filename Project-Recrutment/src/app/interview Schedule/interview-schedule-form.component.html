@@ -1,0 +1,127 @@
+<!-- interview-schedule-form.component.html -->
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">Back</button>
+      <h1 class="page-title">{{ isEditMode ? 'Edit Interview' : 'Add New Interview' }}</h1>
+      <p class="page-sub">{{ isEditMode ? 'Update the interview details below' : 'Fill in the details to schedule a new interview' }}</p>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading interview data...</p>
+  </div>
+
+  <div class="form-card" *ngIf="!isLoading">
+    <div class="alert-error" *ngIf="errorMsg">
+      <span>!</span> {{ errorMsg }}
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="userId">User ID <span class="req">*</span></label>
+          <input
+            id="userId"
+            type="number"
+            formControlName="userId"
+            placeholder="Enter user id"
+            [class.invalid]="f['userId'].invalid && f['userId'].touched"
+          />
+          <div class="err-msg" *ngIf="f['userId'].touched && f['userId'].errors?.['required']">
+            User ID is required.
+          </div>
+          <div class="err-msg" *ngIf="f['userId'].touched && f['userId'].errors?.['min']">
+            User ID must be greater than 0.
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label for="interviewTitle">Interview Title <span class="req">*</span></label>
+          <input
+            id="interviewTitle"
+            type="text"
+            formControlName="interviewTitle"
+            placeholder="e.g. Frontend Developer Round 1"
+            [class.invalid]="f['interviewTitle'].invalid && f['interviewTitle'].touched"
+          />
+          <div class="err-msg" *ngIf="f['interviewTitle'].touched && f['interviewTitle'].errors?.['required']">
+            Interview title is required.
+          </div>
+          <div class="err-msg" *ngIf="f['interviewTitle'].touched && f['interviewTitle'].errors?.['minlength']">
+            Title must be at least 3 characters.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="interviewDateTime">Date &amp; Time <span class="req">*</span></label>
+          <input
+            id="interviewDateTime"
+            type="datetime-local"
+            formControlName="interviewDateTime"
+            class="datetime-input"
+            [class.invalid]="f['interviewDateTime'].invalid && f['interviewDateTime'].touched"
+          />
+          <div class="err-msg" *ngIf="f['interviewDateTime'].touched && f['interviewDateTime'].errors?.['required']">
+            Date and time is required.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="interviewBy">Interviewed By <span class="req">*</span></label>
+          <input
+            id="interviewBy"
+            type="text"
+            formControlName="interviewBy"
+            placeholder="e.g. Rahul Sharma"
+            [class.invalid]="f['interviewBy'].invalid && f['interviewBy'].touched"
+          />
+          <div class="err-msg" *ngIf="f['interviewBy'].touched && f['interviewBy'].errors?.['required']">
+            Interviewer name is required.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Status <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="status" formControlName="status">
+              <option *ngFor="let opt of statusOptions" [ngValue]="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+            <span class="select-arrow">v</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="recordingPath">Recording Path</label>
+          <input
+            id="recordingPath"
+            type="text"
+            formControlName="recordingPath"
+            placeholder="e.g. /recordings/interview_001.mp4"
+          />
+        </div>
+
+        <div class="form-group full">
+          <label for="comments">Comments / Notes</label>
+          <textarea
+            id="comments"
+            formControlName="comments"
+            rows="4"
+            placeholder="Add any notes, feedback, or instructions..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn-cancel" (click)="goBack()">Cancel</button>
+        <button type="submit" class="btn-save" [disabled]="isSaving">
+          <span *ngIf="isSaving" class="btn-spinner"></span>
+          {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Interview' : 'Save Interview') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

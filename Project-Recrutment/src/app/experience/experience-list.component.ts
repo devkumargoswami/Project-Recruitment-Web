@@ -57,7 +57,13 @@ export class ExperienceListComponent implements OnInit {
   loadExperiences(): void {
     this.isLoading = true;
     // ✅ Fixed: pass only userId (service accepts 1 argument)
-    this.service.getAllExperiences(this.currentUserId).subscribe(
+    const role = this.currentUserRole.toLowerCase();
+    const isHrOrAdmin = role === 'hr' || role === 'admin';
+    const request$ = isHrOrAdmin
+      ? this.service.getAllExperiences()
+      : this.service.getAllExperiences(this.currentUserId);
+
+    request$.subscribe(
       (response) => {
         const rows = this.extractRows(response);
         this.experiences = rows.map((row: any) => this.normalizeExperience(row));

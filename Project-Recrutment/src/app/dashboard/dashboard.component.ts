@@ -10,6 +10,9 @@ import { AuthService, AuthUser } from '../service/auth.service';
 import { DashboardService } from '../service/dashboard.service';
 import { Result } from '../result/result.model';
 
+import { InterviewScheduleService } from '../interview Schedule/interview-schedule.service';
+import { InterviewSchedule, InterviewStatus } from '../interview Schedule/interview-schedule.model';
+
 interface NavItem {
   id?: string; icon?: string; label?: string;
   divider?: boolean; dlabel?: string; admin?: boolean;
@@ -45,13 +48,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
         { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
         { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'interview',  icon: '&#x1F4C5;', label: 'Interview Schedule' },
         { id: 'results',    icon: '&#x1F4CB;', label: 'Results' },
         { divider: true, dlabel: 'Management' },
         { id: 'users', icon: '&#x1F465;', label: 'All Users', admin: true }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
-        experience: '+ Add Experience', documents: '+ Upload Document', results: '+ Add Result', users: '+ Add User'
+        experience: '+ Add Experience', documents: '+ Upload Document',
+        interview: '+ Schedule Interview', results: '+ Add Result', users: '+ Add User'
       }
     },
     HR: {
@@ -63,13 +68,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
         { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
         { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'interview',  icon: '&#x1F4C5;', label: 'Interview Schedule' },
         { id: 'results',    icon: '&#x1F4CB;', label: 'Results' },
         { divider: true, dlabel: 'Management' },
         { id: 'users', icon: '&#x1F465;', label: 'All Users', admin: true }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
-        experience: '+ Add Experience', documents: '+ Upload Document', results: '+ Add Result', users: '+ Add User'
+        experience: '+ Add Experience', documents: '+ Upload Document',
+        interview: '+ Schedule Interview', results: '+ Add Result', users: '+ Add User'
       }
     },
     Employer: {
@@ -81,11 +88,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
         { id: 'skills',     icon: '&#x2699;',  label: 'Skills' },
         { id: 'experience', icon: '&#x1F4BC;', label: 'Experience' },
         { id: 'documents',  icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'interview',  icon: '&#x1F4C5;', label: 'Interview Schedule' },
         { id: 'results',    icon: '&#x1F4CB;', label: 'Results' }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education', skills: '+ Add Skill',
-        experience: '+ Add Experience', documents: '+ Upload Document', results: '+ Add Result'
+        experience: '+ Add Experience', documents: '+ Upload Document',
+        interview: '+ Schedule Interview', results: '+ Add Result'
       }
     },
     Candidate: {
@@ -96,16 +105,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
         { id: 'education', icon: '&#x1F393;', label: 'Education' },
         { id: 'skills',    icon: '&#x2699;',  label: 'Skills' },
         { id: 'documents', icon: '&#x1F4C4;', label: 'Documents' },
+        { id: 'interview', icon: '&#x1F4C5;', label: 'Interview Schedule' },
         { id: 'results',   icon: '&#x1F4CB;', label: 'Results' }
       ],
       actions: {
         profile: 'Edit Profile', education: '+ Add Education',
-        skills: '+ Add Skill', documents: '+ Upload Document', results: '+ Add Result'
+        skills: '+ Add Skill', documents: '+ Upload Document',
+        interview: '+ Schedule Interview', results: '+ Add Result'
       }
     }
   };
 
-  // Sections that navigate to their own route instead of rendering inline
   private readonly ROUTED_SECTIONS: Record<string, string> = {
     skills:     '/skills',
     experience: '/experience/list',
@@ -114,22 +124,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   readonly SECTION_TITLE: Record<string, string> = {
     profile: 'Profile', education: 'Education', skills: 'Skills',
-    experience: 'Work Experience', documents: 'Documents', results: 'Results', users: 'All Users'
+    experience: 'Work Experience', documents: 'Documents',
+    interview: 'Interview Schedule', results: 'Results', users: 'All Users'
   };
 
   readonly SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
   readonly subTabs: SubDataTab[] = ['education', 'skills', 'experience', 'documents'];
+
+  // Interview status helpers exposed to template
+  readonly InterviewStatus = InterviewStatus;
+  readonly InterviewStatusLabels: Record<number, string> = {
+    [InterviewStatus.Scheduled]: 'Scheduled',
+    [InterviewStatus.Completed]: 'Completed',
+    [InterviewStatus.Cancelled]: 'Cancelled',
+  };
+  readonly InterviewStatusClasses: Record<number, string> = {
+    [InterviewStatus.Scheduled]: 'badge-blue',
+    [InterviewStatus.Completed]: 'badge-green',
+    [InterviewStatus.Cancelled]: 'badge-red',
+  };
 
   // ── Current user ──────────────────────────────────────────────────
   user: AuthUser | null = null;
   currentRole = '';
 
   // ── Own profile data ──────────────────────────────────────────────
-  educationList: Education[]   = [];
-  skillsList: Skill[]          = [];
-  experienceList: Experience[] = [];
-  documentList: Document[]     = [];
-  resultList: Result[]         = [];
+  educationList: Education[]         = [];
+  skillsList: Skill[]                = [];
+  experienceList: Experience[]       = [];
+  documentList: Document[]           = [];
+  resultList: Result[]               = [];
+  interviewList: InterviewSchedule[] = [];
+
+  // Interview stats
+  get interviewTotal()     { return this.interviewList.length; }
+  get interviewScheduled() { return this.interviewList.filter(i => i.status === InterviewStatus.Scheduled).length; }
+  get interviewCompleted() { return this.interviewList.filter(i => i.status === InterviewStatus.Completed).length; }
+  get interviewCancelled() { return this.interviewList.filter(i => i.status === InterviewStatus.Cancelled).length; }
 
   // ── HR/Admin: all users ───────────────────────────────────────────
   allUsers: AuthUser[]      = [];
@@ -167,6 +198,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     private dashboardService: DashboardService,
+    private interviewService: InterviewScheduleService,
     private router: Router,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -189,6 +221,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
   toTitleCase(value: string): string {
     if (!value) return '';
     return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  }
+
+  formatInterviewDate(dtStr: string): string {
+    if (!dtStr) return '—';
+    return new Date(dtStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  formatInterviewTime(dtStr: string): string {
+    if (!dtStr) return '';
+    return new Date(dtStr).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  interviewInitials(title: string): string {
+    return title?.trim()?.[0]?.toUpperCase() || 'I';
+  }
+
+  getInterviewStatusLabel(status: number | string): string {
+    return this.InterviewStatusLabels[Number(status)] || 'Unknown';
+  }
+
+  getInterviewStatusClass(status: number | string): string {
+    return this.InterviewStatusClasses[Number(status)] || 'badge-blue';
   }
 
   // ── Getters ───────────────────────────────────────────────────────
@@ -247,27 +301,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Navigation ────────────────────────────────────────────────────
-
-  /**
-   * Central navigation handler.
-   * Sections in ROUTED_SECTIONS navigate to their own page.
-   * All other sections render inline on the dashboard.
-   */
   showSection(id: string): void {
     const route = this.ROUTED_SECTIONS[id];
-    if (route) {
-      this.router.navigate([route]);
-      return;
-    }
+    if (route) { this.router.navigate([route]); return; }
 
     this.currentSection = id;
     this.sidebarOpen = false;
     this.selectedUserForData = null;
 
-    // Refresh data for the newly active section
     switch (id) {
-      case 'education': this.loadEducationData(); break;
-      case 'documents': this.loadDocumentData();  break;
+      case 'education':  this.loadEducationData();  break;
+      case 'documents':  this.loadDocumentData();   break;
+      case 'interview':  this.loadInterviewData();  break;
     }
 
     this.cdr.markForCheck();
@@ -280,7 +325,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       skills:     '/skills',
       experience: '/experience',
       documents:  '/documents',
-      interview:  '/interview-schedule',
+      interview:  '/interview-schedule/add',
       results:    '/results',
       users:      '/user'
     };
@@ -288,7 +333,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (route) this.router.navigate([route]);
   }
 
-  // Convenience wrappers — all go through showSection so routing stays consistent
   goToEducation():  void { this.showSection('education');  }
   goToSkills():     void { this.showSection('skills');     }
   goToExperience(): void { this.showSection('experience'); }
@@ -296,10 +340,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   goToResults():    void { this.showSection('results');    }
   goToAddUser():    void { this.showSection('users');      }
 
-  goToInterviewSchedule():     void { this.router.navigate(['/interview-schedule']);      }
+  goToInterviewSchedule():     void { this.router.navigate(['/interview-schedule/add']);  }
   goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule/list']); }
+  editInterview(id: number):   void { this.router.navigate(['/interview-schedule/edit', id]); }
 
-  // Edit routes
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]);  }
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]);     }
   editExperience(id: number): void { this.router.navigate([`/experience/edit/${id}`]); }
@@ -311,7 +355,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   closeSidebar(): void { this.sidebarOpen = false; this.cdr.markForCheck(); }
 
   refresh(): void { this.loadDashboard(); }
-
   logout(): void { this.auth.logout(); }
 
   // ── Sub-panel ─────────────────────────────────────────────────────
@@ -326,15 +369,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.selectedUserForData) this.syncSubArrays(this.selectedUserForData.id);
   }
 
-  closeSubPanel(): void {
-    this.selectedUserForData = null;
-    this.cdr.markForCheck();
-  }
+  closeSubPanel(): void { this.selectedUserForData = null; this.cdr.markForCheck(); }
 
   // ── User filters ──────────────────────────────────────────────────
   onUserSearch(e: Event):   void { this.userSearchTerm   = (e.target as HTMLInputElement).value;  this.applyFilters(); }
   onRoleFilter(e: Event):   void { this.userRoleFilter   = (e.target as HTMLSelectElement).value; this.applyFilters(); }
   onStatusFilter(e: Event): void { this.userStatusFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
+
+  // ── Delete: interview ─────────────────────────────────────────────
+  async deleteInterview(id: number): Promise<void> {
+    if (!confirm('Delete this interview?')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.interviewService.delete(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next:  () => { this.interviewList = this.interviewList.filter(i => i.id !== id); this.deletingId = null; this.cdr.markForCheck(); },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
+  }
 
   // ── Delete: own data ──────────────────────────────────────────────
   async deleteEducation(id: number): Promise<void> {
@@ -382,9 +432,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  async deleteUser(_: number): Promise<void> {
-    this.router.navigate(['/user']);
-  }
+  async deleteUser(_: number): Promise<void> { this.router.navigate(['/user']); }
 
   // ── Delete: sub-panel data ────────────────────────────────────────
   async deleteSubEducation(id: number): Promise<void> {
@@ -446,10 +494,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ? this.dashboardService.getAllUsers().pipe(catchError(err => { console.error('Error loading users:', err); return of([]); }))
       : of([]);
 
-    forkJoin({ dashboard: dashboard$, users: users$ })
+    const interviews$ = this.interviewService
+      .getAll(this.user.id)
+      .pipe(catchError(() => of([])));
+
+    forkJoin({ dashboard: dashboard$, users: users$, interviews: interviews$ })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ dashboard, users }) => {
+        next: ({ dashboard, users, interviews }) => {
           if (dashboard) {
             this.educationList  = dashboard.education  ?? [];
             this.skillsList     = dashboard.skills     ?? [];
@@ -457,6 +509,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.documentList   = dashboard.documents  ?? [];
             this.resultList     = dashboard.results    ?? [];
           }
+          this.interviewList = interviews ?? [];
           this.allUsers      = (users ?? []).map((u: any) => this.mapUserFromAPI(u));
           this.filteredUsers = [...this.allUsers];
           this.loading = false;
@@ -464,6 +517,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
         error: (err) => { console.error('Dashboard loading error:', err); this.loading = false; this.cdr.markForCheck(); }
       });
+  }
+
+  private loadInterviewData(): void {
+    if (!this.user?.id) return;
+    this.loading = true; this.cdr.markForCheck();
+    this.interviewService.getAll(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data) => { this.interviewList = data; this.loading = false; this.cdr.markForCheck(); },
+      error: () => { this.loading = false; this.cdr.markForCheck(); }
+    });
   }
 
   private loadEducationData(): void {

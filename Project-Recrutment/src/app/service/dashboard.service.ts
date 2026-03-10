@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
@@ -131,13 +131,26 @@ export class DashboardService {
 
   /* ───────────────── DASHBOARD AGGREGATE ───────────────── */
 
-  getCompleteDashboard(userId: number): Observable<any> {
+  getCompleteDashboard(): Observable<any>;
+  getCompleteDashboard(userId: number): Observable<any>;
+  getCompleteDashboard(userId?: number): Observable<any> {
+    const resolvedUserId = userId ?? this.getCurrentUserId();
+    if (!resolvedUserId) {
+      return of({
+        education: [],
+        skills: [],
+        experience: [],
+        documents: [],
+        results: []
+      });
+    }
+
     return forkJoin({
-      education:  this.getEducationByUserId(userId),
-      skills:     this.getSkillsByUserId(userId),
-      experience: this.getExperienceByUserId(userId),
-      documents:  this.getDocumentsByUserId(userId),
-      results:    this.getResultsByUserId(userId)
+      education:  this.getEducationByUserId(resolvedUserId),
+      skills:     this.getSkillsByUserId(resolvedUserId),
+      experience: this.getExperienceByUserId(resolvedUserId),
+      documents:  this.getDocumentsByUserId(resolvedUserId),
+      results:    this.getResultsByUserId(resolvedUserId)
     });
   }
 
@@ -168,6 +181,22 @@ export class DashboardService {
     } catch (error) {
       console.warn('Auth headers error:', error);
       return new HttpHeaders({ 'Content-Type': 'application/json' });
+    }
+  }
+
+  private getCurrentUserId(): number | null {
+    try {
+      const userRaw =
+        localStorage.getItem('currentUser') ||
+        localStorage.getItem('user') ||
+        sessionStorage.getItem('currentUser');
+
+      if (!userRaw) return null;
+      const user = JSON.parse(userRaw);
+      const id = Number(user?.id ?? user?.Id ?? user?.userId ?? user?.UserId);
+      return Number.isFinite(id) && id > 0 ? id : null;
+    } catch {
+      return null;
     }
   }
 }

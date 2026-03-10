@@ -100,6 +100,7 @@ export const routes: Routes = [
       import('./experience/experience.route')
         .then(m => m.experienceRoutes)
   },
+
   // Results
   {
     path: 'results',
@@ -107,6 +108,15 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./result/result.routes')
         .then(m => m.resultRoutes)
+  },
+
+  // ✅ Interview Schedule — NAYA ROUTE
+  {
+    path: 'interview-schedule',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('../app/interview Schedule/interview-schedule.route')
+        .then(m => m.interviewScheduleRoutes)
   }
 
 ];

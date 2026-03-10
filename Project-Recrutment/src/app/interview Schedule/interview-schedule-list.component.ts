@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { InterviewScheduleService, InterviewSchedule } from '../service/interview-schedule.service';
+import { InterviewScheduleService } from './interview-schedule.service';
+import { InterviewSchedule } from './interview-schedule.model';
 import { AuthService } from '../service/auth.service';
 
 @Component({
@@ -27,49 +28,55 @@ export class InterviewScheduleListComponent implements OnInit {
 
   ngOnInit() {
     const user = this.authService.getUser();
-    if (user) {
-      this.currentUserId = user.id;
-      this.currentUserRole = user.role;
+    if (user?.id) {
+      this.currentUserId = Number(user.id);
+      this.currentUserRole = String(user.role ?? '');
       this.loadSchedules();
-    } else {
-      alert('Please login first');
-      this.router.navigate(['/login']);
+      return;
     }
+
+    // Fallback for refresh when in-memory auth is empty
+    try {
+      const stored = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+      const parsed = stored ? JSON.parse(stored) : null;
+      const fallbackId = Number(parsed?.id ?? parsed?.userId ?? 0);
+      if (fallbackId > 0) {
+        this.currentUserId = fallbackId;
+        this.currentUserRole = String(parsed?.role ?? '');
+        this.loadSchedules();
+        return;
+      }
+    } catch {}
+
+    alert('Please login first');
+    this.router.navigate(['/login']);
   }
 
   loadSchedules() {
     this.isLoading = true;
-    
-    if (this.currentUserRole === 'HR' || this.currentUserRole === 'Admin') {
-      this.service.getAll().subscribe(
-        (data: InterviewSchedule[]) => {
-          this.schedules = data || [];
-          this.isLoading = false;
-        },
-        (error: any) => {
-          console.error('Error loading schedules:', error);
-          this.isLoading = false;
-          alert('Failed to load schedules');
-        }
-      );
-    } else {
-      this.service.getByUserId(this.currentUserId).subscribe(
-        (data: InterviewSchedule[]) => {
-          this.schedules = data || [];
-          this.isLoading = false;
-        },
-        (error: any) => {
-          console.error('Error loading schedules:', error);
-          this.isLoading = false;
-          alert('Failed to load schedules');
-        }
-      );
-    }
+    const role = this.currentUserRole.toLowerCase();
+    const isHrOrAdmin = role === 'hr' || role === 'admin';
+    const source$ = isHrOrAdmin
+      ? this.service.getAll()
+      : this.service.getByUserId(this.currentUserId);
+
+    source$.subscribe(
+      (response: any) => {
+        const rows = this.extractRows(response);
+        this.schedules = rows.map((row: any) => this.normalizeSchedule(row));
+        this.isLoading = false;
+      },
+      (error: any) => {
+        console.error('Error loading schedules:', error);
+        this.isLoading = false;
+        alert('Failed to load schedules');
+      }
+    );
   }
 
   get filteredSchedules() {
     if (!this.searchTerm) return this.schedules;
-    
+
     const term = this.searchTerm.toLowerCase();
     return this.schedules.filter(s =>
       s.interviewTitle?.toLowerCase().includes(term) ||
@@ -79,7 +86,7 @@ export class InterviewScheduleListComponent implements OnInit {
 
   onEdit(schedule: InterviewSchedule) {
     sessionStorage.setItem('editSchedule', JSON.stringify(schedule));
-    this.router.navigate(['/interview-schedule']);
+    this.router.navigate(['/interview-schedule/edit', schedule.id]);
   }
 
   onDelete(schedule: InterviewSchedule) {
@@ -99,27 +106,27 @@ export class InterviewScheduleListComponent implements OnInit {
 
   onAddNew() {
     sessionStorage.removeItem('editSchedule');
-    this.router.navigate(['/interview-schedule']);
+    this.router.navigate(['/interview-schedule/add']);
   }
 
-  getStatusLabel(status: number): string {
+  getStatusLabel(status: number | string): string {
+    const key = Number(status);
     const statusMap: Record<number, string> = {
-      0: 'Pending',
       1: 'Scheduled',
       2: 'Completed',
       3: 'Cancelled'
     };
-    return statusMap[status] || 'Unknown';
+    return statusMap[key] || 'Unknown';
   }
 
-  getStatusClass(status: number): string {
+  getStatusClass(status: number | string): string {
+    const key = Number(status);
     const classMap: Record<number, string> = {
-      0: 'status-pending',
-      1: 'status-scheduled',
-      2: 'status-completed',
-      3: 'status-cancelled'
+      1: 'scheduled',
+      2: 'completed',
+      3: 'cancelled'
     };
-    return classMap[status] || 'status-pending';
+    return classMap[key] || 'scheduled';
   }
 
   formatDate(dateString: string): string {
@@ -128,19 +135,67 @@ export class InterviewScheduleListComponent implements OnInit {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   }
 
+  getTitleBadge(title: string): string {
+    const value = (title || '').trim();
+    if (!value) return 'IV';
+    return value.slice(0, 2).toUpperCase();
+  }
+
   get totalSchedules(): number {
     return this.schedules.length;
   }
 
   get upcomingSchedules(): number {
-    return this.schedules.filter(s => s.status === 1).length;
+    return this.schedules.filter(s => Number(s.status) === 1).length;
   }
 
   get completedSchedules(): number {
-    return this.schedules.filter(s => s.status === 2).length;
+    return this.schedules.filter(s => Number(s.status) === 2).length;
   }
 
   trackBySchedule(index: number, schedule: InterviewSchedule) {
     return schedule.id;
+  }
+
+  private normalizeSchedule(raw: any): InterviewSchedule {
+    const toNullable = (v: unknown): string | null => {
+      const text = String(v ?? '').trim();
+      return text ? text : null;
+    };
+
+    return {
+      id: Number(raw?.id ?? raw?.Id ?? raw?.interviewScheduleId ?? raw?.InterviewScheduleId ?? 0),
+      userId: Number(raw?.userId ?? raw?.UserId ?? 0),
+      interviewTitle: String(raw?.interviewTitle ?? raw?.InterviewTitle ?? ''),
+      interviewDateTime: String(raw?.interviewDateTime ?? raw?.InterviewDateTime ?? ''),
+      interviewBy: String(raw?.interviewBy ?? raw?.InterviewBy ?? ''),
+      status: Number(raw?.status ?? raw?.Status ?? 1) as InterviewSchedule['status'],
+      comments: toNullable(raw?.comments ?? raw?.Comments),
+      recordingPath: toNullable(raw?.recordingPath ?? raw?.RecordingPath),
+    };
+  }
+
+  private extractRows(response: any): any[] {
+    if (Array.isArray(response)) return response;
+
+    const nested =
+      response?.data ??
+      response?.result ??
+      response?.items ??
+      response?.list ??
+      response?.records ??
+      response?.Data ??
+      response?.Result ??
+      response?.Items ??
+      response?.List ??
+      response?.Records;
+
+    if (Array.isArray(nested)) return nested;
+    if (Array.isArray(nested?.data)) return nested.data;
+    if (Array.isArray(nested?.items)) return nested.items;
+    if (Array.isArray(nested?.$values)) return nested.$values;
+    if (Array.isArray(response?.$values)) return response.$values;
+    if (nested && typeof nested === 'object') return [nested];
+    return [];
   }
 }

@@ -5,6 +5,9 @@ import { map, catchError } from 'rxjs/operators';
 
 export interface AuthUser {
   id: number;
+  token?: string;
+  accessToken?: string;
+  authToken?: string;
   username?: string;
   email?: string;
   firstName?: string;
@@ -73,11 +76,15 @@ export class AuthService {
           if (!userId) return false;
           const roleId = this.extractRoleId(userData);
           const role = this.resolveRole(userData, roleId);
+          const token = this.extractToken(response, userData);
           const firstName = userData.firstName ?? userData.FirstName ?? '';
           const lastName = userData.lastName ?? userData.LastName ?? '';
 
           const user: AuthUser = {
             id: userId,
+            token: token ?? undefined,
+            accessToken: token ?? undefined,
+            authToken: token ?? undefined,
             username: userData.username ?? userData.Username ?? '',
             email: userData.email ?? userData.Email ?? payload.email,
             firstName,
@@ -99,6 +106,11 @@ export class AuthService {
           };
 
           localStorage.setItem('currentUser', JSON.stringify(user));
+          if (token) {
+            localStorage.setItem('token', token);
+          } else {
+            localStorage.removeItem('token');
+          }
           this.userSubject.next(user);
           return true;
         }
@@ -129,8 +141,28 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
     sessionStorage.removeItem('currentUser');
     this.userSubject.next(null);
+  }
+
+  private extractToken(response: any, userData: any): string | null {
+    const tokenRaw =
+      response?.token ??
+      response?.accessToken ??
+      response?.authToken ??
+      response?.jwt ??
+      response?.jwtToken ??
+      response?.data?.token ??
+      response?.data?.accessToken ??
+      response?.result?.token ??
+      response?.result?.accessToken ??
+      userData?.token ??
+      userData?.accessToken ??
+      userData?.authToken;
+
+    const token = String(tokenRaw ?? '').trim();
+    return token ? token : null;
   }
 
   private extractRoleId(userData: any): number {
