@@ -420,11 +420,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (routes[this.currentSection]) this.router.navigate([routes[this.currentSection]]);
   }
 
-  goToEducation():  void { this.showSection('education'); }
+  goToEducation():  void { this.router.navigate(['/education']); }
   goToSkills():     void { this.showSection('skills'); }
   goToExperience(): void { this.showSection('experience'); }
   goToDocuments():  void { this.showSection('documents'); }
   goToAddUser():    void { this.showSection('users'); }
+  goToInterviewSchedule(): void { this.router.navigate(['/interview-schedule']); }
+  goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule']); }
 
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]); }
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]); }

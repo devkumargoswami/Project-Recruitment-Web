@@ -7,8 +7,8 @@ import { EducationModel } from '../education/education.model';
 @Injectable({ providedIn: 'root' })
 export class EducationService {
 
-  // ✅ FIXED: Match your API specification
-  private readonly API = 'https://localhost:7027/api/UserEducation';  // Use /api/UserEducation endpoints
+  // ✅ FIXED: Use relative path to match proxy configuration
+  private readonly API = '/api/UserEducation';  // Use /api/UserEducation endpoints
 
   constructor(private http: HttpClient) {}
 
@@ -57,13 +57,13 @@ export class EducationService {
   }
 
   /** ✅ UPDATE - Match your API specification */
-  update(id: number, educationData: any): Observable<any> {
-    console.log('=== UPDATE EDUCATION DEBUG ===', id);
+  update(educationData: any): Observable<any> {
+    console.log('=== UPDATE EDUCATION DEBUG ===', educationData.id);
     console.log('Education data:', educationData);
 
     // Convert to the exact format your API expects
     const payload: EducationModel = {
-      id: id,
+      id: educationData.id,
       userId: educationData.userId,
       educationLevelId: educationData.educationLevelId,
       schoolCollege: educationData.schoolCollege,
@@ -76,7 +76,7 @@ export class EducationService {
       isContinue: educationData.isContinue
     };
 
-    return this.http.put(`${this.API}/Update/${id}`, payload, this.getHeaders()).pipe(
+    return this.http.put(`${this.API}/Update`, payload, this.getHeaders()).pipe(
       tap(response => console.log('Update success:', response)),
       catchError(error => {
         console.error('Update error:', error);

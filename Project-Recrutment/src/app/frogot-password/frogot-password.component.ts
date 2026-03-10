@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule , ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './frogot-password.component.html',
   styleUrls: ['./frogot-password.component.css']
 })
@@ -18,18 +18,18 @@ export class ForgotPasswordComponent {
   message = '';
   error = '';
 
-  private apiUrl = 'https://localhost:7027/api/User/update-password'; 
+  private apiUrl = 'https://localhost:7027/api/User/update-password';
   // change URL according to your backend
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.resetForm = this.fb.group({
-      userId: ['', Validators.required],
+      identifier: ['', Validators.required],
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required]
     });
@@ -38,7 +38,7 @@ export class ForgotPasswordComponent {
   submit() {
     if (this.resetForm.invalid) return;
 
-    const { newPassword, confirmPassword } = this.resetForm.value;
+    const { identifier, newPassword, confirmPassword } = this.resetForm.value;
 
     if (newPassword !== confirmPassword) {
       this.error = 'Passwords do not match';
@@ -49,24 +49,44 @@ export class ForgotPasswordComponent {
     this.error = '';
     this.message = '';
 
-    this.http.post<any>(this.apiUrl, this.resetForm.value).subscribe({
+    let payload: any = {
+      userId: null,
+      email: null,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword
+    };
+
+    // detect email or userid
+    if (!isNaN(identifier)) {
+      payload.userId = Number(identifier);
+    } else {
+      payload.email = identifier;
+    }
+
+    console.log("Sending payload:", payload); // 🔍 debug
+
+    this.http.post<any>(this.apiUrl, payload).subscribe({
       next: (res) => {
         this.loading = false;
-        this.message = 'Password updated successfully';
+        this.message = res.message || "Password updated successfully";
 
-        // auto redirect after 2 sec
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
       },
       error: (err) => {
         this.loading = false;
-        this.error = 'Failed to reset password';
-        console.error(err);
+
+        if (err.error?.message) {
+          this.error = err.error.message;
+        } else {
+          this.error = "Password reset failed";
+        }
+
+        console.error("API Error:", err);
       }
     });
   }
-
   goToLogin() {
     this.router.navigate(['/login']);
   }

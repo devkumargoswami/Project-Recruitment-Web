@@ -15,14 +15,14 @@ export class DashboardService {
 
   getEducationByUserId(userId: number): Observable<any[]> {
     return this.http.get<any[]>(
-      `${this.API}/api/UserEducation/GetByUser/${userId}`,
+      `${this.API}/UserEducation/GetByUser/${userId}`,
       { headers: this.getSafeAuthHeaders() }
     );
   }
 
   deleteEducation(educationId: number): Observable<void> {
     return this.http.delete<void>(
-      `${this.API}/api/UserEducation/Delete/${educationId}`,
+      `${this.API}/UserEducation/Delete/${educationId}`,
       { headers: this.getSafeAuthHeaders() }
     );
   }
@@ -63,7 +63,7 @@ export class DashboardService {
 
   getDocumentsByUserId(userId: number): Observable<any[]> {
     return this.http.get<any[]>(
-      `${this.API}/Document/GetByUserId/${userId}`,
+      `${this.API}/Document/GetByUser/${userId}`,
       { headers: this.getSafeAuthHeaders() }
     );
   }

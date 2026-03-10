@@ -55,7 +55,6 @@
           <td>{{ doc.documentPath || 'N/A' }}</td>
           <td>{{ doc.createDatetime ? (doc.createDatetime | date:'medium') : 'N/A' }}</td>
           <td>
-            <button class="btn-view" (click)="viewDocument(doc)">View</button>
             <button class="btn-edit" (click)="editDocument(doc)">Edit</button>
             <button class="btn-delete" (click)="deleteDocument(doc.documentId)">Delete</button>
           </td>

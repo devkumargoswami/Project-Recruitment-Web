@@ -40,7 +40,7 @@ export class EducationListComponent implements OnInit {
   constructor(private educationService: EducationService) {}
 
   ngOnInit(): void {
-    this.getEducation();
+    this.openAddModal();
   }
 
   /** OPEN MODAL */
@@ -248,7 +248,7 @@ export class EducationListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.educationService.update(this.newEducation.id, this.newEducation).subscribe({
+    this.educationService.update(this.newEducation).subscribe({
       next: (response: any) => {
         console.log('=== UPDATE SUCCESS ===');
         console.log('Response:', response);
