@@ -119,13 +119,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private readonly ROUTED_SECTIONS: Record<string, string> = {
     skills:     '/skills',
     experience: '/experience/list',
-    results:    '/results'
+    results:    '/results',
+    interview:  '/interview-schedule/list',
+    users:      '/user'
   };
 
   readonly SECTION_TITLE: Record<string, string> = {
-    profile: 'Profile', education: 'Education', skills: 'Skills',
-    experience: 'Work Experience', documents: 'Documents',
-    interview: 'Interview Schedule', results: 'Results', users: 'All Users'
+    profile: 'Profile', 
+    education: 'Education', 
+    skills: 'Skills',
+    experience: 'Work Experience', 
+    documents: 'Documents',
+    interview: 'Interview Schedule', 
+    results: 'Results', 
+    users: 'All Users'
   };
 
   readonly SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
