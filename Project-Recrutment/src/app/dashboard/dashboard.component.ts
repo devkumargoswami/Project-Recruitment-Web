@@ -8,6 +8,7 @@ import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService, AuthUser } from '../auth.service';
 import { DashboardService } from '../service/dashboard.service';
+import { Result } from '../result/result.model';
 
 interface NavItem {
   id?: string; icon?: string; label?: string;
@@ -123,6 +124,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   skillsList: Skill[]          = [];
   experienceList: Experience[] = [];
   documentList: Document[]     = [];
+  resultList: Result[]         = [];
 
   // ── HR/Admin: all users ───────────────────────────────────────────
   allUsers: AuthUser[]      = [];
@@ -134,15 +136,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     skills: Skill[];
     experience: Experience[];
     documents: Document[];
+    results: Result[];
   }>();
 
   // ── Sub-panel state ───────────────────────────────────────────────
   selectedUserForData: AuthUser | null = null;
-  subDataTab: SubDataTab = 'education';
+  subDataTab: SubDataTab | 'results' = 'education';
   subEducation:  Education[]  = [];
   subSkills:     Skill[]      = [];
   subExperience: Experience[] = [];
   subDocuments:  Document[]   = [];
+  subResults:    Result[]     = [];
 
   // ── UI state ──────────────────────────────────────────────────────
   loading          = false;
@@ -194,7 +198,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => { console.error(err); return of(null); }));
 
     const users$ = this.isAdminOrHR()
-      ? this.dashboardService.getAllUsers().pipe(catchError(() => of([])))
+      ? this.dashboardService.getAllUsers().pipe(
+          catchError(err => { 
+            console.error('Error loading users:', err);
+            return of([]);
+          })
+        )
       : of([]);
 
     forkJoin({ dashboard: dashboard$, users: users$ })
@@ -206,13 +215,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.skillsList     = dashboard.skills     ?? [];
             this.experienceList = dashboard.experience ?? [];
             this.documentList   = dashboard.documents  ?? [];
+            this.resultList     = dashboard.results    ?? [];
           }
-          this.allUsers      = (users ?? []) as AuthUser[];
+          
+          // Map API response to AuthUser format with correct property names
+          this.allUsers = (users ?? []).map(user => this.mapUserFromAPI(user));
           this.filteredUsers = [...this.allUsers];
+          
+          console.log('Dashboard loaded successfully:', {
+            dashboard: dashboard ? 'Loaded' : 'Not loaded',
+            users: this.allUsers.length,
+            filteredUsers: this.filteredUsers.length
+          });
+          
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: () => { this.loading = false; this.cdr.markForCheck(); }
+        error: (err) => { 
+          console.error('Dashboard loading error:', err);
+          this.loading = false; 
+          this.cdr.markForCheck(); 
+        }
       });
   }
 
@@ -313,7 +336,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       education:  this.educationList.length,
       skills:     this.skillsList.length,
       experience: this.experienceList.length,
-      documents:  this.documentList.length
+      documents:  this.documentList.length,
+      results:    this.resultList.length
     };
     return map[s.toLowerCase()] ?? 0;
   }
@@ -323,14 +347,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Sub-panel ─────────────────────────────────────────────────────
-  viewUserData(user: AuthUser, tab: SubDataTab): void {
+  viewUserData(user: AuthUser, tab: SubDataTab | 'results'): void {
     this.selectedUserForData = user;
     this.subDataTab = tab;
     this.loadSubPanelData(user.id);
   }
 
   switchSubTab(tab: string): void {
-    this.subDataTab = tab as SubDataTab;
+    this.subDataTab = tab as SubDataTab | 'results';
     if (this.selectedUserForData) this.syncSubArrays(this.selectedUserForData.id);
   }
 
@@ -348,7 +372,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
           education:  data?.education  ?? [],
           skills:     data?.skills     ?? [],
           experience: data?.experience ?? [],
-          documents:  data?.documents  ?? []
+          documents:  data?.documents  ?? [],
+          results:    data?.results    ?? []
         });
         this.syncSubArrays(userId);
       });
@@ -361,6 +386,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subSkills     = [...c.skills];
     this.subExperience = [...c.experience];
     this.subDocuments  = [...c.documents];
+    this.subResults    = [...c.results];
     this.cdr.markForCheck();
   }
 
@@ -391,6 +417,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   showSection(id: string): void {
     if (id === 'skills') {
       this.router.navigate(['/skills']);
+      return;
+    }
+    if (id === 'results') {
+      this.router.navigate(['/results']);
       return;
     }
     this.currentSection = id;
@@ -424,6 +454,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   goToSkills():     void { this.showSection('skills'); }
   goToExperience(): void { this.showSection('experience'); }
   goToDocuments():  void { this.showSection('documents'); }
+  goToResults():    void { this.showSection('results'); }
+  goToInterviewSchedule(): void { this.router.navigate(['/interview-schedule']); }
+  goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule/list']); }
   goToAddUser():    void { this.showSection('users'); }
   goToInterviewSchedule(): void { this.router.navigate(['/interview-schedule']); }
   goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule']); }
@@ -432,6 +465,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]); }
   editExperience(id: number): void { this.router.navigate([`/experience/edit/${id}`]); }
   editDocument(id: number):   void { this.router.navigate([`/documents/edit/${id}`]); }
+  editResult(id: number):     void { this.router.navigate([`/results/edit/${id}`]); }
   editUser(_: number):       void { this.router.navigate(['/user']); }
 
   openSidebar():  void { this.sidebarOpen = true;  this.cdr.markForCheck(); }
@@ -485,6 +519,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteDocument(id).pipe(takeUntil(this.destroy$)).subscribe({
       next:  () => { this.documentList = this.documentList.filter(d => d.documentId !== id); this.deletingId = null; this.cdr.markForCheck(); },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  async deleteResult(id: number): Promise<void> {
+    if (!confirm('Delete this result?')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.dashboardService.deleteResult(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next:  () => { this.resultList = this.resultList.filter(r => r.result_id !== id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -547,7 +590,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private patchCache(tab: SubDataTab, id: number): void {
+  async deleteSubResult(id: number): Promise<void> {
+    if (!confirm('Delete this result?')) return;
+    this.deletingId = id; this.cdr.markForCheck();
+    this.dashboardService.deleteResult(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.subResults = this.subResults.filter(r => r.result_id !== id);
+        this.patchCache('results', id);
+        this.deletingId = null; this.cdr.markForCheck();
+      },
+      error: () => { this.deletingId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  private patchCache(tab: SubDataTab | 'results', id: number): void {
     if (!this.selectedUserForData) return;
     const cache = this.userDataCache.get(this.selectedUserForData.id);
     if (cache) {
@@ -555,6 +611,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.educationId !== id);
       } else if (tab === 'documents') {
         (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.documentId !== id);
+      } else if (tab === 'results') {
+        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.result_id !== id);
       } else {
         (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.id !== id);
       }
@@ -562,5 +620,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   logout(): void { this.auth.logout(); }
+
+  // Custom mapping function to handle the API response structure
+  private mapUserFromAPI(raw: any): AuthUser {
+    const roleId = raw.roleId ?? raw.RoleId ?? 4;
+    const firstName = raw.firstName ?? raw.FirstName ?? '';
+    const lastName = raw.lastName ?? raw.LastName ?? '';
+    return {
+      id: raw.id ?? raw.Id,
+      username: raw.username ?? raw.Username ?? '',
+      email: raw.email ?? raw.Email ?? '',
+      firstName,
+      lastName,
+      gender: raw.gender ?? raw.Gender ?? null,
+      phonenumber: raw.phoneNumber ?? raw.PhoneNumber ?? null, // Fixed property name
+      dataOfBirth: raw.dateOfBirth ?? raw.DateOfBirth ?? null, // Fixed property name
+      address: raw.address ?? raw.Address ?? null,
+      countryId: raw.countryId ?? raw.CountryId ?? null,
+      stateId: raw.stateId ?? raw.StateId ?? null,
+      city: raw.city ?? raw.City ?? null,
+      roleId,
+      role: this.getRoleName(roleId),
+      offerCTC: raw.offerCTC ?? raw.OfferCTC ?? null,
+      totalExperience: raw.totalExperience ?? raw.TotalExperience ?? null,
+      createdDateTime: raw.createdDateTime ?? raw.CreatedDateTime ?? null,
+      status: raw.status ?? 'Active',
+      name: `${firstName} ${lastName}`.trim() || (raw.username ?? raw.Username ?? ''),
+    };
+  }
+
+  private getRoleName(roleId: number): string {
+    const ROLE_MAP: Record<number, string> = {
+      1: 'HR',
+      2: 'Admin',
+      3: 'Employer',
+      4: 'Candidate'
+    };
+    return ROLE_MAP[roleId] ?? 'Candidate';
+  }
 
 }

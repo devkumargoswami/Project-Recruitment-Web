@@ -24,11 +24,20 @@ export const dashboardRoutes: Routes = [
           import('../education/education.routes')
             .then(m => m.educationRoutes)
       },
-
-
-      // future
-      // { path: 'skills', ... }
-      // { path: 'users', ... }
+      // results module
+      {
+        path: 'results',
+        loadChildren: () =>
+          import('../result/result.routes')
+            .then(m => m.resultRoutes)
+      },
+      // skills module
+      {
+        path: 'skills',
+        loadChildren: () =>
+          import('../skill/skill.route')
+            .then(m => m.skillRoutes)
+      }
     ]
   }
 ];

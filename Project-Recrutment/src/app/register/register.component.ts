@@ -36,7 +36,6 @@ export class RegisterComponent {
       countryId: [0, Validators.required],
       stateId: [0, Validators.required],
       totalExperience: [0, [Validators.required, Validators.min(0)]],
-      roleId: [0, Validators.required],
       offerCTC: [0, [Validators.required, Validators.min(0)]]
     });
   }
@@ -50,12 +49,12 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMessage = null;
 
-    // Convert numeric fields to number type
+    // Convert numeric fields to number type and set default roleId to 4 (Candidate)
     const payload = {
       ...this.registerForm.value,
       countryId: Number(this.registerForm.value.countryId),
       stateId: Number(this.registerForm.value.stateId),
-      roleId: Number(this.registerForm.value.roleId),
+      roleId: 4, // Default to Candidate role
       totalExperience: Number(this.registerForm.value.totalExperience),
       offerCTC: Number(this.registerForm.value.offerCTC)
     };

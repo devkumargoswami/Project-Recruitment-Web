@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SkillService } from './skill.service';
 import { SkillModel, ApiResponse } from './skill.model';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-skill',
@@ -15,6 +16,8 @@ export class SkillComponent {
   skills: SkillModel[] = [];
   loading = false;
   error: string | null = null;
+  currentUserId: number | null = null;
+  currentUserRole: string | null = null;
   
   // Form fields for adding new skill
   newSkill: SkillModel = { id: 0, userId: 0, name: '' };
@@ -29,7 +32,52 @@ export class SkillComponent {
   // Success message state
   successMessage: string | null = null;
   
-  constructor(private skillService: SkillService) {}
+  constructor(
+    private skillService: SkillService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadSkills();
+  }
+
+  loadSkills(): void {
+    this.loading = true;
+    this.error = null;
+
+    // Get current user information
+    const currentUser = this.authService.getUser();
+    if (!currentUser) {
+      this.loading = false;
+      this.error = 'User not authenticated';
+      return;
+    }
+
+    this.currentUserId = currentUser.id;
+    this.currentUserRole = currentUser.role;
+    console.log('Current user ID:', this.currentUserId, 'Role:', this.currentUserRole);
+
+    this.skillService.getSkills().subscribe({
+      next: (data: SkillModel[]) => {
+        this.loading = false;
+        // Apply role-based filtering
+        if (this.currentUserRole === 'HR' || this.currentUserRole === 'Admin') {
+          // HR/Admin can see all skills
+          this.skills = data;
+          console.log('HR/Admin user - showing all skills:', data.length);
+        } else {
+          // Regular users see only their own skills
+          this.skills = data.filter(skill => skill.userId === this.currentUserId);
+          console.log('Regular user - showing personal skills:', this.skills.length);
+        }
+        this.error = null;
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = 'Error loading skills: ' + err.message;
+      }
+    });
+  }
 
   openAddModal() {
     this.isAddModalOpen = true;
@@ -157,7 +205,16 @@ export class SkillComponent {
     this.skillService.getSkills().subscribe({
       next: (data: SkillModel[]) => {
         this.loading = false;
-        this.skills = data;
+        // Apply role-based filtering
+        if (this.currentUserRole === 'HR' || this.currentUserRole === 'Admin') {
+          // HR/Admin can see all skills
+          this.skills = data;
+          console.log('HR/Admin user - showing all skills:', data.length);
+        } else {
+          // Regular users see only their own skills
+          this.skills = data.filter(skill => skill.userId === this.currentUserId);
+          console.log('Regular user - showing personal skills:', this.skills.length);
+        }
         this.error = null;
       },
       error: (err) => {
@@ -280,6 +337,7 @@ export class SkillComponent {
         this.loading = false;
         if (response.status === 200) {
           this.error = null;
+          this.successMessage = 'Skill successfully updated!';
           // Close modal and clear form
           this.closeAddModal();
           // Clear the form data
@@ -287,6 +345,11 @@ export class SkillComponent {
           // Refresh the list
           console.log('Refreshing skills list after successful update');
           this.getSkills();
+          
+          // Auto-hide success message after 3 seconds
+          setTimeout(() => {
+            this.successMessage = null;
+          }, 3000);
         } else {
           this.error = response.message || 'Failed to update skill';
         }
@@ -295,7 +358,27 @@ export class SkillComponent {
         console.log('=== API CALL FAILED ===');
         console.log('Error details:', err);
         this.loading = false;
-        this.error = 'Error updating skill: ' + err.message;
+        
+        // Check if this is a parsing error but the operation might have succeeded
+        if (err.status === 200 || err.message?.includes('parsing error')) {
+          console.log('=== UPDATE PARSING ERROR BUT OPERATION LIKELY SUCCEEDED ===');
+          this.error = null;
+          this.successMessage = 'Skill successfully updated!';
+          // Close modal and clear form
+          this.closeAddModal();
+          // Clear the form data
+          this.newSkill = { id: 0, userId: 0, name: '' };
+          // Refresh the list
+          console.log('Refreshing skills list after successful update (despite parsing error)');
+          this.getSkills();
+          
+          // Auto-hide success message after 3 seconds
+          setTimeout(() => {
+            this.successMessage = null;
+          }, 3000);
+        } else {
+          this.error = 'Error updating skill: ' + err.message;
+        }
       }
     });
   }

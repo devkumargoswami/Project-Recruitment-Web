@@ -410,6 +410,55 @@
         </div>
       </section>
 
+      <!-- ====== RESULTS ====== -->
+      <section *ngIf="currentSection === 'results'" class="section fade-in">
+        <div class="card">
+          <div class="card-head">
+            <h3>Results</h3>
+            <button class="btn-add" *ngIf="isAdminOrHR()" (click)="goToResults()">+ Add Result</button>
+          </div>
+          <div class="empty-state" *ngIf="resultList.length === 0">
+            <div class="empty-icon">&#x1F4D0;</div>
+            <p>No results found.</p>
+            <button *ngIf="isAdminOrHR()" class="btn-primary" (click)="goToResults()">Add your first result</button>
+          </div>
+          <div class="table-wrap" *ngIf="resultList.length > 0">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Candidate ID</th>
+                  <th>Technical Marks</th>
+                  <th>HR Marks</th>
+                  <th>Total</th>
+                  <th>Update</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let result of resultList; trackBy: trackById; let i = index"
+                  [class.deleting]="deletingId === result.result_id">
+                  <td class="td-num">{{ i + 1 }}</td>
+                  <td class="td-main">{{ result.candidate_id }}</td>
+                  <td>{{ result.technical_marks }}</td>
+                  <td>{{ result.hr_marks }}</td>
+                  <td class="td-total">{{ result.technical_marks + result.hr_marks }}</td>
+                  <td class="td-action-col">
+                    <button class="btn-action btn-update" (click)="editResult(result.result_id)">Update</button>
+                  </td>
+                  <td class="td-action-col">
+                    <button class="btn-action btn-delete" [disabled]="deletingId === result.result_id"
+                      (click)="deleteResult(result.result_id)">
+                      {{ deletingId === result.result_id ? '...' : 'Delete' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <!-- ====== ALL USERS (Admin / HR only) ====== -->
       <section *ngIf="currentSection === 'users' && isAdminOrHR()" class="section fade-in">
         <div class="card">

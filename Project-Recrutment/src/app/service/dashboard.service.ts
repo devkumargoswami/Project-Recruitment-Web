@@ -75,6 +75,22 @@ export class DashboardService {
     );
   }
 
+  /* ───────────────── RESULTS ───────────────── */
+
+  getResultsByUserId(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.API}/Result/GetByUserId/${userId}`,
+      { headers: this.getSafeAuthHeaders() }
+    );
+  }
+
+  deleteResult(resultId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.API}/Result/Delete/${resultId}`,
+      { headers: this.getSafeAuthHeaders() }
+    );
+  }
+
   /* ───────────────── USERS ───────────────── */
 
   getAllUsers(): Observable<any[]> {
@@ -98,7 +114,8 @@ export class DashboardService {
       education:  this.getEducationByUserId(userId),
       skills:     this.getSkillsByUserId(userId),
       experience: this.getExperienceByUserId(userId),
-      documents:  this.getDocumentsByUserId(userId)
+      documents:  this.getDocumentsByUserId(userId),
+      results:    this.getResultsByUserId(userId)
     });
   }
 

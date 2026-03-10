@@ -1,35 +1,65 @@
 <div class="user-list-container">
-  <h2>User List</h2>
+  <div class="list-header">
+    <h2>User List</h2>
+    <div class="header-actions">
+      <button class="btn-refresh" (click)="loadUsers()" [disabled]="loading">
+        {{ loading ? 'Refreshing...' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
 
-  <div *ngIf="loading">Loading...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading users...</p>
+  </div>
 
-  <table *ngIf="users.length > 0" class="user-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Phone Number</th>
-        <th>Role ID</th>
-        <th>Created Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.firstName }}</td>
-        <td>{{ user.lastName }}</td>
-        <td>{{ user.phonenumber }}</td>
-        <td>{{ user.roleId }}</td>
-        <td>{{ user.createdDateTime | date:'short' }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div *ngIf="error" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="loadUsers()">Retry</button>
+  </div>
 
-  <div *ngIf="users.length === 0 && !loading">No users found.</div>
+  <div *ngIf="users.length === 0 && !loading" class="empty-state">
+    <div class="empty-icon">👥</div>
+    <p>No users found.</p>
+  </div>
+
+  <div *ngIf="users.length > 0 && !loading" class="user-table-container">
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th class="th-id">#</th>
+          <th class="th-name">Name</th>
+          <th class="th-email">Email</th>
+          <th class="th-role">Role</th>
+          <th class="th-status">Status</th>
+          <th class="th-date">Member Since</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users; let i = index">
+          <td class="td-id">#{{ user.id }}</td>
+          <td class="td-name">
+            <div class="user-cell">
+              <div class="avatar-xs" [style.background]="'linear-gradient(135deg,#60a5fa,#6366f1)'">
+                {{ getInitials(user.name) }}
+              </div>
+              <span class="name-text">{{ user.name }}</span>
+            </div>
+          </td>
+          <td class="td-email">{{ user.email }}</td>
+          <td class="td-role">
+            <span class="badge badge-blue">{{ user.role }}</span>
+          </td>
+          <td class="td-status">
+            <span class="status-dot" [class.dot-green]="!user.status || user.status === 'Active'"
+              [class.dot-red]="user.status === 'Inactive'" [class.dot-amber]="user.status === 'Pending'">
+            </span>
+            {{ user.status || 'Active' }}
+          </td>
+          <td class="td-date">{{ formatDate(user.createdDateTime) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
