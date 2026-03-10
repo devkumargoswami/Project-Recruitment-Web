@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DocumentService } from '../service/document.service';
 import { DocumentModel } from './document.model';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-document-list',
@@ -33,7 +33,7 @@ export class DocumentListComponent implements OnInit {
   };
 
 
-  currentUserId: number | null = null;
+  currentUserId = 0;
   currentUserRole: string | null = null;
 
   constructor(

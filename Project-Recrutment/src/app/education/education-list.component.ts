@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EducationService } from '../service/education.service';
 import { EducationModel } from './education.model';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-education-list',
@@ -38,7 +38,7 @@ export class EducationListComponent implements OnInit {
     isContinue: false
   };
 
-  currentUserId: number | null = null;
+  currentUserId = 0;
   currentUserRole: string | null = null;
 
   constructor(

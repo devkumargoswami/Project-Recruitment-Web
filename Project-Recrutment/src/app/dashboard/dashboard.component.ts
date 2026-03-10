@@ -361,7 +361,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   goToInterviewSchedule():     void { this.router.navigate(['/interview-schedule/add']);  }
   goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule/list']); }
-  goToAddUser():    void { this.showSection('users'); }
+  editInterview(id: number):   void { this.router.navigate(['/interview-schedule/edit', id]); }
 
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]);  }
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]);     }
@@ -552,6 +552,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loading = true; this.cdr.markForCheck();
     this.dashboardService.getEducationByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data: any[]) => { this.educationList = data; this.loading = false; this.cdr.markForCheck(); },
+      error: () => { this.loading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  private loadSkillsData(): void {
+    if (!this.user?.id) return;
+    this.loading = true; this.cdr.markForCheck();
+    this.dashboardService.getSkillsByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data: any[]) => { this.skillsList = data ?? []; this.loading = false; this.cdr.markForCheck(); },
+      error: () => { this.loading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  private loadExperienceData(): void {
+    if (!this.user?.id) return;
+    this.loading = true; this.cdr.markForCheck();
+    this.dashboardService.getExperienceByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data: any[]) => { this.experienceList = data ?? []; this.loading = false; this.cdr.markForCheck(); },
       error: () => { this.loading = false; this.cdr.markForCheck(); }
     });
   }
