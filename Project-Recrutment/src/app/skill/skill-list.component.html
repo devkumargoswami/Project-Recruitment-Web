@@ -25,7 +25,7 @@
           [(ngModel)]="searchId" 
           placeholder="Enter skill ID">
       </div>
-      <div class="form-group">
+      <div class="form-group" *ngIf="currentUserRole === 'HR' || currentUserRole === 'Admin'">
         <label for="searchUserId">User ID</label>
         <input 
           type="number" 
@@ -43,7 +43,7 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>User ID</th>
+            <th *ngIf="currentUserRole === 'HR' || currentUserRole === 'Admin'">User ID</th>
             <th>Skill Name</th>
             <th>Actions</th>
           </tr>
@@ -51,7 +51,7 @@
         <tbody>
           <tr *ngFor="let skill of skills">
             <td>{{ skill.id }}</td>
-            <td>{{ skill.userId }}</td>
+            <td *ngIf="currentUserRole === 'HR' || currentUserRole === 'Admin'">{{ skill.userId }}</td>
             <td>{{ skill.name }}</td>
             <td>
               <button class="btn btn-danger" (click)="deleteSkill(skill.id)">Delete</button>
@@ -65,6 +65,10 @@
 
   <div *ngIf="loading" class="loading">
     Loading skills...
+  </div>
+
+  <div class="back-section">
+    <button class="btn btn-secondary" (click)="goBack()">Back to Profile</button>
   </div>
 
   <!-- Add/Edit Skill Modal -->

@@ -1,12 +1,44 @@
 <div class="result-container">
-  <h2>Candidate Results</h2>
+  <div class="header-section">
+    <h2>
+      <span *ngIf="currentUser?.role === 'HR' || currentUser?.role === 'Admin'">All Candidate Results</span>
+      <span *ngIf="currentUser?.role !== 'HR' && currentUser?.role !== 'Admin'">My Results</span>
+    </h2>
+    <div class="user-info" *ngIf="currentUser">
+      <span class="role-badge" [class.hr-admin]="currentUser.role === 'HR' || currentUser.role === 'Admin'">
+        {{ currentUser.role }}
+      </span>
+      <span class="user-name">{{ currentUser.name }}</span>
+    </div>
+  </div>
+
+  <!-- Add Result Button - Only for HR/Admin -->
+  <div *ngIf="currentUser?.role === 'HR' || currentUser?.role === 'Admin'" class="actions-section">
+    <button class="btn btn-primary" (click)="addResult()">Add Result</button>
+  </div>
 
   <div *ngIf="loading" class="loading">
     Loading results...
   </div>
 
+  <div class="back-section">
+    <button class="btn btn-secondary" (click)="goBack()">Back to Profile</button>
+  </div>
+
   <div *ngIf="error" class="error">
     {{ error }}
+  </div>
+
+  <div *ngIf="results.length > 0" class="results-info">
+    <p class="count-info">
+      Showing {{ results.length }} result(s)
+      <span *ngIf="currentUser?.role === 'HR' || currentUser?.role === 'Admin'" class="view-mode">
+        (Viewing all candidates's results)
+      </span>
+      <span *ngIf="currentUser?.role !== 'HR' && currentUser?.role !== 'Admin'" class="view-mode">
+        (Viewing personal results)
+      </span>
+    </p>
   </div>
 
   <table *ngIf="results.length > 0" class="result-table">
@@ -16,7 +48,9 @@
         <th>Candidate ID</th>
         <th>Technical Marks</th>
         <th>HR Marks</th>
-        <th>Total</th>
+        <th>Total Marks</th>
+        <th>Status</th>
+        <th *ngIf="currentUser?.role === 'HR' || currentUser?.role === 'Admin'">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -25,12 +59,30 @@
         <td>{{ result.candidate_id }}</td>
         <td>{{ result.technical_marks }}</td>
         <td>{{ result.hr_marks }}</td>
-        <td>{{ result.technical_marks + result.hr_marks }}</td>
+        <td>{{ getTotalMarks(result) }}</td>
+        <td>
+          <span class="status-badge" [class.pass]="getTotalMarks(result) >= 50" [class.fail]="getTotalMarks(result) < 50">
+            {{ getTotalMarks(result) >= 50 ? 'PASS' : 'FAIL' }}
+          </span>
+        </td>
+        <td *ngIf="currentUser?.role === 'HR' || currentUser?.role === 'Admin'" class="actions-cell">
+          <button class="btn btn-warning btn-sm" (click)="editResult(result.result_id)" [disabled]="loading">Edit</button>
+          <button class="btn btn-danger btn-sm" (click)="deleteResult(result.result_id)" [disabled]="loading">
+            <span *ngIf="loading">⏳</span>
+            {{ loading ? 'Deleting...' : 'Delete' }}
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>
 
   <div *ngIf="results.length === 0 && !loading" class="no-data">
-    No results found.
+    <p>No results found.</p>
+    <p *ngIf="currentUser?.role === 'HR' || currentUser?.role === 'Admin'">
+      No candidates have results yet. Results will appear here when candidates complete their assessments.
+    </p>
+    <p *ngIf="currentUser?.role !== 'HR' && currentUser?.role !== 'Admin'">
+      You haven't taken any assessments yet. Please complete your assessments to see results here.
+    </p>
   </div>
 </div>

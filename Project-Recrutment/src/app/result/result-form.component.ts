@@ -42,13 +42,32 @@ export class ResultComponent implements OnInit {
   }
 
   loadResult(id: number): void {
-    // For editing, you would load the result data here
-    // This is a placeholder - you would need to implement the actual loading logic
-    console.log('Loading result for editing:', id);
+    // For editing, we need to get the specific result by result_id
+    // Since we don't have a direct API for this, we'll use GetAllResult and filter
+    this.resultService.getAllResults().subscribe({
+      next: (results: Result[]) => {
+        // Find the specific result by result_id
+        const result = results.find(r => r.result_id === id);
+        if (result) {
+          this.resultForm.patchValue({
+            candidate_id: result.candidate_id,
+            technical_marks: result.technical_marks,
+            hr_marks: result.hr_marks
+          });
+        } else {
+          console.error('Result not found for editing:', id);
+          this.router.navigate(['/results']);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading result for editing:', err);
+        this.router.navigate(['/results']);
+      }
+    });
   }
 
   onSubmit(): void {
-    if (this.resultForm.invalid) {
+    if (this.resultForm.invalid || this.submitting) {
       return;
     }
 
@@ -68,25 +87,29 @@ export class ResultComponent implements OnInit {
         hr_marks: resultData.hr_marks
       };
       this.resultService.updateResult(updateData).subscribe({
-        next: () => {
+        next: (response: any) => {
           this.submitting = false;
+          console.log('Result updated successfully:', response);
+          // Navigate back to results list after successful update
           this.router.navigate(['/results']);
         },
-        error: (err) => {
-          console.error('Error updating result:', err);
+        error: (err: any) => {
           this.submitting = false;
+          console.error('Error updating result:', err);
         }
       });
     } else {
       // Insert new result - use any type to bypass result_id requirement for insertion
       this.resultService.insertResult(resultData as any).subscribe({
-        next: () => {
+        next: (response: any) => {
           this.submitting = false;
+          console.log('Result added successfully:', response);
+          // Navigate back to results list after successful addition
           this.router.navigate(['/results']);
         },
-        error: (err) => {
-          console.error('Error inserting result:', err);
+        error: (err: any) => {
           this.submitting = false;
+          console.error('Error inserting result:', err);
         }
       });
     }
