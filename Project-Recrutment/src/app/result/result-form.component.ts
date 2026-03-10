@@ -18,6 +18,7 @@ export class ResultComponent implements OnInit {
   submitting = false;
   error = '';
   isEditMode = false;
+  get isEditing(): boolean { return this.isEditMode; }
 
   constructor(
     private fb: FormBuilder,
@@ -77,5 +78,9 @@ export class ResultComponent implements OnInit {
         this.error = err?.error?.message ?? 'Failed to save result.';
       }
     });
+  }
+
+  onCancel(): void {
+    this.router.navigate(['/results']);
   }
 }

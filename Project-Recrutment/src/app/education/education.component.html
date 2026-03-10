@@ -7,16 +7,15 @@
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
       <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
 
-      <!-- User ID -->
-      <div class="form-group">
-        <label for="userId">User ID</label>
-        <input id="userId"
-               type="text"
-               [value]="userId"
-               class="form-control readonly-input"
-               readonly
-               title="Auto-filled from session">
-      </div>
+      <!-- Education ID (Hidden in both modes) -->
+      <input id="educationId"
+             type="hidden"
+             [value]="educationId || 0">
+
+      <!-- User ID (Hidden in both modes) -->
+      <input id="userId"
+             type="hidden"
+             [value]="userId">
 
       <!-- Education Level -->
       <div class="form-group">

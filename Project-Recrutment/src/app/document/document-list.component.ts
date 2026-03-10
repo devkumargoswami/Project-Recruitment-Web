@@ -245,7 +245,7 @@ export class DocumentListComponent implements OnInit {
       createDatetime: new Date().toISOString()
     };
 
-    this.documentService.update(this.newDocument.documentId, payload).subscribe({
+    this.documentService.update(payload).subscribe({
       next: (response: any) => {
         console.log('=== UPDATE SUCCESS ===');
         console.log('Response:', response);

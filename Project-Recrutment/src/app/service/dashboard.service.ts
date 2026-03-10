@@ -71,7 +71,7 @@ export class DashboardService {
 
   getDocumentsByUserId(userId: number): Observable<any[]> {
     return this.http.get<any[]>(
-      `${this.API}/Document/GetByUserId/${userId}`,
+      `${this.API}/Document/GetByUser/${userId}`,
       { headers: this.getSafeAuthHeaders() }
     ).pipe(
       catchError(() =>
