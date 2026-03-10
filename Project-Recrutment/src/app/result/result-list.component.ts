@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ResultService } from '../service/result.service';
 import { Result } from '../result/result.model';
@@ -8,7 +9,7 @@ import { AuthService, AuthUser } from '../auth.service';
 @Component({
   selector: 'app-result-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './result-list.component.html',
   styleUrls: ['./result-list.component.css']
 })
@@ -21,8 +22,8 @@ export class ResultListComponent implements OnInit {
 
   constructor(
     private resultService: ResultService,
-    private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   goBack(): void {
@@ -30,18 +31,23 @@ export class ResultListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadResults();
+    const user = this.authService.getUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.isHR = user.role === 'HR' || user.role === 'Admin';
+
+    if (!this.isHR) {
+      this.candidateId = user.id;
+      this.loadResults();
+    }
   }
 
   loadResults(): void {
-    this.loading = true;
-    this.error = null;
-
-    // Get current user ID from auth service
-    const currentUser = this.authService.getUser();
-    if (!currentUser) {
-      this.loading = false;
-      this.error = 'User not authenticated';
+    if (!this.candidateId || this.candidateId <= 0) {
+      this.error = 'Please enter a valid candidate ID.';
       return;
     }
 
@@ -140,7 +146,7 @@ export class ResultListComponent implements OnInit {
     });
   }
 
-  getTotalMarks(result: Result): number {
-    return result.technical_marks + result.hr_marks;
+  goToAdd(): void {
+    this.router.navigate(['/results/add']);
   }
 }

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AuthService, AuthUser } from '../auth.service';
+import { AuthService, AuthUser } from '../service/auth.service';
 import { DashboardService } from '../service/dashboard.service';
 import { Result } from '../result/result.model';
 
@@ -28,7 +28,7 @@ type SubDataTab = 'education' | 'skills' | 'experience' | 'documents';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],   // <-- TitleCasePipe removed; use toTitleCase() method instead
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -90,7 +90,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     },
     Candidate: {
       color: '#a2e1c8', grad: 'linear-gradient(135deg,#10b981,#059669)', badge: 'badge-green',
-      stats: ['Education','Skills','Documents', 'Results'],
+      stats: ['Education', 'Skills', 'Documents', 'Results'],
       nav: [
         { id: 'profile',   icon: '&#x1F464;', label: 'Profile' },
         { id: 'education', icon: '&#x1F393;', label: 'Education' },
@@ -105,14 +105,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   };
 
+  // Sections that navigate to their own route instead of rendering inline
+  private readonly ROUTED_SECTIONS: Record<string, string> = {
+    skills:     '/skills',
+    experience: '/experience/list',
+    results:    '/results'
+  };
+
   readonly SECTION_TITLE: Record<string, string> = {
     profile: 'Profile', education: 'Education', skills: 'Skills',
     experience: 'Work Experience', documents: 'Documents', results: 'Results', users: 'All Users'
   };
 
   readonly SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-
-  /** Sub-panel tab list exposed to template */
   readonly subTabs: SubDataTab[] = ['education', 'skills', 'experience', 'documents'];
 
   // ── Current user ──────────────────────────────────────────────────
@@ -171,8 +176,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const sessionUser = this.auth.getUser();
     if (!sessionUser) { this.router.navigate(['/login']); return; }
     this.user = sessionUser;
-    // ✅ Always read role from session — fixes "shows as Candidate" bug
-    this.currentRole = sessionUser.role ?? 'Candidate';
+    this.currentRole = this.normalizeRoleName(sessionUser.role) ?? 'Candidate';
     if (this.currentRole === 'HR') {
       this.currentSection = 'users';
     }
@@ -181,137 +185,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
-  // ── Utility: replaces | titlecase pipe ───────────────────────────
+  // ── Utility ───────────────────────────────────────────────────────
   toTitleCase(value: string): string {
     if (!value) return '';
     return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
-  }
-
-  // ── Data loading ──────────────────────────────────────────────────
-  private loadDashboard(): void {
-    if (!this.user?.id) return;
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    const dashboard$ = this.dashboardService
-      .getCompleteDashboard(this.user.id)
-      .pipe(catchError(err => { console.error(err); return of(null); }));
-
-    const users$ = this.isAdminOrHR()
-      ? this.dashboardService.getAllUsers().pipe(
-          catchError(err => { 
-            console.error('Error loading users:', err);
-            return of([]);
-          })
-        )
-      : of([]);
-
-    forkJoin({ dashboard: dashboard$, users: users$ })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({ dashboard, users }) => {
-          if (dashboard) {
-            this.educationList  = dashboard.education  ?? [];
-            this.skillsList     = dashboard.skills     ?? [];
-            this.experienceList = dashboard.experience ?? [];
-            this.documentList   = dashboard.documents  ?? [];
-            this.resultList     = dashboard.results    ?? [];
-          }
-          
-          // Map API response to AuthUser format with correct property names
-          this.allUsers = (users ?? []).map(user => this.mapUserFromAPI(user));
-          this.filteredUsers = [...this.allUsers];
-          
-          console.log('Dashboard loaded successfully:', {
-            dashboard: dashboard ? 'Loaded' : 'Not loaded',
-            users: this.allUsers.length,
-            filteredUsers: this.filteredUsers.length
-          });
-          
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-        error: (err) => { 
-          console.error('Dashboard loading error:', err);
-          this.loading = false; 
-          this.cdr.markForCheck(); 
-        }
-      });
-  }
-
-  refresh(): void { this.loadDashboard(); }
-
-  // ── Load education and document data directly ─────────────────────
-  private loadEducationData(): void {
-    if (!this.user?.id) return;
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    this.dashboardService.getEducationByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data: any[]) => {
-        this.educationList = data;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  private loadDocumentData(): void {
-    if (!this.user?.id) return;
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    this.dashboardService.getDocumentsByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data: any[]) => {
-        this.documentList = data;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  private loadSkillsData(): void {
-    if (!this.user?.id) return;
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    this.dashboardService.getSkillsByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data: any[]) => {
-        this.skillsList = data;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  private loadExperienceData(): void {
-    if (!this.user?.id) return;
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    this.dashboardService.getExperienceByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data: any[]) => {
-        this.experienceList = data;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
   }
 
   // ── Getters ───────────────────────────────────────────────────────
@@ -346,6 +223,97 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.userDataCache.get(userId)?.[tab]?.length ?? 0;
   }
 
+  // ── Skill helpers ─────────────────────────────────────────────────
+  getSkillLevelWidth(level: string): string {
+    const idx = this.SKILL_LEVELS.findIndex(l => l.toLowerCase() === level?.toLowerCase());
+    return idx === -1 ? '25%' : `${((idx + 1) / this.SKILL_LEVELS.length) * 100}%`;
+  }
+
+  getSkillLevelColor(level: string): string {
+    const map: Record<string, string> = {
+      beginner: '#fbbf24', intermediate: '#60a5fa',
+      advanced: '#34d399', expert: '#f87171'
+    };
+    return map[level?.toLowerCase()] || '#888';
+  }
+
+  // ── Misc helpers ──────────────────────────────────────────────────
+  trackById(_: number, item: any): number {
+    return item.id || item.educationId || item.documentId || 0;
+  }
+
+  getInitials(name?: string | null): string {
+    return (name || '').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────
+
+  /**
+   * Central navigation handler.
+   * Sections in ROUTED_SECTIONS navigate to their own page.
+   * All other sections render inline on the dashboard.
+   */
+  showSection(id: string): void {
+    const route = this.ROUTED_SECTIONS[id];
+    if (route) {
+      this.router.navigate([route]);
+      return;
+    }
+
+    this.currentSection = id;
+    this.sidebarOpen = false;
+    this.selectedUserForData = null;
+
+    // Refresh data for the newly active section
+    switch (id) {
+      case 'education': this.loadEducationData(); break;
+      case 'documents': this.loadDocumentData();  break;
+    }
+
+    this.cdr.markForCheck();
+  }
+
+  handleTopAction(): void {
+    const routes: Record<string, string> = {
+      profile:    '/profile',
+      education:  '/education',
+      skills:     '/skills',
+      experience: '/experience',
+      documents:  '/documents',
+      interview:  '/interview-schedule',
+      results:    '/results',
+      users:      '/user'
+    };
+    const route = routes[this.currentSection];
+    if (route) this.router.navigate([route]);
+  }
+
+  // Convenience wrappers — all go through showSection so routing stays consistent
+  goToEducation():  void { this.showSection('education');  }
+  goToSkills():     void { this.showSection('skills');     }
+  goToExperience(): void { this.showSection('experience'); }
+  goToDocuments():  void { this.showSection('documents');  }
+  goToResults():    void { this.showSection('results');    }
+  goToAddUser():    void { this.showSection('users');      }
+
+  goToInterviewSchedule():     void { this.router.navigate(['/interview-schedule']);      }
+  goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule/list']); }
+
+  // Edit routes
+  editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]);  }
+  editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]);     }
+  editExperience(id: number): void { this.router.navigate([`/experience/edit/${id}`]); }
+  editDocument(id: number):   void { this.router.navigate([`/documents/edit/${id}`]);  }
+  editResult(id: number):     void { this.router.navigate([`/results/edit/${id}`]);    }
+  editUser(_: number):        void { this.router.navigate(['/user']);                  }
+
+  openSidebar():  void { this.sidebarOpen = true;  this.cdr.markForCheck(); }
+  closeSidebar(): void { this.sidebarOpen = false; this.cdr.markForCheck(); }
+
+  refresh(): void { this.loadDashboard(); }
+
+  logout(): void { this.auth.logout(); }
+
   // ── Sub-panel ─────────────────────────────────────────────────────
   viewUserData(user: AuthUser, tab: SubDataTab | 'results'): void {
     this.selectedUserForData = user;
@@ -363,126 +331,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  private loadSubPanelData(userId: number): void {
-    if (this.userDataCache.has(userId)) { this.syncSubArrays(userId); return; }
-    this.dashboardService.getCompleteDashboard(userId)
-      .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
-      .subscribe(data => {
-        this.userDataCache.set(userId, {
-          education:  data?.education  ?? [],
-          skills:     data?.skills     ?? [],
-          experience: data?.experience ?? [],
-          documents:  data?.documents  ?? [],
-          results:    data?.results    ?? []
-        });
-        this.syncSubArrays(userId);
-      });
-  }
-
-  private syncSubArrays(userId: number): void {
-    const c = this.userDataCache.get(userId);
-    if (!c) return;
-    this.subEducation  = [...c.education];
-    this.subSkills     = [...c.skills];
-    this.subExperience = [...c.experience];
-    this.subDocuments  = [...c.documents];
-    this.subResults    = [...c.results];
-    this.cdr.markForCheck();
-  }
-
-  // ── Skill helpers ─────────────────────────────────────────────────
-  getSkillLevelWidth(level: string): string {
-    const idx = this.SKILL_LEVELS.findIndex(l => l.toLowerCase() === level?.toLowerCase());
-    return idx === -1 ? '25%' : `${((idx + 1) / this.SKILL_LEVELS.length) * 100}%`;
-  }
-
-  getSkillLevelColor(level: string): string {
-    const map: Record<string, string> = {
-      beginner: '#fbbf24', intermediate: '#60a5fa',
-      advanced: '#34d399', expert: '#f87171'
-    };
-    return map[level?.toLowerCase()] || '#888';
-  }
-
-  // ── Misc helpers ──────────────────────────────────────────────────
-  trackById(_: number, item: any): number { 
-    return item.id || item.educationId || item.documentId || 0; 
-  }
-
-  getInitials(name?: string | null): string {
-    return (name || '').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  }
-
-  // ── Navigation ────────────────────────────────────────────────────
-  showSection(id: string): void {
-    if (id === 'skills') {
-      this.router.navigate(['/skills']);
-      return;
-    }
-    if (id === 'results') {
-      this.router.navigate(['/results']);
-      return;
-    }
-    this.currentSection = id;
-    this.sidebarOpen = false;
-    this.selectedUserForData = null;
-    
-    // Load data for sections that require user data
-    if (id === 'education') {
-      this.loadEducationData();
-    } else if (id === 'skills') {
-      this.loadSkillsData();
-    } else if (id === 'experience') {
-      this.loadExperienceData();
-    } else if (id === 'documents') {
-      this.loadDocumentData();
-    }
-    
-    this.cdr.markForCheck();
-  }
-
-  handleTopAction(): void {
-    const routes: Record<string, string> = {
-      profile: '/profile', education: '/education', skills: '/skills',
-      experience: '/experience', documents: '/documents',
-      interview: '/interview-schedule', users: '/user'
-    };
-    if (routes[this.currentSection]) this.router.navigate([routes[this.currentSection]]);
-  }
-
-  goToEducation():  void { this.showSection('education'); }
-  goToSkills():     void { this.showSection('skills'); }
-  goToExperience(): void { this.showSection('experience'); }
-  goToDocuments():  void { this.showSection('documents'); }
-  goToResults():    void { this.showSection('results'); }
-  goToInterviewSchedule(): void { this.router.navigate(['/interview-schedule']); }
-  goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule/list']); }
-  goToAddUser():    void { this.showSection('users'); }
-
-  editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]); }
-  editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]); }
-  editExperience(id: number): void { this.router.navigate([`/experience/edit/${id}`]); }
-  editDocument(id: number):   void { this.router.navigate([`/documents/edit/${id}`]); }
-  editResult(id: number):     void { this.router.navigate([`/results/edit/${id}`]); }
-  editUser(_: number):       void { this.router.navigate(['/user']); }
-
-  openSidebar():  void { this.sidebarOpen = true;  this.cdr.markForCheck(); }
-  closeSidebar(): void { this.sidebarOpen = false; this.cdr.markForCheck(); }
-
   // ── User filters ──────────────────────────────────────────────────
-  onUserSearch(e: Event):   void { this.userSearchTerm   = (e.target as HTMLInputElement).value;   this.applyFilters(); }
-  onRoleFilter(e: Event):   void { this.userRoleFilter   = (e.target as HTMLSelectElement).value;  this.applyFilters(); }
-  onStatusFilter(e: Event): void { this.userStatusFilter = (e.target as HTMLSelectElement).value;  this.applyFilters(); }
-
-  private applyFilters(): void {
-    const t = this.userSearchTerm.toLowerCase();
-    this.filteredUsers = this.allUsers.filter(u =>
-      (!t || u.name?.toLowerCase().includes(t) || u.email?.toLowerCase().includes(t)) &&
-      (!this.userRoleFilter   || u.role   === this.userRoleFilter)   &&
-      (!this.userStatusFilter || u.status === this.userStatusFilter)
-    );
-    this.cdr.markForCheck();
-  }
+  onUserSearch(e: Event):   void { this.userSearchTerm   = (e.target as HTMLInputElement).value;  this.applyFilters(); }
+  onRoleFilter(e: Event):   void { this.userRoleFilter   = (e.target as HTMLSelectElement).value; this.applyFilters(); }
+  onStatusFilter(e: Event): void { this.userStatusFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
 
   // ── Delete: own data ──────────────────────────────────────────────
   async deleteEducation(id: number): Promise<void> {
@@ -530,7 +382,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Delete: user row ──────────────────────────────────────────────
   async deleteUser(_: number): Promise<void> {
     this.router.navigate(['/user']);
   }
@@ -540,11 +391,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this education record?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteEducation(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.subEducation = this.subEducation.filter(e => e.educationId !== id);
-        this.patchCache('education', id);
-        this.deletingId = null; this.cdr.markForCheck();
-      },
+      next: () => { this.subEducation = this.subEducation.filter(e => e.educationId !== id); this.patchCache('education', id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -553,11 +400,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this skill?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteSkill(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.subSkills = this.subSkills.filter(s => s.id !== id);
-        this.patchCache('skills', id);
-        this.deletingId = null; this.cdr.markForCheck();
-      },
+      next: () => { this.subSkills = this.subSkills.filter(s => s.id !== id); this.patchCache('skills', id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -566,11 +409,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this experience?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteExperience(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.subExperience = this.subExperience.filter(e => e.id !== id);
-        this.patchCache('experience', id);
-        this.deletingId = null; this.cdr.markForCheck();
-      },
+      next: () => { this.subExperience = this.subExperience.filter(e => e.id !== id); this.patchCache('experience', id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -579,11 +418,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this document?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteDocument(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.subDocuments = this.subDocuments.filter(d => d.documentId !== id);
-        this.patchCache('documents', id);
-        this.deletingId = null; this.cdr.markForCheck();
-      },
+      next: () => { this.subDocuments = this.subDocuments.filter(d => d.documentId !== id); this.patchCache('documents', id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
   }
@@ -592,69 +427,154 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!confirm('Delete this result?')) return;
     this.deletingId = id; this.cdr.markForCheck();
     this.dashboardService.deleteResult(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.subResults = this.subResults.filter(r => r.result_id !== id);
-        this.patchCache('results', id);
-        this.deletingId = null; this.cdr.markForCheck();
-      },
+      next: () => { this.subResults = this.subResults.filter(r => r.result_id !== id); this.patchCache('results', id); this.deletingId = null; this.cdr.markForCheck(); },
       error: () => { this.deletingId = null; this.cdr.markForCheck(); }
     });
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────
+  private loadDashboard(): void {
+    if (!this.user?.id) return;
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    const dashboard$ = this.dashboardService
+      .getCompleteDashboard(this.user.id)
+      .pipe(catchError(err => { console.error(err); return of(null); }));
+
+    const users$ = this.isAdminOrHR()
+      ? this.dashboardService.getAllUsers().pipe(catchError(err => { console.error('Error loading users:', err); return of([]); }))
+      : of([]);
+
+    forkJoin({ dashboard: dashboard$, users: users$ })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ dashboard, users }) => {
+          if (dashboard) {
+            this.educationList  = dashboard.education  ?? [];
+            this.skillsList     = dashboard.skills     ?? [];
+            this.experienceList = dashboard.experience ?? [];
+            this.documentList   = dashboard.documents  ?? [];
+            this.resultList     = dashboard.results    ?? [];
+          }
+          this.allUsers      = (users ?? []).map((u: any) => this.mapUserFromAPI(u));
+          this.filteredUsers = [...this.allUsers];
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => { console.error('Dashboard loading error:', err); this.loading = false; this.cdr.markForCheck(); }
+      });
+  }
+
+  private loadEducationData(): void {
+    if (!this.user?.id) return;
+    this.loading = true; this.cdr.markForCheck();
+    this.dashboardService.getEducationByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data: any[]) => { this.educationList = data; this.loading = false; this.cdr.markForCheck(); },
+      error: () => { this.loading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  private loadDocumentData(): void {
+    if (!this.user?.id) return;
+    this.loading = true; this.cdr.markForCheck();
+    this.dashboardService.getDocumentsByUserId(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data: any[]) => { this.documentList = data; this.loading = false; this.cdr.markForCheck(); },
+      error: () => { this.loading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  private loadSubPanelData(userId: number): void {
+    if (this.userDataCache.has(userId)) { this.syncSubArrays(userId); return; }
+    this.dashboardService.getCompleteDashboard(userId)
+      .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.userDataCache.set(userId, {
+          education:  data?.education  ?? [],
+          skills:     data?.skills     ?? [],
+          experience: data?.experience ?? [],
+          documents:  data?.documents  ?? [],
+          results:    data?.results    ?? []
+        });
+        this.syncSubArrays(userId);
+      });
+  }
+
+  private syncSubArrays(userId: number): void {
+    const c = this.userDataCache.get(userId);
+    if (!c) return;
+    this.subEducation  = [...c.education];
+    this.subSkills     = [...c.skills];
+    this.subExperience = [...c.experience];
+    this.subDocuments  = [...c.documents];
+    this.subResults    = [...c.results];
+    this.cdr.markForCheck();
+  }
+
+  private applyFilters(): void {
+    const t = this.userSearchTerm.toLowerCase();
+    this.filteredUsers = this.allUsers.filter(u =>
+      (!t || u.name?.toLowerCase().includes(t) || u.email?.toLowerCase().includes(t)) &&
+      (!this.userRoleFilter   || u.role   === this.userRoleFilter) &&
+      (!this.userStatusFilter || u.status === this.userStatusFilter)
+    );
+    this.cdr.markForCheck();
   }
 
   private patchCache(tab: SubDataTab | 'results', id: number): void {
     if (!this.selectedUserForData) return;
     const cache = this.userDataCache.get(this.selectedUserForData.id);
-    if (cache) {
-      if (tab === 'education') {
-        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.educationId !== id);
-      } else if (tab === 'documents') {
-        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.documentId !== id);
-      } else if (tab === 'results') {
-        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.result_id !== id);
-      } else {
-        (cache[tab] as any[]) = (cache[tab] as any[]).filter((x: any) => x.id !== id);
-      }
+    if (!cache) return;
+    if (tab === 'education') {
+      cache[tab] = (cache[tab] as any[]).filter((x: any) => x.educationId !== id) as Education[];
+    } else if (tab === 'documents') {
+      cache[tab] = (cache[tab] as any[]).filter((x: any) => x.documentId !== id) as Document[];
+    } else if (tab === 'results') {
+      cache[tab] = (cache[tab] as any[]).filter((x: any) => x.result_id !== id) as Result[];
+    } else {
+      cache[tab] = (cache[tab] as any[]).filter((x: any) => x.id !== id) as Skill[] & Experience[];
     }
   }
 
-  logout(): void { this.auth.logout(); }
-
-  // Custom mapping function to handle the API response structure
   private mapUserFromAPI(raw: any): AuthUser {
-    const roleId = raw.roleId ?? raw.RoleId ?? 4;
+    const roleId    = raw.roleId    ?? raw.RoleId    ?? 4;
     const firstName = raw.firstName ?? raw.FirstName ?? '';
-    const lastName = raw.lastName ?? raw.LastName ?? '';
+    const lastName  = raw.lastName  ?? raw.LastName  ?? '';
     return {
-      id: raw.id ?? raw.Id,
-      username: raw.username ?? raw.Username ?? '',
-      email: raw.email ?? raw.Email ?? '',
+      id:              raw.id              ?? raw.Id,
+      username:        raw.username        ?? raw.Username        ?? '',
+      email:           raw.email           ?? raw.Email           ?? '',
       firstName,
       lastName,
-      gender: raw.gender ?? raw.Gender ?? null,
-      phonenumber: raw.phoneNumber ?? raw.PhoneNumber ?? null, // Fixed property name
-      dataOfBirth: raw.dateOfBirth ?? raw.DateOfBirth ?? null, // Fixed property name
-      address: raw.address ?? raw.Address ?? null,
-      countryId: raw.countryId ?? raw.CountryId ?? null,
-      stateId: raw.stateId ?? raw.StateId ?? null,
-      city: raw.city ?? raw.City ?? null,
+      gender:          raw.gender          ?? raw.Gender          ?? null,
+      phonenumber:     raw.phoneNumber     ?? raw.PhoneNumber     ?? null,
+      dataOfBirth:     raw.dateOfBirth     ?? raw.DateOfBirth     ?? null,
+      address:         raw.address         ?? raw.Address         ?? null,
+      countryId:       raw.countryId       ?? raw.CountryId       ?? null,
+      stateId:         raw.stateId         ?? raw.StateId         ?? null,
+      city:            raw.city            ?? raw.City            ?? null,
       roleId,
-      role: this.getRoleName(roleId),
-      offerCTC: raw.offerCTC ?? raw.OfferCTC ?? null,
+      role:            this.normalizeRoleName(raw.role ?? raw.Role ?? raw.roleName ?? raw.RoleName) ?? this.getRoleName(roleId),
+      offerCTC:        raw.offerCTC        ?? raw.OfferCTC        ?? null,
       totalExperience: raw.totalExperience ?? raw.TotalExperience ?? null,
       createdDateTime: raw.createdDateTime ?? raw.CreatedDateTime ?? null,
-      status: raw.status ?? 'Active',
-      name: `${firstName} ${lastName}`.trim() || (raw.username ?? raw.Username ?? ''),
+      status:          raw.status          ?? 'Active',
+      name:            `${firstName} ${lastName}`.trim() || (raw.username ?? raw.Username ?? ''),
     };
   }
 
   private getRoleName(roleId: number): string {
-    const ROLE_MAP: Record<number, string> = {
-      1: 'HR',
-      2: 'Admin',
-      3: 'Employer',
-      4: 'Candidate'
-    };
-    return ROLE_MAP[roleId] ?? 'Candidate';
+    const map: Record<number, string> = { 1: 'Admin', 2: 'HR', 3: 'Candidate', 4: 'Employer' };
+    return map[roleId] ?? 'Candidate';
   }
 
+  private normalizeRoleName(role: unknown): string | null {
+    const value = String(role ?? '').trim().toLowerCase();
+    if (!value) return null;
+    if (value === 'admin') return 'Admin';
+    if (value === 'hr' || value === 'human resources') return 'HR';
+    if (value === 'candidate') return 'Candidate';
+    if (value === 'employer' || value === 'manager') return 'Employer';
+    return null;
+  }
 }

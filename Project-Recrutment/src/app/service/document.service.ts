@@ -9,7 +9,7 @@ import { DocumentModel } from '../document/document.model';
 })
 export class DocumentService {
 
-  private readonly API = 'https://localhost:7027/api/Document';
+  private readonly API = '/api/Document';
 
   constructor(private http: HttpClient) {}
 
@@ -72,20 +72,20 @@ export class DocumentService {
   }
 
   /** UPDATE document */
-  update(id: number, documentData: any): Observable<any> {
-    console.log('=== UPDATE DOCUMENT DEBUG ===', id);
+  update(documentData: any): Observable<any> {
+    console.log('=== UPDATE DOCUMENT DEBUG ===', documentData.documentId);
     console.log('Document data:', documentData);
 
     // Convert to the exact format your API expects
     const payload = {
-      documentId: id,
+      documentId: documentData.documentId,
       userId: documentData.userId,
       documentName: documentData.documentName,
       documentPath: documentData.documentPath || '',
       createDatetime: new Date().toISOString()
     };
 
-    return this.http.put(`${this.API}/Update/${id}`, payload, this.getHeaders()).pipe(
+    return this.http.put(`${this.API}/Update`, payload, this.getHeaders()).pipe(
       tap(response => console.log('Update success:', response)),
       catchError(error => {
         console.error('Update error:', error);

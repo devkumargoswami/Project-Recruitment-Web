@@ -22,6 +22,12 @@ export class InterviewScheduleService {
 
   constructor(private http: HttpClient) {}
 
+  // ✅ ADD THIS - HR/Admin ke liye
+  getAll(): Observable<InterviewSchedule[]> {
+    return this.http.get<InterviewSchedule[]>(`${this.baseUrl}/list`);
+  }
+
+  // EXISTING - Candidate ke liye
   getByUserId(userId: number): Observable<InterviewSchedule[]> {
     return this.http.get<InterviewSchedule[]>(`${this.baseUrl}/get/${userId}`);
   }

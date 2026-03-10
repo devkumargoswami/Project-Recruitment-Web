@@ -1,14 +1,22 @@
 import { Routes } from '@angular/router';
-import { ExperienceComponent } from './experience.component';
-import { ExperienceListComponent } from './experience-list.component';
+import { ExperienceFormComponent } from './experience-form.component';
+import { ExperienceListComponent } from './experience-list.route';
 
 export const experienceRoutes: Routes = [
   {
     path: '',
-    component: ExperienceComponent       // localhost:4200/experience → Form
+    component: ExperienceListComponent
   },
   {
     path: 'list',
-    component: ExperienceListComponent   // localhost:4200/experience/list → List
+    component: ExperienceListComponent
+  },
+  {
+    path: 'add',
+    component: ExperienceFormComponent
+  },
+  {
+    path: 'edit/:id',
+    component: ExperienceFormComponent
   }
 ];

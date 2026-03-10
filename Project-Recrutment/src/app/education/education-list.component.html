@@ -2,10 +2,10 @@
   <div class="header">
     <h1>Education Management</h1>
     <button class="btn-primary" (click)="openAddModal()">+ Add Education</button>
-  </div>
+  </div> 
 
   <div class="search-section">
-    <div class="search-group">
+    <!-- <div class="search-group">
       <label for="searchId">Search by Education ID:</label>
       <input 
         type="number" 
@@ -13,7 +13,7 @@
         [(ngModel)]="searchId" 
         placeholder="Enter Education ID"
       >
-    </div>
+    </div> -->
     <div class="search-group">
       <label for="searchUserId">Search by User ID:</label>
       <input 
@@ -59,7 +59,6 @@
           <td>{{ edu.startMonth }}/{{ edu.startYear }}</td>
           <td>{{ edu.isContinue ? 'Present' : (edu.endMonth + '/' + edu.endYear) }}</td>
           <td>
-            <button class="btn-view" (click)="viewEducation(edu)">View</button>
             <button class="btn-edit" (click)="editEducation(edu)">Edit</button>
             <button class="btn-delete" (click)="deleteEducation(edu.id)">Delete</button>
           </td>
@@ -87,6 +86,7 @@
             id="userId" 
             [(ngModel)]="newEducation.userId" 
             placeholder="Enter User ID"
+            disabled="{{ newEducation.id !== 0 }}"
           >
         </div>
         <div class="form-group">
@@ -97,11 +97,11 @@
             name="educationLevelId"
           >
             <option value="">-- Select Education Level --</option>
-            <option value="1">SSC (10th)</option>
-            <option value="2">HSC (12th)</option>
-            <option value="3">UG (Bachelor)</option>
-            <option value="4">PG (Master)</option>
-            <option value="5">PhD</option>
+            <option value="4003">SSC (10th)</option>
+            <option value="4004">HSC (12th)</option>
+            <option value="4005">UG (Bachelor)</option>
+            <option value="4006">PG (Master)</option>
+            <option value="4007">PhD</option>
           </select>
         </div>
         <div class="form-group">

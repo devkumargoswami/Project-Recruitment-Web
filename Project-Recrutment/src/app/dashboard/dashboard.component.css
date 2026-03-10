@@ -181,6 +181,8 @@ tr.deleting { opacity: .45; pointer-events: none; }
 .btn-add:hover { background: rgba(96,165,250,.1); border-color: rgba(96,165,250,.4); }
 .btn-add-danger { color: #f87171; }
 .btn-add-danger:hover { background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.4); }
+.btn-row-wrap { display: flex; gap: .5rem; flex-wrap: wrap; }
+.btn-row-center { justify-content: center; }
 
 .btn-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: transparent; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: .8rem; transition: all .18s; text-decoration: none; }
 .btn-icon:hover { background: var(--surface2); color: var(--text); }

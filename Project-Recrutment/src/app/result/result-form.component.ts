@@ -1,35 +1,32 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ResultService } from '../service/result.service';
-import { Result } from '../result/result.model';
+import { AuthService } from '../service/auth.service';
+import { Result } from './result.model';
 
 @Component({
   selector: 'app-result',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './result-form.component.html',
   styleUrls: ['./result-form.component.css']
 })
 export class ResultComponent implements OnInit {
-  resultForm: FormGroup;
-  isEditing = false;
-  resultId: number | null = null;
+  resultForm!: FormGroup;
   submitting = false;
+  error = '';
+  isEditMode = false;
+  get isEditing(): boolean { return this.isEditMode; }
 
   constructor(
     private fb: FormBuilder,
     private resultService: ResultService,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
-  ) {
-    this.resultForm = this.fb.group({
-      candidate_id: ['', [Validators.required, Validators.min(1)]],
-      technical_marks: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-      hr_marks: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {

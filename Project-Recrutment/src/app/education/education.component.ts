@@ -22,11 +22,11 @@ export class EducationComponent implements OnInit {
   successMessage = '';
 
   educationLevels = [
-    { id: 1, name: 'SSC (10th)' },
-    { id: 2, name: 'HSC (12th)' },
-    { id: 3, name: 'UG (Bachelor)' },
-    { id: 4, name: 'PG (Master)' },
-    { id: 5, name: 'PhD' }
+    { id: 4003, name: 'SSC (10th)' },
+    { id: 4004, name: 'HSC (12th)' },
+    { id: 4005, name: 'UG (Bachelor)' },
+    { id: 4006, name: 'PG (Master)' },
+    { id: 4007, name: 'PhD' }
   ];
 
   constructor(
@@ -146,10 +146,14 @@ export class EducationComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const payload = { ...this.educationForm.value, userId: this.userId };
+    const payload = { 
+      ...this.educationForm.value, 
+      userId: this.userId,
+      id: this.educationId || 0
+    };
 
     if (this.isEditMode) {
-      this.educationService.update(this.educationId!, payload).subscribe({
+      this.educationService.update(payload).subscribe({
         next: () => {
           this.loading = false;
           this.successMessage = 'Education updated successfully';

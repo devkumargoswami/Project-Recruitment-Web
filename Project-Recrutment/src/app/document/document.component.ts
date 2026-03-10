@@ -118,16 +118,17 @@ export class DocumentComponent implements OnInit {
 
     this.loading = true;
 
-    const formData = new FormData();
-    formData.append('UserId', this.userId.toString());
-    formData.append('DocumentName', this.documentForm.value.documentName);
-    if (this.selectedFile) {
-      formData.append('DocumentFile', this.selectedFile);
-    }
+    // Convert to the exact format your API expects
+    const payload = {
+      userId: this.userId,
+      documentName: this.documentForm.value.documentName,
+      documentPath: this.selectedFile ? this.selectedFile.name : '',
+      createDatetime: new Date().toISOString()
+    };
 
     const req = this.isEditMode
-      ? this.documentService.update(this.documentId!, formData)
-      : this.documentService.insert(formData);
+      ? this.documentService.update(payload)
+      : this.documentService.insert(payload);
 
     req.subscribe({
       next: () => {

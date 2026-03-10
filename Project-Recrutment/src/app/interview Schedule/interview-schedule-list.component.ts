@@ -1,66 +1,146 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
 import { InterviewScheduleService, InterviewSchedule } from '../service/interview-schedule.service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-interview-schedule-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './interview-schedule-list.component.html',
   styleUrls: ['./interview-schedule-list.component.css']
 })
 export class InterviewScheduleListComponent implements OnInit {
+  schedules: InterviewSchedule[] = [];
+  searchTerm = '';
+  isLoading = false;
+  currentUserId = 0;
+  currentUserRole = '';
 
-  userId: number = 1;
-  scheduleList: InterviewSchedule[] = [];
+  constructor(
+    private service: InterviewScheduleService,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
-  statusOptions = [
-    { value: 1, label: 'Scheduled' },
-    { value: 2, label: 'Completed' },
-    { value: 3, label: 'Cancelled' },
-    { value: 4, label: 'Rescheduled' }
-  ];
-
-  constructor(private service: InterviewScheduleService) {}
-
-  ngOnInit(): void {
-    this.loadData();
-  }
-
-  loadData(): void {
-    this.service.getByUserId(this.userId).subscribe({
-      next: (data) => this.scheduleList = data,
-      error: (err) => console.error('Load Error:', err)
-    });
-  }
-
-  deleteRecord(id: number): void {
-    if (!confirm('Are you sure?')) return;
-    this.service.delete(id).subscribe({
-      next: () => { alert('Deleted Successfully'); this.loadData(); },
-      error: (err) => console.error('Delete Error:', err)
-    });
-  }
-
-  getStatusLabel(status: number): string {
-    return this.statusOptions.find(s => s.value === status)?.label || 'Unknown';
-  }
-
-  getStatusClass(status: number): string {
-    switch(status) {
-      case 1: return 'scheduled';
-      case 2: return 'completed';
-      case 3: return 'cancelled';
-      case 4: return 'rescheduled';
-      default: return '';
+  ngOnInit() {
+    const user = this.authService.getUser();
+    if (user) {
+      this.currentUserId = user.id;
+      this.currentUserRole = user.role;
+      this.loadSchedules();
+    } else {
+      alert('Please login first');
+      this.router.navigate(['/login']);
     }
   }
 
-  formatDisplay(date: any): string {
-    if (!date) return '-';
-    return new Date(date).toLocaleString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
+  loadSchedules() {
+    this.isLoading = true;
+    
+    if (this.currentUserRole === 'HR' || this.currentUserRole === 'Admin') {
+      this.service.getAll().subscribe(
+        (data: InterviewSchedule[]) => {
+          this.schedules = data || [];
+          this.isLoading = false;
+        },
+        (error: any) => {
+          console.error('Error loading schedules:', error);
+          this.isLoading = false;
+          alert('Failed to load schedules');
+        }
+      );
+    } else {
+      this.service.getByUserId(this.currentUserId).subscribe(
+        (data: InterviewSchedule[]) => {
+          this.schedules = data || [];
+          this.isLoading = false;
+        },
+        (error: any) => {
+          console.error('Error loading schedules:', error);
+          this.isLoading = false;
+          alert('Failed to load schedules');
+        }
+      );
+    }
+  }
+
+  get filteredSchedules() {
+    if (!this.searchTerm) return this.schedules;
+    
+    const term = this.searchTerm.toLowerCase();
+    return this.schedules.filter(s =>
+      s.interviewTitle?.toLowerCase().includes(term) ||
+      s.interviewBy?.toLowerCase().includes(term)
+    );
+  }
+
+  onEdit(schedule: InterviewSchedule) {
+    sessionStorage.setItem('editSchedule', JSON.stringify(schedule));
+    this.router.navigate(['/interview-schedule']);
+  }
+
+  onDelete(schedule: InterviewSchedule) {
+    if (confirm(`Delete interview "${schedule.interviewTitle}"?`)) {
+      this.service.delete(schedule.id).subscribe(
+        () => {
+          alert('Interview deleted successfully!');
+          this.loadSchedules();
+        },
+        (error: any) => {
+          console.error('Error deleting:', error);
+          alert('Failed to delete interview');
+        }
+      );
+    }
+  }
+
+  onAddNew() {
+    sessionStorage.removeItem('editSchedule');
+    this.router.navigate(['/interview-schedule']);
+  }
+
+  getStatusLabel(status: number): string {
+    const statusMap: Record<number, string> = {
+      0: 'Pending',
+      1: 'Scheduled',
+      2: 'Completed',
+      3: 'Cancelled'
+    };
+    return statusMap[status] || 'Unknown';
+  }
+
+  getStatusClass(status: number): string {
+    const classMap: Record<number, string> = {
+      0: 'status-pending',
+      1: 'status-scheduled',
+      2: 'status-completed',
+      3: 'status-cancelled'
+    };
+    return classMap[status] || 'status-pending';
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  }
+
+  get totalSchedules(): number {
+    return this.schedules.length;
+  }
+
+  get upcomingSchedules(): number {
+    return this.schedules.filter(s => s.status === 1).length;
+  }
+
+  get completedSchedules(): number {
+    return this.schedules.filter(s => s.status === 2).length;
+  }
+
+  trackBySchedule(index: number, schedule: InterviewSchedule) {
+    return schedule.id;
   }
 }
