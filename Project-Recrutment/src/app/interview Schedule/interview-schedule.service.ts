@@ -19,13 +19,14 @@ export class InterviewScheduleService {
     const urls = typeof userId === 'number'
       ? [
           `${this.baseUrl}/get/${userId}`,
+          `${this.baseUrl}/get/userId/${userId}`,
+          `${this.baseUrl}/get/userId?userId=${userId}`,
           `${this.baseUrl}/Get/${userId}`,
-          `${this.baseUrl}/Select/${userId}`,
         ]
       : [
-          `${this.baseUrl}/list`,
-          `${this.baseUrl}/List`,
-          `${this.baseUrl}/Select`,
+          `${this.baseUrl}/get-all`,
+          `${this.baseUrl}/getAll`,
+          `${this.baseUrl}/GetAll`,
         ];
 
     return this.getManyWithFallback(urls);
@@ -221,7 +222,7 @@ export class InterviewScheduleService {
       interviewTitle: String(raw?.interviewTitle ?? raw?.InterviewTitle ?? ''),
       interviewDateTime: String(raw?.interviewDateTime ?? raw?.InterviewDateTime ?? ''),
       interviewBy: String(raw?.interviewBy ?? raw?.InterviewBy ?? ''),
-      status: Number(raw?.status ?? raw?.Status ?? 0) as InterviewSchedule['status'],
+      status: Number(raw?.status ?? raw?.Status ?? 1) as InterviewSchedule['status'],
       comments: toNullable(raw?.comments ?? raw?.Comments),
       recordingPath: toNullable(raw?.recordingPath ?? raw?.RecordingPath),
     };

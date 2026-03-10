@@ -2,8 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import {
+  InterviewSchedule,
+  InterviewStatus,
+  InterviewStatusLabels,
+  InterviewStatusClasses
+} from './interview-schedule.model';
 import { InterviewScheduleService } from './interview-schedule.service';
-import { InterviewSchedule } from './interview-schedule.model';
 import { AuthService } from '../service/auth.service';
 
 @Component({
@@ -11,31 +16,60 @@ import { AuthService } from '../service/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './interview-schedule-list.component.html',
-  styleUrls: ['./interview-schedule-list.component.css']
+  styleUrls: ['./interview-schedule-list.component.css'],
 })
 export class InterviewScheduleListComponent implements OnInit {
-  schedules: InterviewSchedule[] = [];
-  searchTerm = '';
+  interviews: InterviewSchedule[] = [];
+  filtered: InterviewSchedule[] = [];
+  searchQuery = '';
   isLoading = false;
+  errorMsg = '';
+
   currentUserId = 0;
   currentUserRole = '';
 
+  // Delete confirm
+  showDeleteModal = false;
+  deleteTargetId: number | null = null;
+
+  // Toast
+  toastMessage = '';
+  toastVisible = false;
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Expose maps/enums to template
+  StatusLabels = InterviewStatusLabels as Record<number, string>;
+  StatusClasses = InterviewStatusClasses as Record<number, string>;
+  InterviewStatus = InterviewStatus;
+
+  // Stats
+  get totalCount(): number { return this.interviews.length; }
+  get scheduledCount(): number {
+    return this.interviews.filter(i => Number(i.status) === InterviewStatus.Scheduled).length;
+  }
+  get completedCount(): number {
+    return this.interviews.filter(i => Number(i.status) === InterviewStatus.Completed).length;
+  }
+  get cancelledCount(): number {
+    return this.interviews.filter(i => Number(i.status) === InterviewStatus.Cancelled).length;
+  }
+
   constructor(
-    private service: InterviewScheduleService,
-    private router: Router,
-    private authService: AuthService
+    private readonly service: InterviewScheduleService,
+    private readonly router: Router,
+    private readonly authService: AuthService
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     const user = this.authService.getUser();
     if (user?.id) {
       this.currentUserId = Number(user.id);
       this.currentUserRole = String(user.role ?? '');
-      this.loadSchedules();
+      this.loadData();
       return;
     }
 
-    // Fallback for refresh when in-memory auth is empty
+    // Fallback for stale in-memory auth state after page refresh
     try {
       const stored = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
       const parsed = stored ? JSON.parse(stored) : null;
@@ -43,136 +77,124 @@ export class InterviewScheduleListComponent implements OnInit {
       if (fallbackId > 0) {
         this.currentUserId = fallbackId;
         this.currentUserRole = String(parsed?.role ?? '');
-        this.loadSchedules();
+        this.loadData();
         return;
       }
     } catch {}
 
-    alert('Please login first');
+    this.errorMsg = 'Please login first.';
     this.router.navigate(['/login']);
   }
 
-  loadSchedules() {
+  loadData(): void {
     this.isLoading = true;
+    this.errorMsg = '';
+
     const role = this.currentUserRole.toLowerCase();
     const isHrOrAdmin = role === 'hr' || role === 'admin';
     const source$ = isHrOrAdmin
       ? this.service.getAll()
       : this.service.getByUserId(this.currentUserId);
 
-    source$.subscribe(
-      (response: any) => {
+    source$.subscribe({
+      next: (response: any) => {
         const rows = this.extractRows(response);
-        this.schedules = rows.map((row: any) => this.normalizeSchedule(row));
+        this.interviews = rows.map((row: any) => this.normalizeSchedule(row));
+        this.applyFilter();
         this.isLoading = false;
       },
-      (error: any) => {
-        console.error('Error loading schedules:', error);
+      error: (err: any) => {
+        console.error('Error loading interviews:', err);
+        this.errorMsg = this.extractErrorMessage(err, 'Failed to load interviews. Please try again.');
+        this.interviews = [];
+        this.filtered = [];
         this.isLoading = false;
-        alert('Failed to load schedules');
-      }
-    );
+      },
+    });
   }
 
-  get filteredSchedules() {
-    if (!this.searchTerm) return this.schedules;
-
-    const term = this.searchTerm.toLowerCase();
-    return this.schedules.filter(s =>
-      s.interviewTitle?.toLowerCase().includes(term) ||
-      s.interviewBy?.toLowerCase().includes(term)
-    );
+  onSearch(): void {
+    this.applyFilter();
   }
 
-  onEdit(schedule: InterviewSchedule) {
-    sessionStorage.setItem('editSchedule', JSON.stringify(schedule));
-    this.router.navigate(['/interview-schedule/edit', schedule.id]);
-  }
-
-  onDelete(schedule: InterviewSchedule) {
-    if (confirm(`Delete interview "${schedule.interviewTitle}"?`)) {
-      this.service.delete(schedule.id).subscribe(
-        () => {
-          alert('Interview deleted successfully!');
-          this.loadSchedules();
-        },
-        (error: any) => {
-          console.error('Error deleting:', error);
-          alert('Failed to delete interview');
-        }
-      );
-    }
-  }
-
-  onAddNew() {
+  navigateToAdd(): void {
     sessionStorage.removeItem('editSchedule');
     this.router.navigate(['/interview-schedule/add']);
   }
 
-  getStatusLabel(status: number | string): string {
-    const key = Number(status);
-    const statusMap: Record<number, string> = {
-      1: 'Scheduled',
-      2: 'Completed',
-      3: 'Cancelled'
-    };
-    return statusMap[key] || 'Unknown';
+  navigateToEdit(id: number): void {
+    const row = this.interviews.find(i => i.id === id);
+    if (row) {
+      sessionStorage.setItem('editSchedule', JSON.stringify(row));
+    }
+    this.router.navigate(['/interview-schedule/edit', id]);
   }
 
-  getStatusClass(status: number | string): string {
-    const key = Number(status);
-    const classMap: Record<number, string> = {
-      1: 'scheduled',
-      2: 'completed',
-      3: 'cancelled'
-    };
-    return classMap[key] || 'scheduled';
+  openDeleteModal(id: number): void {
+    this.deleteTargetId = id;
+    this.showDeleteModal = true;
   }
 
-  formatDate(dateString: string): string {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.deleteTargetId = null;
   }
 
-  getTitleBadge(title: string): string {
-    const value = (title || '').trim();
-    if (!value) return 'IV';
-    return value.slice(0, 2).toUpperCase();
+  confirmDelete(): void {
+    if (this.deleteTargetId === null) return;
+
+    this.service.delete(this.deleteTargetId).subscribe({
+      next: () => {
+        this.interviews = this.interviews.filter(i => i.id !== this.deleteTargetId);
+        this.applyFilter();
+        this.closeDeleteModal();
+        this.showToast('Interview deleted successfully');
+      },
+      error: (err: any) => {
+        console.error('Error deleting interview:', err);
+        this.closeDeleteModal();
+        this.showToast('Failed to delete interview');
+      },
+    });
   }
 
-  get totalSchedules(): number {
-    return this.schedules.length;
+  formatDate(dtStr: string): string {
+    if (!dtStr) return '-';
+    return new Date(dtStr).toLocaleDateString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric',
+    });
   }
 
-  get upcomingSchedules(): number {
-    return this.schedules.filter(s => Number(s.status) === 1).length;
+  formatTime(dtStr: string): string {
+    if (!dtStr) return '';
+    return new Date(dtStr).toLocaleTimeString('en-IN', {
+      hour: '2-digit', minute: '2-digit', hour12: true,
+    });
   }
 
-  get completedSchedules(): number {
-    return this.schedules.filter(s => Number(s.status) === 2).length;
+  initials(title: string): string {
+    return title?.trim()?.[0]?.toUpperCase() || 'I';
   }
 
-  trackBySchedule(index: number, schedule: InterviewSchedule) {
-    return schedule.id;
+  showToast(msg: string): void {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastMessage = msg;
+    this.toastVisible = true;
+    this.toastTimer = setTimeout(() => {
+      this.toastVisible = false;
+    }, 3000);
   }
 
-  private normalizeSchedule(raw: any): InterviewSchedule {
-    const toNullable = (v: unknown): string | null => {
-      const text = String(v ?? '').trim();
-      return text ? text : null;
-    };
-
-    return {
-      id: Number(raw?.id ?? raw?.Id ?? raw?.interviewScheduleId ?? raw?.InterviewScheduleId ?? 0),
-      userId: Number(raw?.userId ?? raw?.UserId ?? 0),
-      interviewTitle: String(raw?.interviewTitle ?? raw?.InterviewTitle ?? ''),
-      interviewDateTime: String(raw?.interviewDateTime ?? raw?.InterviewDateTime ?? ''),
-      interviewBy: String(raw?.interviewBy ?? raw?.InterviewBy ?? ''),
-      status: Number(raw?.status ?? raw?.Status ?? 1) as InterviewSchedule['status'],
-      comments: toNullable(raw?.comments ?? raw?.Comments),
-      recordingPath: toNullable(raw?.recordingPath ?? raw?.RecordingPath),
-    };
+  private applyFilter(): void {
+    const q = this.searchQuery.toLowerCase().trim();
+    this.filtered = q
+      ? this.interviews.filter(i =>
+          (i.interviewTitle ?? '').toLowerCase().includes(q) ||
+          (i.interviewBy ?? '').toLowerCase().includes(q)
+        )
+      : [...this.interviews];
   }
 
   private extractRows(response: any): any[] {
@@ -197,5 +219,33 @@ export class InterviewScheduleListComponent implements OnInit {
     if (Array.isArray(response?.$values)) return response.$values;
     if (nested && typeof nested === 'object') return [nested];
     return [];
+  }
+
+  private normalizeSchedule(raw: any): InterviewSchedule {
+    const toNullable = (v: unknown): string | null => {
+      const text = String(v ?? '').trim();
+      return text ? text : null;
+    };
+
+    return {
+      id: Number(raw?.id ?? raw?.Id ?? raw?.interviewScheduleId ?? raw?.InterviewScheduleId ?? 0),
+      userId: Number(raw?.userId ?? raw?.UserId ?? 0),
+      interviewTitle: String(raw?.interviewTitle ?? raw?.InterviewTitle ?? ''),
+      interviewDateTime: String(raw?.interviewDateTime ?? raw?.InterviewDateTime ?? ''),
+      interviewBy: String(raw?.interviewBy ?? raw?.InterviewBy ?? ''),
+      status: Number(raw?.status ?? raw?.Status ?? InterviewStatus.Scheduled) as InterviewSchedule['status'],
+      comments: toNullable(raw?.comments ?? raw?.Comments),
+      recordingPath: toNullable(raw?.recordingPath ?? raw?.RecordingPath),
+    };
+  }
+
+  private extractErrorMessage(err: any, fallback: string): string {
+    return (
+      err?.error?.message ||
+      err?.error?.title ||
+      err?.error?.error ||
+      err?.message ||
+      fallback
+    );
   }
 }

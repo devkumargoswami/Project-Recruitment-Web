@@ -1,89 +1,145 @@
-<div class="list-page">
-  <div class="header-section">
-    <div>
-      <h1>Interview Schedules</h1>
-      <p class="subtitle">View and manage all interview plans</p>
+<!-- interview-schedule-list.component.html -->
+<div class="page-wrapper">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Interview Schedule</h1>
+      <p class="page-sub">View and manage all interview appointments</p>
     </div>
-    <button (click)="onAddNew()" class="btn btn-primary">+ Add New Interview</button>
+    <button class="btn-add" (click)="navigateToAdd()">
+      <span class="btn-icon">＋</span> Add New Interview
+    </button>
   </div>
 
-  <div class="stats-section">
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-number">{{ totalSchedules }}</div>
-      <div class="stat-label">Total Interviews</div>
+      <div class="stat-num accent">{{ totalCount }}</div>
+      <div class="stat-label">TOTAL INTERVIEWS</div>
     </div>
     <div class="stat-card">
-      <div class="stat-number">{{ upcomingSchedules }}</div>
-      <div class="stat-label">Scheduled</div>
+      <div class="stat-num green">{{ scheduledCount }}</div>
+      <div class="stat-label">SCHEDULED / PENDING</div>
     </div>
     <div class="stat-card">
-      <div class="stat-number">{{ completedSchedules }}</div>
-      <div class="stat-label">Completed</div>
+      <div class="stat-num warn">{{ completedCount }}</div>
+      <div class="stat-label">COMPLETED</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num danger">{{ cancelledCount }}</div>
+      <div class="stat-label">CANCELLED</div>
     </div>
   </div>
 
-  <div class="list-container">
-    <div class="search-section">
-      <div class="search-input-wrapper">
-        <span class="search-icon">Search</span>
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          placeholder="Search by title or interviewer..."
-          class="search-input"
-        />
-      </div>
-      <span class="result-count">{{ filteredSchedules.length }} of {{ schedules.length }}</span>
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearch()"
+        placeholder="Search by title or interviewer..."
+        class="search-input"
+      />
     </div>
+    <div class="count-badge">{{ filtered.length }} of {{ totalCount }}</div>
+  </div>
 
-    <div class="loading" *ngIf="isLoading">
-      <p>Loading interview schedules...</p>
-    </div>
+  <!-- LOADING -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading interviews...</p>
+  </div>
 
-    <div class="table-wrapper" *ngIf="!isLoading">
-      <table class="interview-table" *ngIf="filteredSchedules.length > 0; else noData">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Interviewer</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Comments</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of filteredSchedules; trackBy: trackBySchedule" class="table-row">
-            <td class="title-cell">
-              <div class="title-badge">{{ getTitleBadge(item.interviewTitle) }}</div>
+  <!-- ERROR -->
+  <div class="error-state" *ngIf="!isLoading && errorMsg">
+    <p>{{ errorMsg }}</p>
+    <button class="btn-add" (click)="loadData()">Retry</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap" *ngIf="!isLoading && !errorMsg">
+    <table>
+      <thead>
+        <tr>
+          <th>Interview Title</th>
+          <th>Date &amp; Time</th>
+          <th>Interviewed By</th>
+          <th>Status</th>
+          <th>Comments</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- EMPTY STATE -->
+        <tr *ngIf="filtered.length === 0">
+          <td colspan="6" class="empty-row">
+            <div class="empty-state">
+              <div class="empty-icon">📋</div>
+              <p>No interviews found</p>
+              <span>Try a different search or add a new interview</span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- ROWS -->
+        <tr *ngFor="let row of filtered">
+          <td>
+            <div class="cell-main">
+              <div class="avatar">{{ initials(row.interviewTitle) }}</div>
               <div>
-                <div class="title-main">{{ item.interviewTitle }}</div>
-                <div class="title-sub">{{ formatDate(item.interviewDateTime) }}</div>
+                <div class="cell-title">{{ row.interviewTitle }}</div>
               </div>
-            </td>
-            <td class="muted-cell">{{ item.interviewBy || '-' }}</td>
-            <td class="date-cell">{{ formatDate(item.interviewDateTime) }}</td>
-            <td>
-              <span class="status-badge" [ngClass]="getStatusClass(item.status)">
-                {{ getStatusLabel(item.status) }}
-              </span>
-            </td>
-            <td class="comment-cell">{{ item.comments || '-' }}</td>
-            <td class="action-cell">
-              <button (click)="onEdit(item)" class="action-btn edit-btn" title="Edit">Edit</button>
-              <button (click)="onDelete(item)" class="action-btn delete-btn" title="Delete">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </td>
+          <td>
+            <div class="date-cell">
+              {{ formatDate(row.interviewDateTime) }}
+              <div class="time">{{ formatTime(row.interviewDateTime) }}</div>
+            </div>
+          </td>
+          <td>{{ row.interviewBy || '—' }}</td>
+          <td>
+            <span class="badge" [ngClass]="StatusClasses[row.status]">
+              <span class="badge-dot"></span>
+              {{ StatusLabels[row.status] }}
+            </span>
+          </td>
+          <td class="comment-cell">{{ row.comments || '—' }}</td>
+          <td>
+            <div class="actions">
+              <button class="btn-edit" (click)="navigateToEdit(row.id)">
+                ✏️ Edit
+              </button>
+              <button class="btn-del" (click)="openDeleteModal(row.id)">
+                🗑️ Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-      <ng-template #noData>
-        <div class="no-data">
-          <p class="no-data-icon">IV</p>
-          <p class="no-data-text">No interviews found</p>
-          <p class="no-data-hint">Click "Add New Interview" to create one</p>
-        </div>
-      </ng-template>
+</div>
+
+<!-- ===== DELETE CONFIRM MODAL ===== -->
+<div class="modal-overlay" [class.open]="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">🗑️</div>
+    <div class="modal-title">Delete Interview?</div>
+    <p class="confirm-msg">This action cannot be undone. The record will be permanently removed.</p>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeDeleteModal()">Cancel</button>
+      <button class="btn-confirm-del" (click)="confirmDelete()">Yes, Delete</button>
     </div>
   </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" [class.show]="toastVisible">
+  <span class="toast-dot"></span>
+  {{ toastMessage }}
 </div>
