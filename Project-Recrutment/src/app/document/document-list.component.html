@@ -5,7 +5,7 @@
   </div>
 
   <div class="search-section">
-    <div class="search-group">
+    <!-- <div class="search-group">
       <label for="searchId">Search by Document ID:</label>
       <input 
         type="number" 
@@ -13,7 +13,7 @@
         [(ngModel)]="searchId" 
         placeholder="Enter Document ID"
       >
-    </div>
+    </div> -->
     <div class="search-group">
       <label for="searchUserId">Search by User ID:</label>
       <input 
@@ -24,7 +24,7 @@
       >
     </div>
     <button class="btn-search" (click)="searchDocument()">Search</button>
-    <button class="btn-refresh" (click)="getDocuments()">Refresh</button>
+    <button class="btn-refresh" (click)="loadDocuments()">Refresh</button>
   </div>
 
   <div class="error-message" *ngIf="error">

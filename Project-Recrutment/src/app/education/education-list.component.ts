@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EducationService } from '../service/education.service';
 import { EducationModel } from './education.model';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-education-list',
@@ -37,10 +38,16 @@ export class EducationListComponent implements OnInit {
     isContinue: false
   };
 
-  constructor(private educationService: EducationService) {}
+  currentUserId: number | null = null;
+  currentUserRole: string | null = null;
+
+  constructor(
+    private educationService: EducationService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    this.openAddModal();
+    this.loadEducation();
   }
 
   /** OPEN MODAL */
@@ -73,26 +80,31 @@ export class EducationListComponent implements OnInit {
   }
 
   /** LOAD EDUCATION */
-  getEducation() {
+  loadEducation() {
     this.loading = true;
     this.error = null;
 
-    this.educationService.getCurrentUserId().subscribe({
-      next: (userId: number) => {
-        this.educationService.getByUserId(userId).subscribe({
-          next: (data: EducationModel[]) => {
-            this.educationList = data;
-            this.loading = false;
-          },
-          error: (err) => {
-            this.error = 'Error loading education: ' + err.message;
-            this.loading = false;
-          }
-        });
+    // Get current user information
+    const currentUser = this.authService.getUser();
+    if (!currentUser) {
+      this.loading = false;
+      this.error = 'User not authenticated';
+      return;
+    }
+
+    this.currentUserId = currentUser.id;
+    this.currentUserRole = currentUser.role;
+    console.log('Current user ID:', this.currentUserId, 'Role:', this.currentUserRole);
+
+    this.educationService.getByUserId(this.currentUserId).subscribe({
+      next: (data: EducationModel[]) => {
+        this.loading = false;
+        this.educationList = data;
+        this.error = null;
       },
       error: (err) => {
         this.loading = false;
-        this.error = 'Error getting user ID: ' + err.message;
+        this.error = 'Error loading education: ' + err.message;
       }
     });
   }
@@ -131,7 +143,7 @@ export class EducationListComponent implements OnInit {
         }
       });
     } else {
-      this.getEducation();
+      this.loadEducation();
     }
   }
 
@@ -181,14 +193,14 @@ export class EducationListComponent implements OnInit {
           // Close modal and clear form
           this.closeAddModal();
           // Refresh the list
-          this.getEducation();
+          this.loadEducation();
         } else if (response && response.message) {
           this.error = response.message;
         } else {
           this.error = 'Education added successfully, but response format is unexpected';
           // Still refresh the list since the operation likely succeeded
           this.closeAddModal();
-          this.getEducation();
+          this.loadEducation();
         }
       },
       error: (err: any) => {
@@ -259,14 +271,14 @@ export class EducationListComponent implements OnInit {
           // Close modal and clear form
           this.closeAddModal();
           // Refresh the list
-          this.getEducation();
+          this.loadEducation();
         } else if (response && response.message) {
           this.error = response.message;
         } else {
           this.error = 'Education updated successfully';
           // Still refresh the list since the operation likely succeeded
           this.closeAddModal();
-          this.getEducation();
+          this.loadEducation();
         }
       },
       error: (err: any) => {
@@ -291,13 +303,13 @@ export class EducationListComponent implements OnInit {
           if (response && (response.status === 200 || response.success || response === null)) {
             this.error = null;
             // Refresh the list
-            this.getEducation();
+            this.loadEducation();
           } else if (response && response.message) {
             this.error = response.message;
           } else {
             this.error = 'Education deleted successfully';
             // Still refresh the list since the operation likely succeeded
-            this.getEducation();
+            this.loadEducation();
           }
         },
         error: (err: any) => {

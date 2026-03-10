@@ -37,6 +37,11 @@ export class SkillComponent {
     private authService: AuthService
   ) {}
 
+  goBack(): void {
+    // Navigate back to profile page
+    window.history.back();
+  }
+
   ngOnInit(): void {
     this.loadSkills();
   }

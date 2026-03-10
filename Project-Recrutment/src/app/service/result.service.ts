@@ -20,6 +20,10 @@ export class ResultService {
     return this.http.get<Result[]>(`${this.apiUrl}/GetByCandidate/${id}`);
   }
 
+  getAllResults(): Observable<Result[]> {
+    return this.http.get<Result[]>(`${this.apiUrl}/GetAllResult`);
+  }
+
   updateResult(result: Result): Observable<any> {
     return this.http.put(`${this.apiUrl}/Update`, result);
   }

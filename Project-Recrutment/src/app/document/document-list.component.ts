@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DocumentService } from '../service/document.service';
 import { DocumentModel } from './document.model';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-document-list',
@@ -31,26 +32,35 @@ export class DocumentListComponent implements OnInit {
     createDatetime: ''
   };
 
-  constructor(private documentService: DocumentService) {}
+
+  currentUserId: number | null = null;
+  currentUserRole: string | null = null;
+
+  constructor(
+    private documentService: DocumentService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    this.getDocuments();
+    this.loadDocuments();
   }
 
   /** OPEN MODAL */
   openAddModal() {
     this.isAddModalOpen = true;
-    this.resetForm();
+    // Reset form but keep user ID from current session
+    this.newDocument = {
+      documentId: 0,
+      userId: this.currentUserId || 0,
+      documentName: '',
+      documentPath: '',
+      createDatetime: ''
+    };
   }
 
   /** CLOSE MODAL */
   closeAddModal() {
     this.isAddModalOpen = false;
-    this.resetForm();
-  }
-
-  /** RESET FORM */
-  resetForm() {
     this.newDocument = {
       documentId: 0,
       userId: 0,
@@ -61,26 +71,31 @@ export class DocumentListComponent implements OnInit {
   }
 
   /** LOAD DOCUMENTS */
-  getDocuments() {
+  loadDocuments() {
     this.loading = true;
     this.error = null;
 
-    this.documentService.getCurrentUserId().subscribe({
-      next: (userId: number) => {
-        this.documentService.getByUserId(userId).subscribe({
-          next: (data: DocumentModel[]) => {
-            this.documents = data;
-            this.loading = false;
-          },
-          error: (err) => {
-            this.error = 'Error loading documents: ' + err.message;
-            this.loading = false;
-          }
-        });
+    // Get current user information
+    const currentUser = this.authService.getUser();
+    if (!currentUser) {
+      this.loading = false;
+      this.error = 'User not authenticated';
+      return;
+    }
+
+    this.currentUserId = currentUser.id;
+    this.currentUserRole = currentUser.role;
+    console.log('Current user ID:', this.currentUserId, 'Role:', this.currentUserRole);
+
+    this.documentService.getByUserId(this.currentUserId).subscribe({
+      next: (data: DocumentModel[]) => {
+        this.loading = false;
+        this.documents = data;
+        this.error = null;
       },
       error: (err) => {
         this.loading = false;
-        this.error = 'Error getting user ID: ' + err.message;
+        this.error = 'Error loading documents: ' + err.message;
       }
     });
   }
@@ -119,7 +134,7 @@ export class DocumentListComponent implements OnInit {
         }
       });
     } else {
-      this.getDocuments();
+      this.loadDocuments();
     }
   }
 
@@ -131,7 +146,6 @@ export class DocumentListComponent implements OnInit {
     console.log('User ID value:', this.newDocument.userId);
     console.log('Document Name type:', typeof this.newDocument.documentName);
     console.log('Document Name value:', this.newDocument.documentName);
-    console.log('Document Path:', this.newDocument.documentPath);
     
     // Convert userId to number if it's a string (common issue)
     if (typeof this.newDocument.userId === 'string') {
@@ -176,14 +190,14 @@ export class DocumentListComponent implements OnInit {
           // Close modal and clear form
           this.closeAddModal();
           // Refresh the list
-          this.getDocuments();
+          this.loadDocuments();
         } else if (response && response.message) {
           this.error = response.message;
         } else {
           this.error = 'Document added successfully, but response format is unexpected';
           // Still refresh the list since the operation likely succeeded
           this.closeAddModal();
-          this.getDocuments();
+          this.loadDocuments();
         }
       },
       error: (err: any) => {
@@ -194,6 +208,7 @@ export class DocumentListComponent implements OnInit {
       }
     });
   }
+
 
   /** EDIT DOCUMENT */
   editDocument(doc: DocumentModel) {
@@ -256,14 +271,14 @@ export class DocumentListComponent implements OnInit {
           // Close modal and clear form
           this.closeAddModal();
           // Refresh the list
-          this.getDocuments();
+          this.loadDocuments();
         } else if (response && response.message) {
           this.error = response.message;
         } else {
           this.error = 'Document updated successfully';
           // Still refresh the list since the operation likely succeeded
           this.closeAddModal();
-          this.getDocuments();
+          this.loadDocuments();
         }
       },
       error: (err: any) => {
@@ -287,14 +302,14 @@ export class DocumentListComponent implements OnInit {
           // Check if response indicates success (handle different response formats)
           if (response && (response.status === 200 || response.success || response === null)) {
             this.error = null;
-            // Refresh the list
-            this.getDocuments();
+          // Refresh the list
+          this.loadDocuments();
           } else if (response && response.message) {
             this.error = response.message;
           } else {
             this.error = 'Document deleted successfully';
-            // Still refresh the list since the operation likely succeeded
-            this.getDocuments();
+          // Still refresh the list since the operation likely succeeded
+          this.loadDocuments();
           }
         },
         error: (err: any) => {

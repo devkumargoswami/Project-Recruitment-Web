@@ -96,6 +96,33 @@ export class DocumentComponent implements OnInit {
     this.errorMessage = '';
   }
 
+  /** UPLOAD FILE TO SERVER AND GET PATH */
+  uploadFileAndGetPath(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // Create FormData to send file
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Call your file upload API endpoint
+      // This should be an API that accepts file upload and returns the file path/URL
+      this.documentService.uploadFile(formData).subscribe({
+        next: (response: any) => {
+          // Assuming the API returns the file path in response.path or response.url
+          const filePath = response.path || response.url || response.filePath;
+          if (filePath) {
+            resolve(filePath);
+          } else {
+            reject('File upload failed - no path returned');
+          }
+        },
+        error: (err: any) => {
+          console.error('File upload error:', err);
+          reject('File upload failed: ' + err.message);
+        }
+      });
+    });
+  }
+
   onSubmit(): void {
     // Check if document type is selected
     const formValue = this.documentForm.value;
@@ -118,30 +145,64 @@ export class DocumentComponent implements OnInit {
 
     this.loading = true;
 
-    // Convert to the exact format your API expects
-    const payload = {
-      userId: this.userId,
-      documentName: this.documentForm.value.documentName,
-      documentPath: this.selectedFile ? this.selectedFile.name : '',
-      createDatetime: new Date().toISOString()
-    };
+    // If there's a file to upload, upload it first and then save document
+    if (this.selectedFile) {
+      this.uploadFileAndGetPath(this.selectedFile).then(filePath => {
+        // Convert to the exact format your API expects
+        const payload = {
+          userId: this.userId,
+          documentName: this.documentForm.value.documentName,
+          documentPath: filePath, // Use the uploaded file path
+          createDatetime: new Date().toISOString()
+        };
 
-    const req = this.isEditMode
-      ? this.documentService.update(payload)
-      : this.documentService.insert(payload);
+        const req = this.isEditMode
+          ? this.documentService.update(payload)
+          : this.documentService.insert(payload);
 
-    req.subscribe({
-      next: () => {
+        req.subscribe({
+          next: () => {
+            this.loading = false;
+            this.successMessage = this.isEditMode
+              ? 'Document updated successfully'
+              : 'Document uploaded successfully';
+            setTimeout(() => this.router.navigate(['/dashboard/documents']), 1200);
+          },
+          error: () => { 
+            this.loading = false;
+            this.errorMessage = 'Operation failed. Try again.';
+          }
+        });
+      }).catch(error => {
         this.loading = false;
-        this.successMessage = this.isEditMode
-          ? 'Document updated successfully'
-          : 'Document uploaded successfully';
-        setTimeout(() => this.router.navigate(['/dashboard/documents']), 1200);
-      },
-      error: () => { 
-        this.loading = false;
-        this.errorMessage = 'Operation failed. Try again.';
-      }
-    });
+        this.errorMessage = error;
+      });
+    } else {
+      // No file to upload, just save the document (for edit mode)
+      const payload = {
+        userId: this.userId,
+        documentName: this.documentForm.value.documentName,
+        documentPath: '', // No file path for edit without new file
+        createDatetime: new Date().toISOString()
+      };
+
+      const req = this.isEditMode
+        ? this.documentService.update(payload)
+        : this.documentService.insert(payload);
+
+      req.subscribe({
+        next: () => {
+          this.loading = false;
+          this.successMessage = this.isEditMode
+            ? 'Document updated successfully'
+            : 'Document uploaded successfully';
+          setTimeout(() => this.router.navigate(['/dashboard/documents']), 1200);
+        },
+        error: () => { 
+          this.loading = false;
+          this.errorMessage = 'Operation failed. Try again.';
+        }
+      });
+    }
   }
 }

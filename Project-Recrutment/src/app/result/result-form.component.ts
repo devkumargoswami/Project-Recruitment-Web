@@ -18,6 +18,7 @@ export class ResultComponent implements OnInit {
   submitting = false;
   error = '';
   isEditMode = false;
+  resultId: number | null = null;
   get isEditing(): boolean { return this.isEditMode; }
 
   constructor(
@@ -29,55 +30,98 @@ export class ResultComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const user = this.authService.getUser();
-    if (!user) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    if (user.role !== 'HR' && user.role !== 'Admin') {
-      this.error = 'Only HR/Admin can access this form.';
-      return;
-    }
-
-    this.resultForm = this.fb.group({
-      result_id: [0, [Validators.required, Validators.min(0)]],
-      candidate_id: [0, [Validators.required, Validators.min(1)]],
-      technical_marks: [0, [Validators.required, Validators.min(0)]],
-      hr_marks: [0, [Validators.required, Validators.min(0)]]
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.resultId = +params['id'];
+        this.loadResult(this.resultId);
+      }
     });
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.isEditMode = true;
-      this.resultForm.patchValue({ result_id: Number(idParam) });
-    }
+    // Initialize form
+    this.resultForm = this.fb.group({
+      candidate_id: ['', [Validators.required, Validators.min(1)]],
+      technical_marks: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      hr_marks: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
+    });
+  }
+
+  loadResult(id: number): void {
+    // For editing, we need to get the specific result by result_id
+    // Since we don't have a direct API for this, we'll use GetAllResult and filter
+    this.resultService.getAllResults().subscribe({
+      next: (results: Result[]) => {
+        // Find the specific result by result_id
+        const result = results.find(r => r.result_id === id);
+        if (result) {
+          this.resultForm.patchValue({
+            candidate_id: result.candidate_id,
+            technical_marks: result.technical_marks,
+            hr_marks: result.hr_marks
+          });
+        } else {
+          console.error('Result not found for editing:', id);
+          this.router.navigate(['/results']);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading result for editing:', err);
+        this.router.navigate(['/results']);
+      }
+    });
   }
 
   onSubmit(): void {
-    if (!this.resultForm || this.resultForm.invalid) {
-      this.resultForm?.markAllAsTouched();
+    if (this.resultForm.invalid || this.submitting) {
       return;
     }
 
     this.submitting = true;
-    this.error = '';
+    const resultData = {
+      candidate_id: this.resultForm.value.candidate_id,
+      technical_marks: this.resultForm.value.technical_marks,
+      hr_marks: this.resultForm.value.hr_marks
+    };
 
-    const payload = this.resultForm.value as Result;
-    const call = this.isEditMode
-      ? this.resultService.updateResult(payload)
-      : this.resultService.insertResult(payload);
-
-    call.subscribe({
-      next: () => {
-        this.submitting = false;
-        this.router.navigate(['/results']);
-      },
-      error: (err) => {
-        this.submitting = false;
-        this.error = err?.error?.message ?? 'Failed to save result.';
-      }
-    });
+    if (this.isEditMode && this.resultId) {
+      // Update existing result
+      const updateData: Result = {
+        result_id: this.resultId,
+        candidate_id: resultData.candidate_id,
+        technical_marks: resultData.technical_marks,
+        hr_marks: resultData.hr_marks
+      };
+      this.resultService.updateResult(updateData).subscribe({
+        next: (response: any) => {
+          this.submitting = false;
+          console.log('Result updated successfully:', response);
+          // Navigate back to results list after successful update
+          setTimeout(() => {
+            this.router.navigate(['/results']);
+          }, 100);
+        },
+        error: (err: any) => {
+          this.submitting = false;
+          console.error('Error updating result:', err);
+        }
+      });
+    } else {
+      // Insert new result - use any type to bypass result_id requirement for insertion
+      this.resultService.insertResult(resultData as any).subscribe({
+        next: (response: any) => {
+          this.submitting = false;
+          console.log('Result added successfully:', response);
+          // Navigate back to results list after successful addition
+          setTimeout(() => {
+            this.router.navigate(['/results']);
+          }, 100);
+        },
+        error: (err: any) => {
+          this.submitting = false;
+          console.error('Error inserting result:', err);
+        }
+      });
+    }
   }
 
   onCancel(): void {

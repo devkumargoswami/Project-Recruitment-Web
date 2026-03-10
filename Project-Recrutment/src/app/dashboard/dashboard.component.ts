@@ -303,16 +303,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ── Navigation ────────────────────────────────────────────────────
   showSection(id: string): void {
     const route = this.ROUTED_SECTIONS[id];
-    if (route) { this.router.navigate([route]); return; }
-
+    if (route) {
+      this.router.navigate([route]);
+      return;
+    }
+    if (id === 'results') {
+      this.router.navigate(['/results']);
+      return;
+    }
+    if (id === 'education') {
+      this.router.navigate(['/education']);
+      return;
+    }
+    if (id === 'documents') {
+      this.router.navigate(['/documents']);
+      return;
+    }
     this.currentSection = id;
     this.sidebarOpen = false;
     this.selectedUserForData = null;
-
-    switch (id) {
-      case 'education':  this.loadEducationData();  break;
-      case 'documents':  this.loadDocumentData();   break;
-      case 'interview':  this.loadInterviewData();  break;
+    
+    // Load data for sections that require user data
+    if (id === 'skills') {
+      this.loadSkillsData();
+    } else if (id === 'experience') {
+      this.loadExperienceData();
+    }else if (id === 'documents') {
+      this.loadDocumentData();
+    } else if (id === 'education') {
+      this.loadEducationData();
     }
 
     this.cdr.markForCheck();
@@ -342,7 +361,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   goToInterviewSchedule():     void { this.router.navigate(['/interview-schedule/add']);  }
   goToInterviewScheduleList(): void { this.router.navigate(['/interview-schedule/list']); }
-  editInterview(id: number):   void { this.router.navigate(['/interview-schedule/edit', id]); }
+  goToAddUser():    void { this.showSection('users'); }
 
   editEducation(id: number):  void { this.router.navigate([`/education/edit/${id}`]);  }
   editSkill(id: number):      void { this.router.navigate([`/skills/edit/${id}`]);     }

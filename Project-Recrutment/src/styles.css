@@ -1,1 +1,50 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Back button styles for skill and result lists */
+.back-section {
+  margin-top: 20px;
+  padding: 20px 0;
+  border-top: 1px solid #dee2e6;
+}
+
+.back-section .btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-section .btn-secondary:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.back-section .btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Large button styles for add result button */
+.btn-large {
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+
+.btn-large:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
