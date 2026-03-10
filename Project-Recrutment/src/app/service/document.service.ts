@@ -155,4 +155,62 @@ export class DocumentService {
 
     return { headers };
   }
+
+  /** HTTP Headers for File Upload */
+  private getFileUploadHeaders() {
+    // For file uploads, we don't set Content-Type as it will be set automatically by FormData
+    let headers = new HttpHeaders();
+
+    try {
+      let token = localStorage.getItem('token');
+
+      if (!token) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          token = user?.token || user?.accessToken || user?.authToken;
+        }
+      }
+
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
+    } catch (error) {
+      console.warn('Auth headers error:', error);
+    }
+
+    return { headers };
+  }
+
+  /** UPLOAD FILE */
+  uploadFile(formData: FormData): Observable<any> {
+    console.log('=== FILE UPLOAD DEBUG ===');
+    console.log('FormData contents:', formData);
+    
+    // Log the files in FormData
+    for (let [key, value] of formData.entries()) {
+      console.log(`FormData entry - Key: ${key}, Value:`, value);
+    }
+
+    return this.http.post(`${this.API}/Upload`, formData, this.getFileUploadHeaders()).pipe(
+      tap(response => {
+        console.log('=== FILE UPLOAD SUCCESS ===');
+        console.log('Response:', response);
+      }),
+      catchError(error => {
+        console.log('=== FILE UPLOAD ERROR ===');
+        console.log('Error status:', error.status);
+        console.log('Error statusText:', error.statusText);
+        console.log('Error message:', error.message);
+        console.log('Error details:', error.error);
+        console.log('Full error object:', error);
+        
+        if (error.error) {
+          console.log('Server error response:', error.error);
+        }
+        
+        return throwError(() => error);
+      })
+    );
+  }
 }
