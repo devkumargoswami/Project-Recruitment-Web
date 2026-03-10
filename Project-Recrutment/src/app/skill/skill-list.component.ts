@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SkillService } from './skill.service';
 import { SkillModel, ApiResponse } from './skill.model';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-skill',
@@ -36,6 +36,11 @@ export class SkillComponent {
     private skillService: SkillService,
     private authService: AuthService
   ) {}
+
+  goBack(): void {
+    // Navigate back to profile page
+    window.history.back();
+  }
 
   ngOnInit(): void {
     this.loadSkills();

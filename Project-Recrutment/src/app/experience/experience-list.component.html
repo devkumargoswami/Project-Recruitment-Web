@@ -1,114 +1,94 @@
-<div class="container">
-  <h2>Experience Management</h2>
-
-  <!-- Main Controls -->
-  <div class="controls">
-    <button class="add-btn" (click)="openAddModal()">Add Experience</button>
-    <button (click)="getExperiences()">View All Experiences</button>
+<div class="list-page">
+  <div class="header-section">
+    <div>
+      <h1>All Experiences</h1>
+      <p class="subtitle">View and manage your professional experiences</p>
+    </div>
+    <button (click)="onAddNew()" class="btn btn-primary">
+      + Add New Experience
+    </button>
   </div>
 
-  <!-- Search Experience Form -->
-  <div class="form-container">
-    <h3>Search Experiences</h3>
-    <div class="form-group">
-      <label for="searchId">Experience ID</label>
-      <input type="number" id="searchId" [(ngModel)]="searchId" placeholder="Enter Experience ID (optional)">
+  <div class="stats-section">
+    <div class="stat-card">
+      <div class="stat-number">{{ experiences.length }}</div>
+      <div class="stat-label">Total Experiences</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ (experiences | filter: 'isCurrent' | slice:0:1).length }}</div>
+      <div class="stat-label">Currently Working</div>
+    </div>
+  </div>
+
+  <div class="list-container">
+    <div class="search-section">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Search by company or designation..."
+          class="search-input"
+        />
+      </div>
+      <span class="result-count">{{ filteredExperiences.length }} of {{ experiences.length }}</span>
     </div>
 
-    <div class="form-group">
-      <label for="searchUserId">User ID</label>
-      <input type="number" id="searchUserId" [(ngModel)]="searchUserId" placeholder="Enter User ID (optional)">
+    <div class="loading" *ngIf="isLoading">
+      <p>⏳ Loading experiences...</p>
     </div>
 
-    <button (click)="searchExperience()">Search</button>
-  </div>
+    <div class="table-wrapper" *ngIf="!isLoading">
+      <table class="experience-table" *ngIf="filteredExperiences.length > 0; else noData">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Designation</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let exp of filteredExperiences; trackBy: trackByExp" class="table-row">
+            <td class="company-cell">
+              <div class="company-badge">
+                {{ getFirstLetters(exp.companyName) }}
+              </div>
+              <span class="company-name">{{ exp.companyName }}</span>
+            </td>
+            <td class="designation-cell">{{ exp.designation }}</td>
+            <td class="date-cell">{{ exp.startDate }}</td>
+            <td class="date-cell">{{ exp.isCurrent ? '—' : exp.endDate }}</td>
+            <td class="duration-cell">
+              <strong>{{ calculateDuration(exp.startDate, exp.endDate, exp.isCurrent) }}</strong>
+            </td>
+            <td class="status-cell">
+              <span class="status-badge" [class.current]="exp.isCurrent">
+                {{ exp.isCurrent ? '🟢 Current' : '⚪ Completed' }}
+              </span>
+            </td>
+            <td class="action-cell">
+              <button (click)="onEdit(exp)" class="action-btn edit-btn" title="Edit">
+                ✏️ Edit
+              </button>
+              <button (click)="onDelete(exp)" class="action-btn delete-btn" title="Delete">
+                🗑️ Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-  <!-- Status Messages -->
-  <div *ngIf="loading" class="loading">Loading...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
-
-  <!-- Experience Table -->
-  <div *ngIf="experiences.length > 0" class="table-container">
-    <h3>Experience List</h3>
-    <table class="skill-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>User ID</th>
-          <th>Company Name</th>
-          <th>Designation</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Current</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let experience of experiences">
-          <td>{{ experience.id }}</td>
-          <td>{{ experience.userId }}</td>
-          <td>{{ experience.companyName }}</td>
-          <td>{{ experience.designation }}</td>
-          <td>{{ experience.startDate | date:'mediumDate' }}</td>
-          <td>{{ experience.isCurrent ? 'Present' : (experience.endDate | date:'mediumDate') }}</td>
-          <td>{{ experience.isCurrent ? 'Yes' : 'No' }}</td>
-          <td>
-            <button (click)="deleteExperience(experience.id)" class="delete-btn">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Add Experience Modal -->
-  <div class="modal-overlay" *ngIf="isAddModalOpen" (click)="closeAddModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Add New Experience</h3>
-        <button class="close-btn" (click)="closeAddModal()">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="modalUserId">User ID</label>
-          <input type="number" id="modalUserId" [(ngModel)]="newExperience.userId" placeholder="Enter User ID">
+      <ng-template #noData>
+        <div class="no-data">
+          <p class="no-data-icon">📭</p>
+          <p class="no-data-text">No experiences found</p>
+          <p class="no-data-hint">Click "Add New Experience" to get started</p>
         </div>
-
-        <div class="form-group">
-          <label for="modalCompanyName">Company Name</label>
-          <input type="text" id="modalCompanyName" [(ngModel)]="newExperience.companyName" placeholder="Enter Company Name">
-        </div>
-
-        <div class="form-group">
-          <label for="modalDesignation">Designation</label>
-          <input type="text" id="modalDesignation" [(ngModel)]="newExperience.designation" placeholder="Enter Designation">
-        </div>
-
-        <div class="form-group">
-          <label for="modalStartDate">Start Date</label>
-          <input type="date" id="modalStartDate" [(ngModel)]="newExperience.startDate">
-        </div>
-
-        <div class="form-group">
-          <label for="modalEndDate">End Date</label>
-          <input type="date" id="modalEndDate" [(ngModel)]="newExperience.endDate"
-            [class.disabled-input]="newExperience.isCurrent">
-        </div>
-
-        <div class="form-group checkbox-group">
-          <label for="modalIsCurrent">
-            <input type="checkbox" id="modalIsCurrent" [(ngModel)]="newExperience.isCurrent">
-            Currently Working Here
-          </label>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button (click)="closeAddModal()" class="cancel-btn">Cancel</button>
-        <button (click)="addExperience()" [disabled]="loading" class="save-btn">
-          {{ loading ? 'Saving...' : 'Save Experience' }}
-        </button>
-      </div>
+      </ng-template>
     </div>
   </div>
 </div>

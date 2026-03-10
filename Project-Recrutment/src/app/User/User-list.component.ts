@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserService } from '../service/User.Service';
+import { UserService } from '../service/User.Service';  // ← service folder
+import { AuthService } from '../service/auth.service'; // ← auth folder
 import { UserModel, UpdatePasswordDTO, ApiResponse } from './User.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-list',
@@ -41,6 +43,10 @@ export class UserListComponent implements OnInit {
 
   toast: { message: string; type: 'success' | 'error' } | null = null;
 
+  // Current logged-in user info
+  currentUserId = 0;
+  currentUserRole = '';
+
   roleMap: Record<number, string> = {
     1: 'Admin',
     2: 'HR',
@@ -57,10 +63,23 @@ export class UserListComponent implements OnInit {
 
   genderOptions = ['Male', 'Female', 'Other'];
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.loadUsers();
+    // Get current logged-in user
+    const user = this.authService.getUser();
+    if (user) {
+      this.currentUserId = user.id;
+      this.currentUserRole = user.role; // 'HR', 'Admin', 'Candidate', etc.
+      this.loadUsers();
+    } else {
+      alert('Please login first');
+      this.router.navigate(['/login']);
+    }
   }
 
   emptyUser(): UserModel {
@@ -91,7 +110,15 @@ export class UserListComponent implements OnInit {
 
     this.userService.getUsers().subscribe({
       next: (data: UserModel[]) => {
-        this.users = data;
+        // Filter based on role
+        if (this.currentUserRole === 'HR' || this.currentUserRole === 'Admin') {
+          // HR/Admin sees all users
+          this.users = data;
+        } else {
+          // Candidate/Other roles see only themselves
+          this.users = data.filter(u => u.id === this.currentUserId);
+        }
+        
         this.applyFilter();
         this.loading = false;
       },
@@ -162,6 +189,11 @@ export class UserListComponent implements OnInit {
   }
 
   openAdd(): void {
+    // Only HR/Admin can add new users
+    if (this.currentUserRole !== 'HR' && this.currentUserRole !== 'Admin') {
+      this.showToast('Only HR can add new users', 'error');
+      return;
+    }
 
     this.formData = this.emptyUser();
     this.isEditMode = false;
@@ -169,6 +201,11 @@ export class UserListComponent implements OnInit {
   }
 
   openEdit(user: UserModel): void {
+    // Users can only edit themselves (or HR can edit anyone)
+    if (this.currentUserId !== user.id && this.currentUserRole !== 'HR' && this.currentUserRole !== 'Admin') {
+      this.showToast('You can only edit your own profile', 'error');
+      return;
+    }
 
     this.formData = {
       ...user,
@@ -181,12 +218,22 @@ export class UserListComponent implements OnInit {
   }
 
   openDelete(user: UserModel): void {
+    // Only HR/Admin can delete
+    if (this.currentUserRole !== 'HR' && this.currentUserRole !== 'Admin') {
+      this.showToast('Only HR can delete users', 'error');
+      return;
+    }
 
     this.selectedUser = user;
     this.showDeleteModal = true;
   }
 
   openPassword(user: UserModel): void {
+    // Users can only change their own password (or HR can change anyone's)
+    if (this.currentUserId !== user.id && this.currentUserRole !== 'HR' && this.currentUserRole !== 'Admin') {
+      this.showToast('You can only change your own password', 'error');
+      return;
+    }
 
     this.passwordForm = {
       userId: user.id,
@@ -197,11 +244,52 @@ export class UserListComponent implements OnInit {
     this.showPasswordModal = true;
   }
 
+  private toNumberOrUndefined(value: any): number | undefined {
+    if (value === null || value === undefined || value === '') return undefined;
+    const n = Number(value);
+    return Number.isNaN(n) ? undefined : n;
+  }
+
+  private toNumberOrZero(value: any): number {
+    const n = Number(value);
+    return Number.isNaN(n) ? 0 : n;
+  }
+
+  private isSuccessResponse(res: any): boolean {
+    if (!res) return true;
+    return res.status === 1 || res.status === 200 || res.success === true || res.isSuccess === true;
+  }
+
   submitForm(): void {
 
-    const payload = {
+    if (!this.formData.firstName?.trim() ||
+        !this.formData.lastName?.trim() ||
+        !this.formData.username?.trim() ||
+        !this.formData.email?.trim() ||
+        !this.formData.dateOfBirth) {
+      this.showToast('Please fill all required fields', 'error');
+      return;
+    }
+
+    if (!this.isEditMode && !this.formData.password?.trim()) {
+      this.showToast('Password is required for new user', 'error');
+      return;
+    }
+
+    const dateOfBirth = this.formData.dateOfBirth.includes('T')
+      ? this.formData.dateOfBirth
+      : `${this.formData.dateOfBirth}T00:00:00`;
+
+    const payload: UserModel = {
       ...this.formData,
-      dateOfBirth: this.formData.dateOfBirth + 'T00:00:00'
+      roleId: this.toNumberOrZero(this.formData.roleId),
+      offerCTC: this.toNumberOrZero(this.formData.offerCTC),
+      interviewStatus: this.toNumberOrUndefined(this.formData.interviewStatus),
+      countryId: this.toNumberOrUndefined(this.formData.countryId),
+      stateId: this.toNumberOrUndefined(this.formData.stateId),
+      totalExperience: this.toNumberOrUndefined(this.formData.totalExperience),
+      phoneNumber: this.toNumberOrUndefined(this.formData.phoneNumber),
+      dateOfBirth
     };
 
     const call = this.isEditMode
@@ -209,9 +297,9 @@ export class UserListComponent implements OnInit {
       : this.userService.insertUser(payload);
 
     call.subscribe({
-      next: (res: ApiResponse) => {
+      next: (res: ApiResponse | any) => {
 
-        if (res.status === 1) {
+        if (this.isSuccessResponse(res)) {
 
           this.showToast(
             this.isEditMode
@@ -224,11 +312,11 @@ export class UserListComponent implements OnInit {
 
         } else {
 
-          this.showToast(res.message || 'Failed', 'error');
+          this.showToast(res?.message || 'Failed', 'error');
         }
       },
 
-      error: () => this.showToast('Network error', 'error')
+      error: (err) => this.showToast(err?.error?.message || err?.message || 'Network error', 'error')
     });
   }
 
@@ -238,9 +326,9 @@ export class UserListComponent implements OnInit {
 
     this.userService.deleteUser(this.selectedUser.id).subscribe({
 
-      next: (res: ApiResponse) => {
+      next: (res: ApiResponse | any) => {
 
-        if (res.status === 1) {
+        if (this.isSuccessResponse(res)) {
 
           this.showToast('User deleted!');
           this.showDeleteModal = false;
@@ -248,11 +336,11 @@ export class UserListComponent implements OnInit {
 
         } else {
 
-          this.showToast(res.message || 'Failed', 'error');
+          this.showToast(res?.message || 'Failed', 'error');
         }
       },
 
-      error: () => this.showToast('Network error', 'error')
+      error: (err) => this.showToast(err?.error?.message || err?.message || 'Network error', 'error')
     });
   }
 
@@ -260,20 +348,20 @@ export class UserListComponent implements OnInit {
 
     this.userService.updatePassword(this.passwordForm).subscribe({
 
-      next: (res: ApiResponse) => {
+      next: (res: ApiResponse | any) => {
 
-        if (res.status === 1) {
+        if (this.isSuccessResponse(res)) {
 
           this.showToast('Password updated!');
           this.showPasswordModal = false;
 
         } else {
 
-          this.showToast(res.message || 'Failed', 'error');
+          this.showToast(res?.message || 'Failed', 'error');
         }
       },
 
-      error: () => this.showToast('Network error', 'error')
+      error: (err) => this.showToast(err?.error?.message || err?.message || 'Network error', 'error')
     });
   }
 
@@ -336,4 +424,8 @@ export class UserListComponent implements OnInit {
     return this.users.filter(u => u.interviewStatus === 2).length;
   }
 
+  // Check if current user is HR/Admin (for showing add button etc)
+  get isHR(): boolean {
+    return this.currentUserRole === 'HR' || this.currentUserRole === 'Admin';
+  }
 }

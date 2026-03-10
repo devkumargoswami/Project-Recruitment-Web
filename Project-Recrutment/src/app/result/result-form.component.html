@@ -1,37 +1,59 @@
 <div class="form-container">
-  <h2>{{ isEditing ? 'Edit Result' : 'Add Result' }}</h2>
+  <div class="form-header">
+    <h2>{{ isEditing ? 'Edit Result' : 'Add Result' }}</h2>
+  </div>
 
   <form [formGroup]="resultForm" (ngSubmit)="onSubmit()">
 
     <div class="form-group">
-      <label>Candidate ID</label>
-      <input type="number" formControlName="candidate_id">
+      <label for="candidate_id">Candidate ID</label>
+      <input 
+        type="number" 
+        id="candidate_id" 
+        formControlName="candidate_id"
+        [class.error-border]="resultForm.get('candidate_id')?.invalid && resultForm.get('candidate_id')?.touched">
       <div class="error" *ngIf="resultForm.get('candidate_id')?.invalid && resultForm.get('candidate_id')?.touched">
         Candidate ID is required and must be greater than 0
       </div>
     </div>
 
     <div class="form-group">
-      <label>Technical Marks</label>
-      <input type="number" formControlName="technical_marks">
+      <label for="technical_marks">Technical Marks</label>
+      <input 
+        type="number" 
+        id="technical_marks" 
+        formControlName="technical_marks"
+        [class.error-border]="resultForm.get('technical_marks')?.invalid && resultForm.get('technical_marks')?.touched">
       <div class="error" *ngIf="resultForm.get('technical_marks')?.invalid && resultForm.get('technical_marks')?.touched">
         Technical marks are required and must be between 0 and 100
       </div>
     </div>
 
     <div class="form-group">
-      <label>HR Marks</label>
-      <input type="number" formControlName="hr_marks">
+      <label for="hr_marks">HR Marks</label>
+      <input 
+        type="number" 
+        id="hr_marks" 
+        formControlName="hr_marks"
+        [class.error-border]="resultForm.get('hr_marks')?.invalid && resultForm.get('hr_marks')?.touched">
       <div class="error" *ngIf="resultForm.get('hr_marks')?.invalid && resultForm.get('hr_marks')?.touched">
         HR marks are required and must be between 0 and 100
       </div>
     </div>
 
     <div class="form-actions">
-      <button type="submit" [disabled]="resultForm.invalid || submitting">
+      <button 
+        type="submit" 
+        [disabled]="resultForm.invalid || submitting"
+        class="btn-submit">
+        <span *ngIf="submitting" class="loading-spinner">⏳</span>
         {{ submitting ? 'Submitting...' : (isEditing ? 'Update Result' : 'Add Result') }}
       </button>
-      <button type="button" (click)="onCancel()" class="btn-cancel">
+      <button 
+        type="button" 
+        (click)="onCancel()" 
+        class="btn-cancel"
+        [disabled]="submitting">
         Cancel
       </button>
     </div>

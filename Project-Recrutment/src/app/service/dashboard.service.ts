@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -33,6 +34,13 @@ export class DashboardService {
     return this.http.get<any[]>(
       `${this.API}/Skill/GetByUserId/${userId}`,
       { headers: this.getSafeAuthHeaders() }
+    ).pipe(
+      catchError(() =>
+        this.http.get<any[]>(
+          `${this.API}/Skill/Select/${userId}`,
+          { headers: this.getSafeAuthHeaders() }
+        )
+      )
     );
   }
 
@@ -65,6 +73,13 @@ export class DashboardService {
     return this.http.get<any[]>(
       `${this.API}/Document/GetByUser/${userId}`,
       { headers: this.getSafeAuthHeaders() }
+    ).pipe(
+      catchError(() =>
+        this.http.get<any[]>(
+          `${this.API}/Document/GetByUser/${userId}`,
+          { headers: this.getSafeAuthHeaders() }
+        )
+      )
     );
   }
 
@@ -81,6 +96,13 @@ export class DashboardService {
     return this.http.get<any[]>(
       `${this.API}/Result/GetByUserId/${userId}`,
       { headers: this.getSafeAuthHeaders() }
+    ).pipe(
+      catchError(() =>
+        this.http.get<any[]>(
+          `${this.API}/Result/GetByCandidate/${userId}`,
+          { headers: this.getSafeAuthHeaders() }
+        )
+      )
     );
   }
 

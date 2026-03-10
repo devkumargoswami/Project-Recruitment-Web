@@ -1,131 +1,125 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Experience } from './experience.model';
 import { ExperienceService } from './experience.service';
-import { ExperienceModel } from './experience.model';
 
 @Component({
-  selector: 'app-experience',
+  selector: 'app-experience-form',
   standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
   templateUrl: './experience-form.component.html',
-  styleUrls: ['./experience-form.component.css'],
-  imports: [ReactiveFormsModule, CommonModule]
+  styleUrls: ['./experience-form.component.css']
 })
-export class ExperienceComponent implements OnInit {
-  experienceForm: FormGroup;
-  submitting = false;
-  successMessage = '';
-  errorMessage = '';
+export class ExperienceFormComponent implements OnInit {
+  form!: FormGroup;
+  isLoading = false;
+  editingId: number | null = null;
+  isEditMode = false;
+  currentUserId = 0;
 
   constructor(
     private fb: FormBuilder,
-    private experienceService: ExperienceService
-  ) {
-    this.experienceForm = this.fb.group({
-      id: [0],
-      userId: ['', [Validators.required, Validators.min(1)]],
+    private service: ExperienceService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.initForm();
+    this.checkEditMode();
+  }
+
+  checkEditMode() {
+    const editData = sessionStorage.getItem('editExperience');
+    if (editData) {
+      const experience = JSON.parse(editData);
+      this.editingId = experience.id;
+      this.isEditMode = true;
+      this.form.patchValue(experience);
+      sessionStorage.removeItem('editExperience');
+    }
+  }
+
+  initForm() {
+    this.form = this.fb.group({
+      userId: [this.currentUserId, [Validators.required]],
       companyName: ['', [Validators.required, Validators.minLength(2)]],
       designation: ['', [Validators.required, Validators.minLength(2)]],
-      startDate: [''],
+      startDate: ['', Validators.required],
       endDate: [''],
       isCurrent: [false]
     });
   }
 
-  ngOnInit(): void {
-    console.log('=== EXPERIENCE COMPONENT INITIALIZED ===');
+  get showEndDate() {
+    return !this.form.get('isCurrent')?.value;
   }
 
-  isFormValid(): boolean {
-    const v = this.experienceForm.value;
-    return !!(v.userId && v.companyName?.trim().length >= 2 &&
-              v.designation?.trim().length >= 2 && v.startDate);
+  getError(fieldName: string): string {
+    const control = this.form.get(fieldName);
+    if (control?.hasError('required')) return `${fieldName} is required`;
+    if (control?.hasError('minlength')) return `${fieldName} must be at least 2 characters`;
+    return '';
   }
 
-  // ✅ ADD
-  onSubmit(): void {
-    this.successMessage = '';
-    this.errorMessage = '';
-
-    if (!this.isFormValid()) {
-      this.errorMessage = 'Please fill in User ID, Company Name, Designation and Start Date';
+  onSubmit() {
+    if (!this.form.valid) {
+      alert('Please fill all required fields');
       return;
     }
 
-    this.submitting = true;
-
-    const formData = {
-      ...this.experienceForm.value,
-      id: 0,
-      endDate: this.experienceForm.value.isCurrent ? null : this.experienceForm.value.endDate
-    };
-
-    console.log('Inserting:', formData);
-
-    this.experienceService.insertExperience(formData).subscribe({
-      next: (response) => {
-        console.log('Insert response:', response);
-        this.submitting = false;
-        this.successMessage = 'Experience added successfully!';
-        this.resetForm();
-      },
-      error: (error) => {
-        console.error('Insert error:', error);
-        this.submitting = false;
-        this.errorMessage = 'Error adding experience: ' + error.message;
-      }
-    });
-  }
-
-  // ✅ UPDATE - id → experienceId mapping
-  onUpdate(): void {
-    this.successMessage = '';
-    this.errorMessage = '';
-
-    const id = this.experienceForm.value.id;
-
-    if (!id || id <= 0) {
-      this.errorMessage = 'Update ke liye Experience ID fill karo';
+    if (this.showEndDate && !this.form.get('endDate')?.value) {
+      alert('Please provide end date for completed experiences');
       return;
     }
 
-    if (!this.isFormValid()) {
-      this.errorMessage = 'Please fill in all required fields';
-      return;
+    this.isLoading = true;
+    const formValue = this.form.value;
+
+    if (this.editingId) {
+      this.service.updateExperience(this.editingId, formValue).subscribe(
+        (result) => {
+          this.isLoading = false;
+          alert('Experience updated successfully!');
+          this.resetForm();
+          this.router.navigate(['/experience/list']);
+        },
+        (error) => {
+          this.isLoading = false;
+          console.error('Error:', error);
+          alert('Failed to update experience');
+        }
+      );
+    } else {
+      this.service.createExperience(formValue).subscribe(
+        (result) => {
+          this.isLoading = false;
+          alert('Experience added successfully!');
+          this.resetForm();
+          this.router.navigate(['/experience/list']);
+        },
+        (error) => {
+          this.isLoading = false;
+          console.error('Error:', error);
+          alert('Failed to create experience');
+        }
+      );
     }
-
-    this.submitting = true;
-
-    // ✅ id → experienceId map kiya — backend ExperienceUpdateDTO expect karta hai
-    const formData = {
-      experienceId: this.experienceForm.value.id,  // ✅ Key fix
-      userId: this.experienceForm.value.userId,
-      companyName: this.experienceForm.value.companyName,
-      designation: this.experienceForm.value.designation,
-      startDate: this.experienceForm.value.startDate,
-      endDate: this.experienceForm.value.isCurrent ? null : this.experienceForm.value.endDate,
-      isCurrent: this.experienceForm.value.isCurrent
-    };
-
-    console.log('Updating:', formData);
-
-    this.experienceService.updateExperience(formData as any).subscribe({
-      next: (response) => {
-        console.log('Update response:', response);
-        this.submitting = false;
-        this.successMessage = 'Experience updated successfully!';
-        this.resetForm();
-      },
-      error: (error) => {
-        console.error('Update error:', error);
-        this.submitting = false;
-        this.errorMessage = 'Error updating experience: ' + error.message;
-      }
-    });
   }
 
-  resetForm(): void {
-    this.experienceForm.reset();
-    this.experienceForm.patchValue({ id: 0, isCurrent: false });
+  resetForm() {
+    this.form.reset();
+    this.editingId = null;
+    this.isEditMode = false;
+  }
+
+  onCancel() {
+    this.resetForm();
+    this.router.navigate(['/experience/list']);
+  }
+
+  goToList() {
+    this.router.navigate(['/experience/list']);
   }
 }
