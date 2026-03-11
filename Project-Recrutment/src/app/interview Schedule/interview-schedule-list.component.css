@@ -31,6 +31,12 @@
   margin-bottom: 28px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .page-title {
   font-family: 'Rajdhani', 'Segoe UI', sans-serif;
   font-size: 2.4rem;
@@ -62,6 +68,26 @@
   white-space: nowrap;
 }
 .btn-add:hover { background: #2b8aee; transform: translateY(-1px); }
+
+.btn-back {
+  background: linear-gradient(135deg, #00c9a7, #0ea5e9);
+  color: #e6fffb;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+
+.btn-back:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 10px 22px rgba(14, 165, 233, 0.35);
+}
 
 /* ── Stats ── */
 .stats-grid {

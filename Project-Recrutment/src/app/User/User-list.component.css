@@ -6,6 +6,25 @@
 .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; }
 .header-badge { font-size: 11px; font-weight: 600; letter-spacing: 0.15em; color: #6366f1; text-transform: uppercase; display: block; margin-bottom: 6px; }
 .header-title { font-size: 32px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.5px; margin: 0; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.btn-back {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  color: #e0f2fe;
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.28);
+  transition: transform .2s, box-shadow .2s, filter .2s;
+}
+.btn-back:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 10px 22px rgba(14, 165, 233, 0.35);
+}
 .btn-add { background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; color: #fff; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(99,102,241,0.4); transition: opacity .2s; }
 .btn-add:hover { opacity: 0.85; }
 

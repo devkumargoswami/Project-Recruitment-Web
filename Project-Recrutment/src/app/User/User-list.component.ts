@@ -210,11 +210,26 @@ export class UserListComponent implements OnInit {
     this.formData = {
       ...user,
       dateOfBirth: user.dateOfBirth?.split('T')[0] ?? '',
-      password: ''
+      password: user.password ?? ''
     };
 
     this.isEditMode = true;
     this.showFormModal = true;
+
+    // Some list APIs omit password; fetch full user details for edit prefill.
+    if (!this.formData.password?.trim()) {
+      this.userService.getUserById(user.id).subscribe({
+        next: (details) => {
+          const existingPassword = details?.password?.trim();
+          if (existingPassword) {
+            this.formData = { ...this.formData, password: existingPassword };
+          }
+        },
+        error: () => {
+          // Keep existing form state when password cannot be fetched.
+        }
+      });
+    }
   }
 
   openDelete(user: UserModel): void {
@@ -271,8 +286,8 @@ export class UserListComponent implements OnInit {
       return;
     }
 
-    if (!this.isEditMode && !this.formData.password?.trim()) {
-      this.showToast('Password is required for new user', 'error');
+    if (!this.formData.password?.trim()) {
+      this.showToast('Password is required', 'error');
       return;
     }
 
@@ -427,5 +442,9 @@ export class UserListComponent implements OnInit {
   // Check if current user is HR/Admin (for showing add button etc)
   get isHR(): boolean {
     return this.currentUserRole === 'HR' || this.currentUserRole === 'Admin';
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard/profile']);
   }
 }

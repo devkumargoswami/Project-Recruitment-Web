@@ -7,9 +7,12 @@
       <h1 class="page-title">Interview Schedule</h1>
       <p class="page-sub">View and manage all interview appointments</p>
     </div>
-    <button class="btn-add" (click)="navigateToAdd()">
-      <span class="btn-icon">＋</span> Add New Interview
-    </button>
+    <div class="header-actions">
+      <button class="btn-back" (click)="goBack()">Back to Profile</button>
+      <button class="btn-add" (click)="navigateToAdd()">
+        <span class="btn-icon">＋</span> Add New Interview
+      </button>
+    </div>
   </div>
 
   <!-- STAT CARDS -->
@@ -143,3 +146,5 @@
   <span class="toast-dot"></span>
   {{ toastMessage }}
 </div>
+
+

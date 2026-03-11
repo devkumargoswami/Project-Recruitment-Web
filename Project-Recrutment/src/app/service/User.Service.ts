@@ -98,6 +98,7 @@ export class UserService {
     const payload = {
       id: Number(user.id),
       username: user.username?.trim(),
+      password: user.password?.trim(),
       email: user.email?.trim(),
       firstName: user.firstName?.trim(),
       lastName: user.lastName?.trim(),

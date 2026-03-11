@@ -4,9 +4,12 @@
       <h1>All Experiences</h1>
       <p class="subtitle">View and manage your professional experiences</p>
     </div>
-    <button (click)="onAddNew()" class="btn btn-primary">
-      + Add New Experience
-    </button>
+    <div class="header-actions">
+      <button (click)="goBack()" class="btn btn-secondary">Back to Profile</button>
+      <button (click)="onAddNew()" class="btn btn-primary">
+        + Add New Experience
+      </button>
+    </div>
   </div>
 
   <div class="stats-section">
@@ -92,3 +95,4 @@
     </div>
   </div>
 </div>
+
