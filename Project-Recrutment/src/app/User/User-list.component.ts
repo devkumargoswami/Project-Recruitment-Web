@@ -210,11 +210,26 @@ export class UserListComponent implements OnInit {
     this.formData = {
       ...user,
       dateOfBirth: user.dateOfBirth?.split('T')[0] ?? '',
-      password: ''
+      password: user.password ?? ''
     };
 
     this.isEditMode = true;
     this.showFormModal = true;
+
+    // Some list APIs omit password; fetch full user details for edit prefill.
+    if (!this.formData.password?.trim()) {
+      this.userService.getUserById(user.id).subscribe({
+        next: (details) => {
+          const existingPassword = details?.password?.trim();
+          if (existingPassword) {
+            this.formData = { ...this.formData, password: existingPassword };
+          }
+        },
+        error: () => {
+          // Keep existing form state when password cannot be fetched.
+        }
+      });
+    }
   }
 
   openDelete(user: UserModel): void {
