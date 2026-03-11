@@ -100,6 +100,8 @@ export class ProfileComponent implements OnInit {
         console.log('Profile update response:', response);
         this.successMessage = 'Profile updated successfully';
         this.errorMessage = '';
+        // Reload profile data after successful update
+        this.loadProfile();
         this.loading = false;
       },
       error: (err) => {

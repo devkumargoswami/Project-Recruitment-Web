@@ -3,13 +3,13 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar" [class.open]="sidebarOpen">
-    <div class="brand">
+    <!-- <div class="brand">
       <div class="brand-icon">&#x1F3E2;</div>
       <div class="brand-text">
         <div class="brand-name">HRPro</div>
         <div class="brand-sub">Dashboard</div>
       </div>
-    </div>
+    </div> -->
 
     <div class="user-mini">
       <div class="avatar" [style.background]="roleConfig.grad">{{ getInitials(user?.name) }}</div>
@@ -78,15 +78,15 @@
               <span class="badge badge-muted" *ngIf="user?.gender">{{ user?.gender }}</span>
             </div>
           </div>
-          <button class="btn-edit-profile" (click)="handleTopAction()">Edit Profile</button>
+          <!-- <button class="btn-edit-profile" (click)="handleTopAction()">Edit Profile</button> -->
         </div>
 
-        <div class="stats-row">
+        <!-- <div class="stats-row">
           <div class="stat-card" *ngFor="let s of roleConfig.stats" (click)="showSection(s.toLowerCase())">
             <div class="stat-num" [style.color]="roleConfig.color">{{ getStatCount(s) }}</div>
             <div class="stat-lbl">{{ s }}</div>
           </div>
-        </div>
+        </div> -->
 
         <div class="profile-grid">
 

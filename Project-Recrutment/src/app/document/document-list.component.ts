@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DocumentService } from '../service/document.service';
 import { DocumentModel } from './document.model';
 import { AuthService } from '../service/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-document-list',
@@ -38,7 +39,8 @@ export class DocumentListComponent implements OnInit {
 
   constructor(
     private documentService: DocumentService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -90,12 +92,17 @@ export class DocumentListComponent implements OnInit {
     this.documentService.getByUserId(this.currentUserId).subscribe({
       next: (data: DocumentModel[]) => {
         this.loading = false;
-        this.documents = data;
+        this.documents = data || [];
         this.error = null;
       },
       error: (err) => {
         this.loading = false;
-        this.error = 'Error loading documents: ' + err.message;
+        // Check if it's a network/server error (server is off)
+        if (err.status === 0 || err.status === 500 || err.status === 502 || err.status === 503) {
+          this.error = 'Server is currently unavailable. Please try again later.';
+        } else {
+          this.error = 'Error loading documents: ' + err.message;
+        }
       }
     });
   }
@@ -325,5 +332,10 @@ export class DocumentListComponent implements OnInit {
     // View document functionality - could open a modal or navigate to detail view
     console.log('Viewing document:', doc);
     alert(`Viewing document: ${doc.documentName}\nPath: ${doc.documentPath}\nCreated: ${doc.createDatetime}`);
+  }
+
+  /** GO BACK TO PROFILE */
+  goBack() {
+    this.router.navigate(['/dashboard/profile']);
   }
 }

@@ -68,11 +68,15 @@
   </div>
 
   <div class="empty-state" *ngIf="!loading && educationList.length === 0 && !error">
-    No education records found. Add a new education record to get started.
+    No education records found.
+  </div>
+
+  <div class="back-section">
+    <button class="btn-secondary" (click)="goBack()">Back to Profile</button>
   </div>
 
   <!-- Add Education Modal -->
-  <div class="modal" *ngIf="isAddModalOpen" (click)="closeAddModal()">
+  <div class="modal" [class.show]="isAddModalOpen" (click)="closeAddModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Add New Education</h2>

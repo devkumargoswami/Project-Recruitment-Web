@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { EducationService } from '../service/education.service';
 import { EducationModel } from './education.model';
 import { AuthService } from '../service/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-education-list',
@@ -43,7 +44,8 @@ export class EducationListComponent implements OnInit {
 
   constructor(
     private educationService: EducationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -99,12 +101,17 @@ export class EducationListComponent implements OnInit {
     this.educationService.getByUserId(this.currentUserId).subscribe({
       next: (data: EducationModel[]) => {
         this.loading = false;
-        this.educationList = data;
+        this.educationList = data || [];
         this.error = null;
       },
       error: (err) => {
         this.loading = false;
-        this.error = 'Error loading education: ' + err.message;
+        // Check if it's a network/server error (server is off)
+        if (err.status === 0 || err.status === 500 || err.status === 502 || err.status === 503) {
+          this.error = 'Server is currently unavailable. Please try again later.';
+        } else {
+          this.error = 'Error loading education: ' + err.message;
+        }
       }
     });
   }
@@ -332,5 +339,10 @@ export class EducationListComponent implements OnInit {
       `Start: ${edu.startMonth}/${edu.startYear}\n` +
       `End: ${edu.isContinue ? 'Present' : edu.endMonth + '/' + edu.endYear}`
     );
+  }
+
+  /** GO BACK TO PROFILE */
+  goBack() {
+    this.router.navigate(['/dashboard/profile']);
   }
 }
