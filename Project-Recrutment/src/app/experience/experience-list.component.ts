@@ -110,6 +110,10 @@ export class ExperienceListComponent implements OnInit {
     this.router.navigate(['/experience/add']);
   }
 
+  goBack(): void {
+    this.router.navigate(['/dashboard/profile']);
+  }
+
   calculateDuration(startDate: string, endDate: string, isCurrent: boolean): string {
     if (!startDate) return 'N/A';
     try {

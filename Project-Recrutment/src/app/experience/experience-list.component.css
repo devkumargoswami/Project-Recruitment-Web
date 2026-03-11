@@ -14,6 +14,12 @@
   gap: 2rem;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .header-section h1 {
   font-size: 3rem;
   font-weight: 900;
@@ -53,6 +59,19 @@
   background: linear-gradient(to right, #1d4ed8, #0369a1);
   box-shadow: 0 0 30px rgba(37, 99, 235, 0.5);
   transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #e0f2fe;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.25);
+}
+
+.btn-secondary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(14, 165, 233, 0.35);
 }
 
 .stats-section {

@@ -122,6 +122,10 @@ export class InterviewScheduleListComponent implements OnInit {
     this.router.navigate(['/interview-schedule/add']);
   }
 
+  goBack(): void {
+    this.router.navigate(['/dashboard/profile']);
+  }
+
   navigateToEdit(id: number): void {
     const row = this.interviews.find(i => i.id === id);
     if (row) {

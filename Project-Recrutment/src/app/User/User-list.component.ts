@@ -271,8 +271,8 @@ export class UserListComponent implements OnInit {
       return;
     }
 
-    if (!this.isEditMode && !this.formData.password?.trim()) {
-      this.showToast('Password is required for new user', 'error');
+    if (!this.formData.password?.trim()) {
+      this.showToast('Password is required', 'error');
       return;
     }
 
@@ -427,5 +427,9 @@ export class UserListComponent implements OnInit {
   // Check if current user is HR/Admin (for showing add button etc)
   get isHR(): boolean {
     return this.currentUserRole === 'HR' || this.currentUserRole === 'Admin';
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard/profile']);
   }
 }
